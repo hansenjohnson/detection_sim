@@ -1,0 +1,25 @@
+# R
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+# System
+.DS_Store
+
+# directories
+data
+figures
+wrk
+
+# files
+.csv
+.txt
+.png
+.jpg
+.mp4
+.gif
+.mov
+.pdf
+.xls
+.docx
