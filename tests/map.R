@@ -17,6 +17,7 @@ df = rw_sims(nrws = 25, hrs = 48, bh = 'feeding', radius = 75)
 
 # convert from local coords to lat/lon (distances must be in meters)
 tmp = geodXyInverse(x = df$x*1e3, y = df$y*1e3, longitudeRef = -63, latitudeRef = 48)
+  # from the oce package
 
 # add to data frame
 df$lat = tmp$latitude

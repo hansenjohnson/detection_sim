@@ -3,7 +3,10 @@
 
 # setup -------------------------------------------------------------------
 
+install.packages('gifski')
+install.packages('gganimate')
 library(tidyverse)
+library(gifski)
 library(gganimate)
 source('r/rw_sim.R')
 

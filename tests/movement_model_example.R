@@ -3,6 +3,7 @@
 
 # read in the model functions
 source('r/rw_sim.R')
+set.seed(1) # you have to read this in before the df line if you want the same random path as last time
 
 # single whale ------------------------------------------------------------
 # The `rw_sim()` function is used to simulate the movement of a single
@@ -36,11 +37,12 @@ ggplot(df, aes(x=t,y=r))+
 ggplot(df, aes(x=t,y=dpt))+
   geom_path()
 
-# plot distribution of whale speeds (should be uniform)
+# plot distribution of whale speeds (should be uniform, see line 58 of rw_sim.R)
 ggplot(df, aes(x=spd))+
   geom_histogram()
 
-# plot distribution of whale turning angles (will not be uniform)
+# plot distribution of whale turning angles (will not be uniform,
+# because it is autocorrelated/constrained by previous heading)
 ggplot(df, aes(x=ang))+
   geom_histogram()
 
@@ -52,7 +54,9 @@ ggplot(df, aes(x=ang))+
 # Here's a quick example with 100 whales:
 
 # run the model
-df = rw_sims(nrws = 100, hrs = 96, bh = 'feeding', radius = 100)
+df = rw_sims(nrws = 100, hrs = 96, bh = 'socializing', radius = 100)
+# radius defines the area where the different whales can be "initialized"
+# (they are randomly scattered over an area)
 
 # plot the output
 ggplot(df, aes(x=x,y=y,group=id))+

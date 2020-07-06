@@ -22,6 +22,7 @@ rad2deg = function(rad){
 }
 
 rw_sim = function(
+  # simulate right whale movement with vectorized correlated random walk
   hrs = 24,       # number of hours
   dt = 2.5,       # time resolution [sec]
   x0 = 0,         # initial x position
@@ -30,9 +31,8 @@ rw_sim = function(
   nt = 60,        # new time resolution after subsampling [sec]
   sub = TRUE      # subsample data to new rate, nt
 ){
-  # simulate right whale movement with vectorized correlated random walk
   
-  # define turn rate (deg / 10m)
+  # define turn rate (in deg/10m)
   if(bh == 'feeding'){
     tr = 19.3  
   } else if(bh == 'traveling'){
@@ -49,19 +49,22 @@ rw_sim = function(
   
   # create time vector
   t = seq(from = 0, to = hrs*60*60, by = dt)
+    # create a sequence from 00 to 24 with 2.5 second jumps
   
   # length time vector
   n = length(t)
   
   # calculate speeds
-  spd = runif(min = 0, max = 1.23, n = n)
+  spd = runif(min = 0, max = 1.23, n = n) 
+  # create a uniform distribution of speeds from 0-1.23 with an observation for every jump in the time vector
   
   # calculate travel distances
-  dst = spd*dt
-  dpt = cumsum(dst)
+  dst = spd*dt # speed * time equals distance at each time step
+  dpt = cumsum(dst) # add up all the distances
   
   # calculate turn angles
-  max_ang = dst*deg2rad(tr)/10
+  max_ang = dst*deg2rad(tr)/10 # distance travelled at a time step * turn rate for a specific behaviour 
+                              # (divided by 10) because tr units are given for 10m
   ang = runif(min = -max_ang, max = max_ang, n=n-1)
   
   # choose starting angle and add to rest
@@ -95,6 +98,7 @@ rw_sim = function(
 
 init_whales = function(nrws=1e3, radius = 1e4){
   # initialize field of simulated whales within a given radius (m)
+  # dropping the points (assigns an angle between 0-2pi based on a specific radius and transforms that into range)
   
   # calculate angles and ranges
   a = 2*pi*runif(n = nrws, min = 0, max = 1)
@@ -115,7 +119,7 @@ rw_sims = function(nrws = 1e2,          # number of whales
                    radius = 100,        # radius of initial positions (km)
                    run_parallel = FALSE # run with parallel processing?
 ){
-  # simulate movements of a field of whales
+  # simulate movements of a field of numerous whales
   
   # startup message
   message('\n## NARW MOVEMENT MODEL RUN ##\n')
@@ -135,7 +139,7 @@ rw_sims = function(nrws = 1e2,          # number of whales
   ini = init_whales(nrws = nrws, radius = radius*1e3)
   
   if(run_parallel){
-    # determine number of cores available
+    # determine number of cores available to run function more efficiently
     numCores = detectCores()
     
     message('Running in parallel with ', numCores, ' cores...')

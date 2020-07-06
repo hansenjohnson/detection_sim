@@ -28,14 +28,17 @@ y = runif(n = n, min = 5, max = 10)
 
 # store in a tibble
 uniform = tibble(x,y)
+# we created a table with two columns, x and y, each with 1000 (n) observations; 
+# x has numbers from 1-100 and y has numbers from 5-10
 
 # plot data
 ggplot(uniform, aes(x=x,y=y))+
   geom_point(shape=1)
 
 # plot histogram
-ggplot(uniform, aes(y=y))+
+ggplot(uniform, aes(x=y))+
   geom_histogram(color = 'black')
+# if you increase n, the histogram becomes more and more uniform
 
 # normal ------------------------------------------------------------------
 # https://en.wikipedia.org/wiki/Normal_distribution
@@ -54,8 +57,9 @@ ggplot(normal, aes(x=x,y=y))+
   geom_point(shape=1)
 
 # plot histogram
-ggplot(normal, aes(y=y))+
+ggplot(normal, aes(x=y))+
   geom_histogram(color = 'black')
+# the bigger n is, the more normal the histogram
 
 # binomial ----------------------------------------------------------------
 # https://en.wikipedia.org/wiki/Binomial_distribution
@@ -74,6 +78,6 @@ ggplot(binom, aes(x=x,y=y))+
   geom_point(shape=1)
 
 # plot histogram
-ggplot(binom, aes(y=y))+
+ggplot(binom, aes(x=y))+
   geom_histogram(color = 'black')
 
