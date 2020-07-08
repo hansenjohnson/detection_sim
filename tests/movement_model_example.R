@@ -46,6 +46,28 @@ ggplot(df, aes(x=spd))+
 ggplot(df, aes(x=ang))+
   geom_histogram()
 
+# single whale, two behaviours --------------------------------------------
+
+df2 = rw_sim(hrs = 24, bh = 'socializing')
+
+df_0 = rbind(df,df2)
+
+ggplot(df_0, aes(x=x,y=y, color=bh))+
+  geom_path()+
+  coord_equal()
+
+ggplot(df_0, aes(x=t,y=r))+
+  geom_path()
+
+ggplot(df_0, aes(x=t,y=dpt))+
+  geom_path()
+
+ggplot(df_0, aes(x=spd))+
+  geom_histogram()
+
+ggplot(df_0, aes(x=ang))+
+  geom_histogram()
+
 # multiple whales ---------------------------------------------------------
 # The function `rw_sims()` is used to model multiple right whales. It works
 # by randomly assigning starting positions of whales within a given radius (km),
@@ -62,3 +84,23 @@ df = rw_sims(nrws = 100, hrs = 96, bh = 'socializing', radius = 100)
 ggplot(df, aes(x=x,y=y,group=id))+
   geom_path(alpha = 0.5)+
   coord_equal()
+
+# multiple whales with different behaviours ---------------------------------
+
+df1 = rw_sims(nrws = 50, hrs = 96, bh = 'socializing', radius = 100)
+df2 = rw_sims(nrws = 50, hrs = 96, bh = 'feeding', radius = 100)
+
+# make a new column with the values from the `bh` and `id` column pasted together 
+df1_new = transform(df1, bh_id=paste(bh, id, sep="_"))
+df2_new = transform(df2, bh_id=paste(bh, id, sep="_"))
+
+# remove id column from both dataframes to avoid confusion when plotting
+df1_new <- df1_new[,-1]
+df2_new <- df2_new[,-1]
+
+all_whales <- rbind(df1_new,df2_new)
+
+ggplot(all_whales, aes(x=x,y=y,group=bh_id, color=bh))+
+  geom_path(alpha = 0.5)+
+  coord_equal()
+
