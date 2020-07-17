@@ -18,6 +18,24 @@ detection_function = function(x,L=1.045,x0=10,k=-0.3){
   return(y)
 }
 
+# logistic curve example --------------------------------------------------
+
+# input parameters
+L=1.0
+x0=1500
+k=-0.01
+x=seq(from = 0, to = 4000, by = 0.5)
+
+# calculate y
+y = L/(1+exp(-1*k*(x-x0)))
+
+# put in table
+df = tibble(x=x,y=y)
+
+# plot
+ggplot()+
+  geom_point(data=df,aes(x=x,y=y))
+
 # simulate whale ----------------------------------------------------------
 
 # model parameters
@@ -28,11 +46,11 @@ x0 = 3000 # start x coord (m)
 y0 = 1000 # start y coord (m)
 
 # run model and convert to km
-wh = rw_sim(hrs = hrs, bh = 'feeding', sub = TRUE, nt = nt,x0=x0,y0=y0) %>%
+wh = rw_sim(hrs = hrs, bh = 'feeding', sub = TRUE, nt = nt, x0=x0, y0=y0) %>%
   mutate(
-    x=x/1e3,
-    y=y/1e3,
-    r=r/1e3
+    x=x/1000,
+    y=y/1000,
+    r=r/1000
   )
 
 # calculate likelihood of call in timestep
@@ -44,15 +62,15 @@ wh$call = rbinom(n = nrow(wh), size = 1, prob = cr_p)
 # plot to check
 # ggplot()+
 #   geom_path(data = wh,aes(x=x,y=y))+
-#   geom_point(data = filter(wh,call==1),aes(x=x,y=y),shape=21,fill='red')
+#   geom_point(data = filter(wh,call==1),aes(x=x,y=y),shape=21,fill='red')+
+#   coord_fixed()
 
 # test detection function -------------------------------------------------
 
 # make detection function 
-df = tibble(
-  r = seq(from = 0, to = 40, by = 0.1), # range vector
-  p = detection_function(x = r) # detection function
-)
+r = seq(from = 0, to = 40, by = 0.1)
+p = detection_function(x = r)
+df = tibble(r,p)
 
 # quick plot to check
 # ggplot(df,aes(x=r,y=p))+
@@ -61,8 +79,8 @@ df = tibble(
 # apply detection function ------------------------------------------------
 
 # coordinates of detector
-x_dt = 30
-y_dt = -25
+x_dt = 40
+y_dt = -40
 
 # make data frame
 df = tibble(
