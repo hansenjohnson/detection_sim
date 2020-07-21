@@ -60,14 +60,14 @@ cr_p = cr_hr/60/60*nt # KEY - this must be less than 1!
 wh$call = rbinom(n = nrow(wh), size = 1, prob = cr_p)
 
 # plot to check
-# ggplot()+
-#   geom_path(data = wh,aes(x=x,y=y))+
-#   geom_point(data = filter(wh,call==1),aes(x=x,y=y),shape=21,fill='red')+
-#   coord_fixed()
+ ggplot()+
+   geom_path(data = wh,aes(x=x,y=y))+
+   geom_point(data = filter(wh,call==1),aes(x=x,y=y),shape=21,fill='red')+
+   coord_fixed()
 
 # test detection function -------------------------------------------------
 
-# make detection function 
+# make detection function using the function created with these x-values
 r = seq(from = 0, to = 40, by = 0.1)
 p = detection_function(x = r)
 df = tibble(r,p)
@@ -76,13 +76,15 @@ df = tibble(r,p)
 # ggplot(df,aes(x=r,y=p))+
 #   geom_path()
 
+# It works! Let's use the whale movements for x-values now
+
 # apply detection function ------------------------------------------------
 
 # coordinates of detector
-x_dt = 40
+x_dt = 20
 y_dt = -40
 
-# make data frame
+# make data frame using whale movement variables
 df = tibble(
   t = wh$t,
   x_wh = wh$x,
@@ -96,10 +98,10 @@ df = tibble(
 # subset to only times with calls
 calls = df %>% filter(call==1)
 
-# apply detection function to extract probabilities
+# apply detection function to the call positions to extract probabilities of detection
 calls$p = detection_function(x = calls$r_wh)
 
-# apply binomial distribution to determine detection
+# generate a binomial distribution to see if each call was detected using this probability
 calls$detected = as.character(rbinom(n = nrow(calls), size = 1, prob = calls$p))
 
 # plot to check
@@ -120,4 +122,8 @@ ggplot()+
   theme_bw()+
   theme(panel.grid = element_blank())
   
-  
+# find percentage of total calls detected
+  detections = calls %>% filter(detected==1)
+  x = nrow(detections)
+  y = nrow(calls)
+  (x/y)*100
