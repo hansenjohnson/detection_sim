@@ -110,7 +110,7 @@ ggplot()+
 # test function with calling rate incorporated ----------------------------
 
 # run a simple model
-df_multiple = rw_sims(hrs = hrs, bh = 'feeding', nt = 60)
+df_multiple = rw_sims(hrs = hrs, bh = 'feeding', nt = 300)
 
 # plot to check
 ggplot()+

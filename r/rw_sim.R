@@ -156,7 +156,8 @@ rw_sims = function(nrws = 1e2,          # number of whales in simulation
                    bh = 'feeding',      # behaviour
                    nt = 300,            # model time resolution (seconds)
                    radius = 100,        # radius of initial positions (km)
-                   run_parallel = FALSE # run with parallel processing?
+                   run_parallel = FALSE,# run with parallel processing?
+                   cr_mn_hr = 0.25      # mean call rate (calls/whale/hr)
 ){
   # simulate movements of a field of numerous whales
   
@@ -185,7 +186,7 @@ rw_sims = function(nrws = 1e2,          # number of whales in simulation
     
     # model movements
     DF = mclapply(X = nseq, FUN = function(i){
-      rw_sim(x0=ini$x[i],y0=ini$y[i],hrs=hrs,bh=bh,nt=nt)
+      rw_sim(x0=ini$x[i],y0=ini$y[i],hrs=hrs,bh=bh,nt=nt,cr_mn_hr=cr_mn_hr)
     }, mc.cores = numCores)
     
   } else {
@@ -210,9 +211,19 @@ rw_sims = function(nrws = 1e2,          # number of whales in simulation
   df$dst = df$dst/1e3
   df$dpt = df$dpt/1e3
   
+  # calculate the number of calls
+  n_calls = df %>% 
+    filter(call==1) %>%
+    nrow()
+  
+  # calculate the observed call rate
+  cr_obs = n_calls/hrs/nrws
+  
   # calculate time elapsed
   toc = round(Sys.time()-tic, 2)
   message('Done! Time elapsed: ', format(toc))
+  message('Expected call rate: ', cr_mn_hr)
+  message('Observed call rate: ', mean(cr_obs, digits = 2))
   
   return(df)
 }
