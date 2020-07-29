@@ -23,14 +23,18 @@ rad2deg = function(rad){
 
 rw_sim = function(
   # simulate right whale movement with vectorized correlated random walk
+  nrws = 1,       # number of whales in simulation
   hrs = 24,       # number of hours
   dt = 2.5,       # time resolution [sec]
   x0 = 0,         # initial x position
   y0 = 0,         # initial y position
   bh = 'feeding', # behaviour (feeding, traveling, socializing)
   nt = 60,        # new time resolution after subsampling [sec]
-  sub = TRUE      # subsample data to new rate, nt
-){
+  sub = TRUE,     # subsample data to new rate, nt
+  cr_mn_hr = 0.25,# mean call rate (calls/whale/hr)
+  cr_sd_hr = 0.001# standard deviation of call rate
+  )
+{ 
   
   # define turn rate (in deg/10m)
   if(bh == 'feeding'){
@@ -49,7 +53,7 @@ rw_sim = function(
   
   # create time vector
   t = seq(from = 0, to = hrs*60*60, by = dt)
-    # create a sequence from 00 to 24 with 2.5 second jumps
+  # create a sequence from 00 to 24 with 2.5 second jumps
   
   # length time vector
   n = length(t)
@@ -64,7 +68,7 @@ rw_sim = function(
   
   # calculate turn angles
   max_ang = dst*deg2rad(tr)/10 # distance travelled at a time step * turn rate for a specific behaviour 
-                              # (divided by 10) because tr units are given for 10m
+  # (divided by 10) because tr units are given for 10m
   ang = runif(min = -max_ang, max = max_ang, n=n-1)
   
   # choose starting angle and add to rest
@@ -93,6 +97,41 @@ rw_sim = function(
   # add behaviour
   df$bh = bh
   
+  # add call rate from normal distribution
+  # calculate the time interval
+  dt = df$t[2] - df$t[1]
+  
+  # generate a normal distribution to assign call rate in each timestep
+  cr_hr = rnorm(n = nrow(df), mean = cr_mn_hr, sd = cr_sd_hr)
+  
+  # convert from hours to seconds
+  cr_sec = cr_hr/60/60
+  
+  # calculate likelihood of call in timestep
+  cr_p = cr_sec*dt # KEY - this must be less than 1!
+  
+  # warn if cr_p is NOT less than 1
+  if(max(cr_p)>1){
+    warning('Liklihood of call in timestep exceeds 1! Increase the time resolution or decrease the call rate to avoid errors')
+  }
+  
+  # generate a binomial distribution using this probability
+  df$call = rbinom(n = nrow(df), size = 1, prob = cr_p)
+  
+  # calculate the number of calls
+  n_calls = df %>% 
+    filter(call==1) %>%
+    nrow()
+  
+  # calculate the observed call rate
+  cr_obs = n_calls/hrs
+  
+  # print a message comparing observed and expected
+  if(nrws==1){
+    message('Expected call rate: ', cr_mn_hr)
+    message('Observed call rate: ', round(x = cr_obs, digits = 2))}
+    else if(nrws>1){}
+    
   return(df)
 }
 
@@ -112,7 +151,7 @@ init_whales = function(nrws=1e3, radius = 1e4){
   out = data.frame(x=round(x),y=round(y))
 }
 
-rw_sims = function(nrws = 1e2,          # number of whales
+rw_sims = function(nrws = 1e2,          # number of whales in simulation
                    hrs = 48,            # duration of simulation (hours)
                    bh = 'feeding',      # behaviour
                    nt = 300,            # model time resolution (seconds)
@@ -153,7 +192,7 @@ rw_sims = function(nrws = 1e2,          # number of whales
     
     # model movements
     DF = lapply(X = nseq, FUN = function(i){
-      rw_sim(x0=ini$x[i],y0=ini$y[i],hrs=hrs,bh=bh,nt=nt)
+      rw_sim(x0=ini$x[i],y0=ini$y[i],hrs=hrs,bh=bh,nt=nt,nrws=nrws)
     })
     
   }
