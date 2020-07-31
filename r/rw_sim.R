@@ -103,7 +103,7 @@ rw_sim = function(
   
   # generate a normal distribution to assign call rate in each timestep
   cr_hr = rnorm(n = nrow(df), mean = cr_mn_hr, sd = cr_sd_hr)
-  
+
   # convert from hours to seconds
   cr_sec = cr_hr/60/60
   

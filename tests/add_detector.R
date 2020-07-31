@@ -36,11 +36,10 @@ df = tibble(x=x,y=y)
 ggplot()+
   geom_point(data=df,aes(x=x,y=y))
 
-# simulate whale ----------------------------------------------------------
+# simulate single whale ----------------------------------------------------
 
 # model parameters
 hrs = 24*7 # model run length (hr)
-cr_hr = 3 # call rate (calls/hr)
 nt = 60 # time res (s)
 x0 = 3000 # start x coord (m)
 y0 = 1000 # start y coord (m)
@@ -54,10 +53,10 @@ wh = rw_sim(hrs = hrs, bh = 'feeding', sub = TRUE, nt = nt, x0=x0, y0=y0) %>%
   )
 
 # calculate likelihood of call in timestep
-cr_p = cr_hr/60/60*nt # KEY - this must be less than 1!
+#cr_p = cr_hr/60/60*nt # KEY - this must be less than 1!
 
 # generate a binomial distribution using this probability
-wh$call = rbinom(n = nrow(wh), size = 1, prob = cr_p)
+#wh$call = rbinom(n = nrow(wh), size = 1, prob = cr_p)
 
 # plot to check
  ggplot()+
@@ -78,7 +77,7 @@ df = tibble(r,p)
 
 # It works! Let's use the whale movements for x-values now
 
-# apply detection function ------------------------------------------------
+# apply detection function on one whale -------------------------------------
 
 # coordinates of detector
 x_dt = 20
@@ -108,15 +107,12 @@ calls$detected = as.character(rbinom(n = nrow(calls), size = 1, prob = calls$p))
 ggplot()+
   # plot whale track
   geom_path(data = wh,aes(x=x,y=y), color = 'grey')+
-  
   # plot calls
   geom_point(data = calls,aes(x=x_wh,y=y_wh,fill=detected,size=detected),shape=21,alpha=0.7)+
   scale_fill_manual(values = c('1'='red','0'='grey'))+
   scale_size_manual(values = c('1'=2,'0'=1))+
-  
   # plot detector position
   geom_point(aes(x=x_dt,y=y_dt),shape=24,fill='blue')+
-  
   # formatting
   coord_equal()+
   theme_bw()+
@@ -127,3 +123,71 @@ ggplot()+
   x = nrow(detections)
   y = nrow(calls)
   (x/y)*100
+  
+# apply detection function on multiple whales --------------------------------
+  
+# simulate multiple whales
+  # model parameters
+  hrs = 24*7 # model run length (hr)
+  nt = 60 # time res (s)
+  
+  # run model and convert to km
+  whs = rw_sims(hrs = hrs, bh = 'feeding', nt = nt) %>%
+    mutate(
+      x=x/1000,
+      y=y/1000,
+      r=r/1000
+    )
+
+  # plot to check
+  ggplot()+
+    geom_path(data=whs, aes(x=x,y=y,group=id))+
+    geom_point(data=filter(whs,call==1),aes(x=x,y=y),shape=21, fill='red')+
+    geom_path(alpha = 0.5)+
+    coord_equal()
+  
+# coordinates of detector
+  x_dt = -0.05
+  y_dt = -0.1
+  
+# make data frame using whale movement variables
+  df = tibble(
+    t = whs$t,
+    x_whs = whs$x,
+    y_whs = whs$y,
+    x_dt,
+    y_dt,
+    r_whs = sqrt((x_whs-x_dt)^2 + (y_whs-y_dt)^2),
+    call = whs$call
+  )
+  
+# subset to only times with calls
+  calls = df %>% filter(call==1)
+  
+# apply detection function to the call positions to extract probabilities of detection
+  calls$p = detection_function(x = calls$r_whs)
+  
+# generate a binomial distribution to see if each call was detected using this probability
+  calls$detected = as.character(rbinom(n = nrow(calls), size = 1, prob = calls$p))
+  
+# plot to check
+  ggplot()+
+  # plot whale track
+  geom_path(data=whs, aes(x=x,y=y,group=id), color = 'grey')+
+  # plot calls
+  geom_point(data = calls,aes(x=x_whs,y=y_whs,fill=detected,size=detected),shape=21,alpha=0.7)+
+  scale_fill_manual(values = c('1'='red','0'='grey'))+
+  scale_size_manual(values = c('1'=2,'0'=1))+
+  # plot detector position
+  geom_point(aes(x=x_dt,y=y_dt),shape=24,fill='blue')+
+  # formatting
+  coord_equal()+
+  theme_bw()+
+  theme(panel.grid = element_blank())
+  
+# find percentage of total calls detected
+  detections = calls %>% filter(detected==1)
+  x = nrow(detections)
+  y = nrow(calls)
+  (x/y)*100
+  
