@@ -89,7 +89,8 @@ glider_moving = function(
 # test it ----------------------------------------------------------------
 
 # run the model for a glider performing path1 over 24 hr period
-df = glider_moving(hrs = hrs, bh = 'path1', sub = TRUE)
+df = glider_moving(hrs = hrs, bh = 'path1', sub = TRUE) %>%
+  mutate(x=x/1e3,y=y/1e3,r=r/1e3)
 
 # plot glider track
 ggplot(df, aes(x=x,y=y))+
@@ -138,3 +139,4 @@ plot = ggplot()+
   coord_equal()+
   theme_bw()+
   theme(panel.grid = element_blank())
+plot  
