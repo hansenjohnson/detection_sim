@@ -132,12 +132,12 @@ ggplot()+
   nt = 60 # time res (s)
   
   # run model and convert to km
-  whs = rw_sims(hrs = hrs, bh = 'feeding', nt = nt) %>%
-    mutate(
-      x=x/1000,
-      y=y/1000,
-      r=r/1000
-    )
+  whs = rw_sims(hrs = hrs, bh = 'feeding', nt = nt)
+    # mutate(
+    #   x=x/1000,
+    #   y=y/1000,
+    #   r=r/1000
+    # )
 
   # plot to check
   ggplot()+
