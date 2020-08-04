@@ -7,7 +7,7 @@
 ifile = 'data/raw/waypoints.csv'
 
 # platform speed (m/s)
-spd = 0.01
+spd = 0.1
 
 # track time resolution (s)
 res = 60
@@ -60,8 +60,13 @@ trk$y = na.approx(trk$y)
 ggplot(data = trk, aes(x=x,y=y))+
   geom_path()+
   geom_point(shape=1)+
-  coord_quickmap()+
+  coord_equal()+
   theme_bw()
+
+# print diagnostics
+message('Total number of waypoints: ', nrow(wpts))
+message('Total path distance: ', max(wpts$dist)/1e3, ' km')
+message('Total transit time: ', round(max(wpts$time)/60/60, 2), ' hr')
 
 # save
 saveRDS(object = trk, file = ofile)
