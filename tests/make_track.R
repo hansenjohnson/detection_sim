@@ -54,7 +54,7 @@ trk$x = na.approx(trk$x)
 trk$y = na.approx(trk$y)
 
 # remove waypoint times (keeps sampling even)
-# trk = trk[trk$time %in% c(0,tseq),]
+trk = trk[trk$time %in% c(0,tseq),]
 
 # plot to check
 ggplot(data = trk, aes(x=x,y=y))+
