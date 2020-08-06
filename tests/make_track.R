@@ -15,12 +15,17 @@ res = 60
 # track file
 ofile = 'data/processed/track.rds'
 
+# plot file
+figure = 'figures/track_with_whale.png'
+
 # setup -------------------------------------------------------------------
 
 library(tidyverse)
 library(oce)
 library(zoo)
 
+source('r/rw_sim.R')
+       
 # process -----------------------------------------------------------------
 
 # read in waypoint list
@@ -38,8 +43,24 @@ wpts$cdist = cumsum(wpts$dist)
 # calculate time to distance (seconds)
 wpts$time = wpts$cdist/spd
 
+# simulate single whale moving
+# model parameters
+hrs = 24*7 # model run length (hr)
+nt = 60 # time res (s)
+x0 = 3000 # start x coord (m)
+y0 = 1000 # start y coord (m)
+
+# run model
+wh = rw_sim(hrs = hrs, bh = 'feeding', sub = TRUE, nt = nt, x0=x0, y0=y0)
+
+# plot to check
+ggplot()+
+  geom_path(data = wh,aes(x=x,y=y))+
+  geom_point(data = filter(wh,call==1),aes(x=x,y=y),shape=21,fill='red')+
+  coord_fixed()
+
 # create time sequence (seconds)
-tseq = seq(from = res, to = ceiling(max(wpts$time)), by = res)
+tseq = seq(from = res, to = ceiling(max(wh$t)), by = res)
 
 # create an empty trackline grid
 tmp = tibble(x=NA, y=NA, time = tseq)
@@ -49,7 +70,10 @@ trk = full_join(tmp,wpts,by=c("x","y","time")) %>%
   transmute(x, y, time) %>%
   arrange(time)
 
-# interpolate
+# remove times after last waypoint is reached
+trk = trk %>% filter(time<=max(wpts$time))
+
+# interpolate (finds x and y positions for the times in between the waypoints)
 trk$x = na.approx(trk$x)
 trk$y = na.approx(trk$y)
 
@@ -57,11 +81,13 @@ trk$y = na.approx(trk$y)
 trk = trk[trk$time %in% c(0,tseq),]
 
 # plot to check
-ggplot(data = trk, aes(x=x,y=y))+
-  geom_path()+
-  geom_point(shape=1)+
-  coord_equal()+
-  theme_bw()
+p = ggplot()+
+      geom_path(data = trk, aes(x=x,y=y), color = 'blue')+
+      geom_path(data = wh, aes(x=x,y=y), color = 'black')+
+      geom_point(shape=1)+
+      coord_equal()+
+      theme_bw()
+p
 
 # print diagnostics
 message('Total number of waypoints: ', nrow(wpts))
@@ -71,3 +97,4 @@ message('Total transit time: ', round(max(wpts$time)/60/60, 2), ' hr')
 # save
 saveRDS(object = trk, file = ofile)
 message('Track saved as: ', ofile)
+ggsave(filename = figure, plot = p, width = 8, height = 4, units = 'in', dpi = 300)

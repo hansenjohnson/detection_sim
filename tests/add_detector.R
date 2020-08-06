@@ -131,7 +131,7 @@ ggplot()+
   hrs = 24*7 # model run length (hr)
   nt = 60 # time res (s)
   
-  # run model and convert to km
+  # run model
   whs = rw_sims(hrs = hrs, bh = 'feeding', nt = nt)
     # mutate(
     #   x=x/1000,
@@ -160,7 +160,7 @@ ggplot()+
     r_whs = sqrt((x_whs-x_dt)^2 + (y_whs-y_dt)^2),
     call = whs$call
   )
-  
+
 # subset to only times with calls
   calls = df %>% filter(call==1)
   

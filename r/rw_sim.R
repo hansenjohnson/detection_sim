@@ -129,8 +129,8 @@ rw_sim = function(
   # print a message comparing observed and expected
   if(nrws==1){
     message('Expected call rate: ', cr_mn_hr)
-    message('Observed call rate: ', round(x = cr_obs, digits = 2))}
-    else if(nrws>1){}
+    message('Observed call rate: ', round(x = cr_obs, digits = 2))
+  }
     
   return(df)
 }
