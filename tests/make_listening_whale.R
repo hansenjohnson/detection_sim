@@ -4,8 +4,6 @@
 
 # setup -------------------------------------------------------------------
 
-set.seed(1)
-
 # libraries
 library(tidyverse)
 library(parallel)

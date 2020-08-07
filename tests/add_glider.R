@@ -3,8 +3,6 @@
 
 # setup -------------------------------------------------------------------
 
-set.seed(1)
-
 # libraries
 library(ggplot2)
 source('tests/make_track.R')
@@ -23,15 +21,13 @@ df = merge(wh, trk, by='time', all.x=TRUE)
 df$r_wh = sqrt((df$x_wh-df$x_dt)^2 + (df$y_wh-df$y_dt)^2)
 
 # subset to only times with calls
-calls = df %>% filter(call==1)
+calls = df %>% filter(call==1) %>% transmute(x_wh, y_wh, call, r_wh)
 
 # apply detection function to the call positions to extract probabilities of detection
 calls$p = detection_function(x = calls$r_wh)
 
 # generate a binomial distribution to see if each call was detected using this probability
 calls$detected = as.character(rbinom(n = nrow(calls), size = 1, prob = calls$p))
-
-dev.off()
 
 # plot to check
 p = ggplot()+
