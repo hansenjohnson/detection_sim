@@ -15,9 +15,6 @@ res = 60
 # track file
 ofile = 'data/processed/track.rds'
 
-# plot file
-figure = 'figures/track_with_whale.png'
-
 # setup -------------------------------------------------------------------
 
 library(tidyverse)
@@ -46,12 +43,11 @@ wpts$time = wpts$cdist/spd
 # simulate single whale moving
 # model parameters
 hrs = 24*7 # model run length (hr)
-nt = 60 # time res (s)
 x0 = 3000 # start x coord (m)
 y0 = 1000 # start y coord (m)
 
 # run model
-wh = rw_sim(hrs = hrs, bh = 'feeding', sub = TRUE, nt = nt, x0=x0, y0=y0)
+wh = rw_sim(hrs = hrs, bh = 'feeding', sub = TRUE, nt = res, x0=x0, y0=y0)
 
 # plot to check
 ggplot()+
@@ -81,13 +77,12 @@ trk$y = na.approx(trk$y)
 trk = trk[trk$time %in% c(0,tseq),]
 
 # plot to check
-p = ggplot()+
-      geom_path(data = trk, aes(x=x,y=y), color = 'blue')+
-      geom_path(data = wh, aes(x=x,y=y), color = 'black')+
-      geom_point(shape=1)+
-      coord_equal()+
-      theme_bw()
-p
+ggplot()+
+  geom_path(data = trk, aes(x=x,y=y), color = 'blue')+
+  geom_path(data = wh, aes(x=x,y=y), color = 'black')+
+  geom_point(shape=1)+
+  coord_equal()+
+  theme_bw()
 
 # print diagnostics
 message('Total number of waypoints: ', nrow(wpts))
@@ -97,4 +92,3 @@ message('Total transit time: ', round(max(wpts$time)/60/60, 2), ' hr')
 # save
 saveRDS(object = trk, file = ofile)
 message('Track saved as: ', ofile)
-ggsave(filename = figure, plot = p, width = 8, height = 4, units = 'in', dpi = 300)
