@@ -12,7 +12,7 @@ set.seed(1)
 res = 60
 
 # produce whale movement model
-whale_df = rw_sim(nt = res, sub = TRUE)
+whale_df = rw_sim(nt = res, sub = TRUE, x0 = 5000, y0 = 5000, bh = 'socializing')
 
 # produce glider track
 track_df = make_track(res = res)
