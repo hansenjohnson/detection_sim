@@ -271,6 +271,8 @@ make_track = function(waypoints = 'data/raw/waypoints.csv',
   message('Total number of waypoints: ', nrow(wpts))
   message('Total path distance: ', max(wpts$dist)/1e3, ' km')
   message('Total transit time: ', round(max(wpts$time)/60/60, 2), ' hr')
+  
+  return(trk)
 }
 
 detection_function = function(x,L=1.045,x0=10,k=-0.3){
@@ -280,4 +282,30 @@ detection_function = function(x,L=1.045,x0=10,k=-0.3){
   # k = logistic growth rate
   y = L/(1+exp(-1*k*(x-x0))) 
   return(y)
+}
+
+simulate_detections = function(whale_df = wh, # whale movement model
+                              track_df = trk # glider track
+){
+  #rename whale movement model table and lose unwanted variables 
+  colnames(whale_df) = c('x_wh', 'y_wh', 'time', 'ang', 'spd', 'dst', 'dpt', 'r', 'bh', 'call')
+  whale_df = whale_df %>% transmute(x_wh, y_wh, time, call)
+  
+  #rename track movement model table 
+  colnames(track_df) = c('x_dt', 'y_dt', 'time')
+  
+  # make data frame using whale movement variables
+  df = merge(whale_df, track_df, by='time', all.x=TRUE)
+  df$r_wh = sqrt((df$x_wh-df$x_dt)^2 + (df$y_wh-df$y_dt)^2)
+  
+  # subset to only times with calls
+  calls = df %>% filter(call==1)
+  
+  # apply detection function to the call positions to extract probabilities of detection
+  calls$p = detection_function(x = calls$r_wh)
+  
+  # generate a binomial distribution to see if each call was detected using this probability
+  calls$detected = as.character(rbinom(n = nrow(calls), size = 1, prob = calls$p))
+  
+  return(calls)
 }

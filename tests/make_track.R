@@ -92,3 +92,17 @@ message('Total transit time: ', round(max(wpts$time)/60/60, 2), ' hr')
 # save
 saveRDS(object = trk, file = ofile)
 message('Track saved as: ', ofile)
+
+# test function ------------------------------------------------------------
+
+# generate track
+trk = make_track(waypoints = 'data/raw/waypoints.csv')
+
+# plot to check
+ggplot()+
+  geom_path(data = trk, aes(x=x,y=y), color = 'blue')+
+  geom_path(data = wh, aes(x=x,y=y), color = 'black')+
+  geom_point(shape=1)+
+  coord_equal()+
+  theme_bw()
+
