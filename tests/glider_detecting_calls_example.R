@@ -39,11 +39,11 @@ ggplot()+
 # plot both tracks with calls detected
 ggplot()+
   # plot glider track
-  geom_path(data = track_df,aes(x=x_dt,y=y_dt), color = 'black')+
+  geom_path(data = track_df,aes(x=x,y=y), color = 'black')+
   # plot whale track
-  geom_path(data = whale_df,aes(x=x_wh,y=y_wh), color = 'grey')+
+  geom_path(data = whale_df,aes(x=x,y=y), color = 'grey')+
   # plot calls
-  geom_point(data = calls,aes(x=x_wh,y=y_wh,fill=detected,size=detected),shape=21,alpha=0.7)+
+  geom_point(data = det_df,aes(x=x_wh,y=y_wh,fill=detected,size=detected),shape=21,alpha=0.7)+
   scale_fill_manual(values = c('1'='red','0'='grey'))+
   scale_size_manual(values = c('1'=2,'0'=1))+
   # formatting
