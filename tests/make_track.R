@@ -56,7 +56,7 @@ ggplot()+
   coord_fixed()
 
 # create time sequence (seconds)
-tseq = seq(from = res, to = ceiling(max(wh$t)), by = res)
+tseq = seq(from = res, to = ceiling(max(wh$time)), by = res)
 
 # create an empty trackline grid
 tmp = tibble(x=NA, y=NA, time = tseq)

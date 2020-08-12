@@ -4,18 +4,26 @@
 # setup -------------------------------------------------------------------
 
 source('r/rw_sim.R')
-set.seed(1)
 
 # process -----------------------------------------------------------------
 
 # define time resolution (s)
 res = 60
 
-# produce whale movement model
-whale_df = rw_sim(nt = res, sub = TRUE, x0 = 5000, y0 = 5000, bh = 'socializing', cr_mn_hr = 10)
+# produce whale movement model and convert to km
+whale_df = rw_sim(hrs=48, nt = res, sub = TRUE, x0 = 5000, y0 = 5000, bh = 'socializing', cr_mn_hr = 10)%>%
+  mutate(
+    x=x/1000,
+    y=y/1000,
+    r=r/1000
+  )
 
-# produce glider track
-track_df = make_track(res = res)
+# produce glider track and convert to km
+track_df = make_track(res = res)%>%
+  mutate(
+    x=x/1000,
+    y=y/1000
+  )
 
 # simulate detection capabilities of glider
 det_df = simulate_detections(whale_df = whale_df, track_df = track_df)

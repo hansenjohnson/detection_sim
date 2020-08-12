@@ -45,7 +45,7 @@ x0 = 3000 # start x coord (m)
 y0 = 1000 # start y coord (m)
 
 # run model and convert to km
-wh = rw_sim(hrs = hrs, bh = 'feeding', sub = TRUE, nt = nt, x0=x0, y0=y0) %>%
+wh = rw_sim(hrs = hrs, bh = 'feeding', sub = TRUE, nt = nt, x0=x0, y0=y0)%>%
   mutate(
     x=x/1000,
     y=y/1000,
@@ -67,9 +67,9 @@ wh = rw_sim(hrs = hrs, bh = 'feeding', sub = TRUE, nt = nt, x0=x0, y0=y0) %>%
 # test detection function -------------------------------------------------
 
 # make detection function using the function created with these x-values
-r = seq(from = 0, to = 40, by = 0.1)
-p = detection_function(x = r)
-df = tibble(r,p)
+#r = seq(from = 0, to = 40, by = 0.1)
+#p = detection_function(x = r)
+#df = tibble(r,p)
 
 # quick plot to check
 # ggplot(df,aes(x=r,y=p))+
@@ -80,12 +80,12 @@ df = tibble(r,p)
 # apply detection function on one whale -------------------------------------
 
 # coordinates of detector
-x_dt = 20
-y_dt = -40
+x_dt = 0
+y_dt = 0
 
 # make data frame using whale movement variables
 df = tibble(
-  t = wh$t,
+  t = wh$time,
   x_wh = wh$x,
   y_wh = wh$y,
   x_dt,
@@ -138,6 +138,7 @@ ggplot()+
     #   y=y/1000,
     #   r=r/1000
     # )
+  # rw_sims is already in kms by default
 
   # plot to check
   ggplot()+
@@ -147,12 +148,12 @@ ggplot()+
     coord_equal()
   
 # coordinates of detector
-  x_dt = -0.05
-  y_dt = -0.1
+  x_dt = 0
+  y_dt = 0
   
 # make data frame using whale movement variables
   df = tibble(
-    t = whs$t,
+    t = whs$time,
     x_whs = whs$x,
     y_whs = whs$y,
     x_dt,

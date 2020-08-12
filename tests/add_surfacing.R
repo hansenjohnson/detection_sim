@@ -31,7 +31,7 @@ df = rw_sim(nt = res, sub = TRUE)
 cycle_dur = dtime_mean+stime_mean
 
 # number of dive cycles to simulate (maximum estimate)
-n_cycles = ceiling(max(df$t)/cycle_dur)*2
+n_cycles = ceiling(max(df$time)/cycle_dur)*2
 
 # generate distributions of surfacing and dive times
 stimes = rnorm(n = n_cycles, mean = stime_mean, sd = stime_sd)
@@ -45,8 +45,8 @@ cyc = tibble(
   surface = as.character(rep(c(0,1), length.out = length(dive_time)))
 )
 
-# bin movement df by dive time
-df$dive_index = cut(x = df$t, breaks = cyc$dive_time, labels = F, include.lowest = TRUE)
+# bin whale movement df by dive time
+df$dive_index = cut(x = df$time, breaks = cyc$dive_time, labels = F, include.lowest = TRUE)
 
 # merge dfs to include dive cycle info in movement df
 df = left_join(x = df, y = cyc, by = 'dive_index')

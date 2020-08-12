@@ -54,11 +54,11 @@ rw_sim = function(
   }
   
   # create time vector
-  t = seq(from = 0, to = hrs*60*60, by = dt)
+  time = seq(from = 0, to = hrs*60*60, by = dt)
   # create a sequence from 00 to 24 with 2.5 second jumps
   
   # length time vector
-  n = length(t)
+  n = length(time)
   
   # calculate speeds
   spd = runif(min = 0, max = 1.23, n = n) 
@@ -86,7 +86,7 @@ rw_sim = function(
   x = c(x0, x0+cumsum(dst*cos(ang)))
   
   # combine into data frame
-  df = tibble(x = x[1:n], y = y[1:n], t, ang = rad2deg(ang), spd, dst, dpt)
+  df = tibble(x = x[1:n], y = y[1:n], time, ang = rad2deg(ang), spd, dst, dpt)
   
   # downsample data
   if(sub){
@@ -101,7 +101,7 @@ rw_sim = function(
   
   # add call rate from normal distribution
   # calculate the time interval
-  dt = df$t[2] - df$t[1]
+  dt = df$time[2] - df$time[1]
   
   # generate a normal distribution to assign call rate in each timestep
   cr_hr = rnorm(n = nrow(df), mean = cr_mn_hr, sd = cr_sd_hr)
@@ -204,7 +204,7 @@ rw_sims = function(nrws = 1e2,          # number of whales in simulation
   df = bind_rows(DF, .id = 'id')
   
   # convert time to hours
-  df$t = df$t/60/60
+  df$time = df$time/60/60
   
   # convert distance to kilometers
   df$x = df$x/1e3
@@ -281,11 +281,12 @@ detection_function = function(x,L=1.045,x0=10,k=-0.3){
   # x0 = value at midpoint
   # k = logistic growth rate
   y = L/(1+exp(-1*k*(x-x0))) 
+  
   return(y)
 }
 
 simulate_detections = function(whale_df = wh, # whale movement model
-                              track_df = trk # glider track
+                               track_df = trk # glider track
 ){
   #rename whale movement model table and lose unwanted variables 
   colnames(whale_df) = c('x_wh', 'y_wh', 'time', 'ang', 'spd', 'dst', 'dpt', 'r', 'bh', 'call')
