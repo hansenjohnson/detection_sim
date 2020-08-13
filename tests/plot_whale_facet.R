@@ -88,7 +88,7 @@ ggplot()+
 set.seed(1)
 whs=rw_sims(nrws = 50, hrs= 24)
 
-# no need to convert time from s to hr, already included on code
+# no need to convert time from s to hr, already included in code
 
 # generate time bin
 tbin = seq(from = 0, to = max(whs$time), by = 6)
