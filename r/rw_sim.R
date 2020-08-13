@@ -130,8 +130,8 @@ rw_sim = function(
   
   # print a message comparing observed and expected
   if(nrws==1){
-    message('Expected call rate: ', cr_mn_hr)
-    message('Observed call rate: ', round(x = cr_obs, digits = 2))
+    message('Expected call rate: ', cr_mn_hr, ' calls/whale/hr')
+    message('Observed call rate: ', round(x = cr_obs, digits = 2), ' calls/whale/hr')
   }
     
   return(df)
@@ -308,5 +308,13 @@ simulate_detections = function(whale_df = wh, # whale movement model
   # generate a binomial distribution to see if each call was detected using this probability
   calls$detected = as.character(rbinom(n = nrow(calls), size = 1, prob = calls$p))
   
+  # find percentage of total calls detected
+  detections = calls %>% filter(detected==1)
+  
+  # print diagnostics
+  message('Total number of calls: ', nrow(calls))
+  message('Total calls detected: ', nrow(detections))
+  message('Percent detection efficiency: ', 100*round((nrow(detections))/(nrow(calls)), 2), '%')
+
   return(calls)
 }

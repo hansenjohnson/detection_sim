@@ -5,7 +5,7 @@
 
 source('r/rw_sim.R')
 
-# one whale ----------------------------------------------------------------
+# one whale ---------------------------------------------------------------
 
 # run rw_sim and convert to km
 set.seed(1)
@@ -86,12 +86,12 @@ ggplot()+
 
 # run rw_sim, but no need convert to km
 set.seed(1)
-whs=rw_sims(nrws = 50, hrs= 24*7)
+whs=rw_sims(nrws = 50, hrs= 24)
 
 # no need to convert time from s to hr, already included on code
 
 # generate time bin
-tbin = seq(from = 0, to = max(whs$time), by = 24)
+tbin = seq(from = 0, to = max(whs$time), by = 6)
 
 # use cut to assign each row to a given time bin
 whs$tbin = cut(x = whs$time, breaks = tbin, include.lowest = TRUE)
