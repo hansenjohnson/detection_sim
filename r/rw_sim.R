@@ -289,8 +289,13 @@ simulate_detections = function(whale_df = wh, # whale movement model
                                track_df = trk # glider track
 ){
   #rename whale movement model table and lose unwanted variables 
-  colnames(whale_df) = c('x_wh', 'y_wh', 'time', 'ang', 'spd', 'dst', 'dpt', 'r', 'bh', 'call')
-  whale_df = whale_df %>% transmute(x_wh, y_wh, time, call)
+  if("id" %in% colnames(whale_df)){
+    colnames(whale_df) = c('id', 'x_wh', 'y_wh', 'time', 'ang', 'spd', 'dst', 'dpt', 'r', 'bh', 'call')
+    whale_df = whale_df %>% transmute(id, x_wh, y_wh, time, call)
+  } else {
+    colnames(whale_df) = c('x_wh', 'y_wh', 'time', 'ang', 'spd', 'dst', 'dpt', 'r', 'bh', 'call')
+    whale_df = whale_df %>% transmute(x_wh, y_wh, time, call) 
+  } 
   
   #rename track movement model table 
   colnames(track_df) = c('x_dt', 'y_dt', 'time')
@@ -307,13 +312,18 @@ simulate_detections = function(whale_df = wh, # whale movement model
   
   # generate a binomial distribution to see if each call was detected using this probability
   calls$detected = as.character(rbinom(n = nrow(calls), size = 1, prob = calls$p))
+
+  # count and remove NAs
+  unavailable = calls$p[complete.cases(calls)==FALSE]
+  calls = calls[complete.cases(calls),]
   
-  # find percentage of total calls detected
+  # find total number of detected calls
   detections = calls %>% filter(detected==1)
   
   # print diagnostics
-  message('Total number of calls: ', nrow(calls))
-  message('Total calls detected: ', nrow(detections))
+  message('Number of calls unavailable to platform: ', length(unavailable))
+  message('Number of calls available: ', nrow(calls))
+  message('Number of calls detected: ', nrow(detections))
   message('Percent detection efficiency: ', 100*round((nrow(detections))/(nrow(calls)), 2), '%')
 
   return(calls)
