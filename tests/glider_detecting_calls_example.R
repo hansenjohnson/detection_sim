@@ -93,7 +93,7 @@ ggplot()+
 # multiple whales ----------------------------------------------------------
 
 # produce whale movement model (no need to transform to kms)
-whales_df = rw_sims(nrws = 50, hrs=24*7, nt = res, bh = 'socializing', cr_mn_hr = 10)
+whales_df = rw_sims(nrws = 10, hrs=24*3, nt = res, bh = 'socializing', cr_mn_hr = 10, radius = 5)
 
 # produce glider track and convert to km
 track_df = make_track(res = res, spd=0.3)%>%
@@ -121,14 +121,15 @@ ggplot()+
 
 # facet wrap plot to see movement over time
 # convert time from s to hr
+whales_df$hr = whales_df$time/60/60
 track_df$hr = track_df$time/60/60
 det_df$hr = det_df$time/60/60
 
 # generate time bin
-tbin = seq(from = 0, to = max(whales_df$time), by = 24)
+tbin = seq(from = 0, to = max(whales_df$hr), by = 24)
 
 # use cut to assign each row to a given time bin
-whales_df$tbin = cut(x = whales_df$time, breaks = tbin, include.lowest = TRUE)
+whales_df$tbin = cut(x = whales_df$hr, breaks = tbin, include.lowest = TRUE)
 track_df$tbin = cut(x = track_df$hr, breaks = tbin, include.lowest = TRUE)
 det_df$tbin = cut(x = det_df$hr, breaks = tbin, include.lowest = TRUE)
 
