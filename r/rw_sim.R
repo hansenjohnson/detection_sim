@@ -204,7 +204,7 @@ rw_sims = function(nrws = 1e2,          # number of whales in simulation
   df = bind_rows(DF, .id = 'id')
   
   # convert time to hours
-  df$time = df$time/60/60
+  # df$time = df$time/60/60
   
   # convert distance to kilometers
   df$x = df$x/1e3
