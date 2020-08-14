@@ -5,13 +5,14 @@
 
 source('r/rw_sim.R')
 
+
 # process -----------------------------------------------------------------
 
 # define time resolution (s)
 res = 60
 
 # produce whale movement model and convert to km
-whale_df = rw_sim(hrs=24*5, nt = res, sub = TRUE, x0 = 5000, y0 = 5000, bh = 'feeding', cr_mn_hr = 5)%>%
+whale_df = rw_sim(hrs=24*5, nt = res, sub = TRUE, x0 = 5000, y0 = 5000, bh = 'feeding', cr_mn_hr = 10)%>%
   mutate(
     x=x/1000,
     y=y/1000,
@@ -91,11 +92,11 @@ ggplot()+
 
 # multiple whales ----------------------------------------------------------
 
-# produce whale movement model
-whales_df = rw_sims(nrws = 100, hrs=24*5, nt = res, bh = 'feeding', cr_mn_hr = 10)
+# produce whale movement model (no need to transform to kms)
+whales_df = rw_sims(nrws = 50, hrs=24*7, nt = res, bh = 'socializing', cr_mn_hr = 10)
 
 # produce glider track and convert to km
-track_df = make_track(res = res)%>%
+track_df = make_track(res = res, spd=0.3)%>%
   mutate(
     x=x/1000,
     y=y/1000

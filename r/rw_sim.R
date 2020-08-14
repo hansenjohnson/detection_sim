@@ -195,7 +195,7 @@ rw_sims = function(nrws = 1e2,          # number of whales in simulation
     
     # model movements
     DF = lapply(X = nseq, FUN = function(i){
-      rw_sim(x0=ini$x[i],y0=ini$y[i],hrs=hrs,bh=bh,nt=nt,nrws=nrws)
+      rw_sim(x0=ini$x[i],y0=ini$y[i],hrs=hrs,bh=bh,nt=nt,nrws=nrws,cr_mn_hr=cr_mn_hr)
     })
     
   }
