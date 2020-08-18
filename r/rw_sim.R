@@ -286,7 +286,11 @@ detection_function = function(x,L=1.045,x0=10,k=-0.3){
 }
 
 simulate_detections = function(whale_df = wh, # whale movement model
-                               track_df = trk # glider track
+                               track_df = trk,# glider track
+                               x = x, # independent variable for detection function
+                               L = 1.045, # maximum detection Y value
+                               x0 = 10, # value at detection midpoint
+                               k = -0.3 # detection logistic growth rate
 ){
   #rename whale movement model table and lose unwanted variables 
   if("id" %in% colnames(whale_df)){
@@ -308,7 +312,7 @@ simulate_detections = function(whale_df = wh, # whale movement model
   calls = df %>% filter(call==1)
   
   # apply detection function to the call positions to extract probabilities of detection
-  calls$p = detection_function(x = calls$r_wh)
+  calls$p = detection_function(x = calls$r_wh, L = L, x0 = x0, k = k)
   
   # generate a binomial distribution to see if each call was detected using this probability
   calls$detected = as.character(rbinom(n = nrow(calls), size = 1, prob = calls$p))
