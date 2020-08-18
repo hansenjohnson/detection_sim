@@ -5,6 +5,10 @@
 
 source('r/rw_sim.R')
 
+ofile_wh = 'data/processed/whale_movement.rda'
+ofile_whs = 'data/processed/multiple_whales_movement.rda'
+ofile_trk = 'data/processed/glider_movement.rda'
+ofile_det = 'data/processed/call_detections.rda'
 
 # process -----------------------------------------------------------------
 
@@ -28,6 +32,14 @@ track_df = make_track(res = res)%>%
 
 # simulate detection capabilities of glider
 det_df = simulate_detections(whale_df = whale_df, track_df = track_df)
+
+# save
+saveRDS(object = whale_df, file = ofile_wh)
+message('Processed glider data saved as: ', ofile_wh)
+saveRDS(object = track_df, file = ofile_trk)
+message('Processed glider data saved as: ', ofile_trk)
+saveRDS(object = det_df, file = ofile_det)
+message('Processed glider data saved as: ', ofile_det)
 
 # plot --------------------------------------------------------------------
 
@@ -105,7 +117,11 @@ track_df = make_track(res = res, spd=0.3)%>%
 # simulate detection capabilities of glider
 det_df = simulate_detections(whale_df = whales_df, track_df = track_df)
 
-# plot whale with calls
+# save
+saveRDS(object = whales_df, file = ofile_whs)
+message('Processed glider data saved as: ', ofile_whs)
+
+# plot whales with calls
 ggplot()+
   geom_path(data = whales_df,aes(x=x,y=y, group=id))+
   geom_point(data = filter(whales_df,call==1),aes(x=x,y=y),shape=21,fill='red')+

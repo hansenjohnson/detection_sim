@@ -119,20 +119,6 @@ rw_sim = function(
   
   # generate a binomial distribution using this probability
   df$call = rbinom(n = nrow(df), size = 1, prob = cr_p)
-  
-  # calculate the number of calls
-  n_calls = df %>% 
-    filter(call==1) %>%
-    nrow()
-  
-  # calculate the observed call rate
-  cr_obs = n_calls/hrs
-  
-  # print a message comparing observed and expected
-  if(nrws==1){
-    message('Expected call rate: ', cr_mn_hr, ' calls/whale/hr')
-    message('Observed call rate: ', round(x = cr_obs, digits = 2), ' calls/whale/hr')
-  }
     
   return(df)
 }
@@ -213,19 +199,9 @@ rw_sims = function(nrws = 1e2,          # number of whales in simulation
   df$dst = df$dst/1e3
   df$dpt = df$dpt/1e3
   
-  # calculate the number of calls
-  n_calls = df %>% 
-    filter(call==1) %>%
-    nrow()
-  
-  # calculate the observed call rate
-  cr_obs = n_calls/hrs/nrws
-  
   # calculate time elapsed
   toc = round(Sys.time()-tic, 2)
   message('Done! Time elapsed: ', format(toc))
-  message('Expected call rate: ', cr_mn_hr)
-  message('Observed call rate: ', mean(cr_obs, digits = 2))
   
   return(df)
 }
@@ -317,18 +293,11 @@ simulate_detections = function(whale_df = wh, # whale movement model
   # generate a binomial distribution to see if each call was detected using this probability
   calls$detected = as.character(rbinom(n = nrow(calls), size = 1, prob = calls$p))
 
-  # count and remove NAs
-  unavailable = calls$p[complete.cases(calls)==FALSE]
+  # remove NAs
   calls = calls[complete.cases(calls),]
   
   # find total number of detected calls
   detections = calls %>% filter(detected==1)
-  
-  # print diagnostics
-  message('Number of calls unavailable to platform: ', length(unavailable))
-  message('Number of calls available: ', nrow(calls))
-  message('Number of calls detected: ', nrow(detections))
-  message('Percent detection efficiency: ', 100*round((nrow(detections))/(nrow(calls)), 2), '%')
 
   return(calls)
 }
