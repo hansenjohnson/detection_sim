@@ -25,7 +25,6 @@ rad2deg = function(rad){
 
 rw_sim = function(
   # simulate right whale movement with vectorized correlated random walk
-  nrws = 1,       # number of whales in simulation
   hrs = 24,       # number of hours
   dt = 2.5,       # time resolution [sec]
   x0 = 0,         # initial x position
@@ -34,7 +33,11 @@ rw_sim = function(
   nt = 60,        # new time resolution after subsampling [sec]
   sub = TRUE,     # subsample data to new rate, nt
   cr_mn_hr = 0.25,# mean call rate (calls/whale/hr)
-  cr_sd_hr = 0.001# standard deviation of call rate
+  cr_sd_hr = 0.001,# standard deviation of call rate,
+  dtime_mean = 720,# mean dive time (s)
+  dtime_sd = 180, # standard dev dive time (s)
+  stime_mean = 300,# mean surface time (s)
+  stime_sd = 60   # standard dev surface time (s)
   )
 { 
   
@@ -119,6 +122,35 @@ rw_sim = function(
   
   # generate a binomial distribution using this probability
   df$call = rbinom(n = nrow(df), size = 1, prob = cr_p)
+  
+  # add surfacing cycles from normal distribution
+  # estimate cycle duration
+  cycle_dur = dtime_mean+stime_mean
+  
+  # number of dive cycles to simulate (maximum estimate)
+  n_cycles = ceiling(max(df$time)/cycle_dur)*2
+  
+  # generate distributions of surfacing and dive times
+  stimes = rnorm(n = n_cycles, mean = stime_mean, sd = stime_sd)
+  dtimes = rnorm(n = n_cycles, mean = dtime_mean, sd = dtime_sd)
+  
+  # generate table with alternating diving/surfacing and associated metadata
+  cyc = tibble(
+    # add dive and surfacing times to create one dive duration
+    dive_dur = c(0, round(c(rbind(dtimes,stimes)),0)),
+    # cummulative sum of all dives
+    dive_time = cumsum(dive_dur),
+    # dive number
+    dive_index = seq(from=1, to = length(dive_time), by = 1),
+    # alternate 0 and 1 to know when the whale is at the surface
+    surface = as.character(rep(c(0,1), length.out = length(dive_time))) 
+  )
+  
+  # bin whale movement wh by dive time
+  df$dive_index = cut(x = df$time, breaks = cyc$dive_time, labels = F, include.lowest = TRUE)
+  
+  # merge dfs to include dive cycle info in movement df
+  df = left_join(x = df, y = cyc, by = 'dive_index')
     
   return(df)
 }
@@ -181,7 +213,7 @@ rw_sims = function(nrws = 1e2,          # number of whales in simulation
     
     # model movements
     DF = lapply(X = nseq, FUN = function(i){
-      rw_sim(x0=ini$x[i],y0=ini$y[i],hrs=hrs,bh=bh,nt=nt,nrws=nrws,cr_mn_hr=cr_mn_hr)
+      rw_sim(x0=ini$x[i],y0=ini$y[i],hrs=hrs,bh=bh,nt=nt,cr_mn_hr=cr_mn_hr)
     })
     
   }
@@ -245,7 +277,7 @@ make_track = function(waypoints = 'data/raw/waypoints.csv',
   
   # print diagnostics
   message('Total number of waypoints: ', nrow(wpts))
-  message('Total path distance: ', max(wpts$dist)/1e3, ' km')
+  message('Total path distance: ', round(max(wpts$dist)/1e3), 2, ' km')
   message('Total transit time: ', round(max(wpts$time)/60/60, 2), ' hr')
   
   return(trk)
@@ -263,18 +295,20 @@ detection_function = function(x,L=1.045,x0=10,k=-0.3){
 
 simulate_detections = function(whale_df = wh, # whale movement model
                                track_df = trk,# glider track
+                               det_method = 'acoustic', # method of detection (calls versus surfacing)
                                x = x, # independent variable for detection function
                                L = 1.045, # maximum detection Y value
                                x0 = 10, # value at detection midpoint
                                k = -0.3 # detection logistic growth rate
 ){
+  
   #rename whale movement model table and lose unwanted variables 
   if("id" %in% colnames(whale_df)){
-    colnames(whale_df) = c('id', 'x_wh', 'y_wh', 'time', 'ang', 'spd', 'dst', 'dpt', 'r', 'bh', 'call')
-    whale_df = whale_df %>% transmute(id, x_wh, y_wh, time, call)
+    colnames(whale_df) = c('id', 'x_wh', 'y_wh', 'time', 'ang', 'spd', 'dst', 'dpt', 'r', 'bh', 'call', 'dive_index', 'dive_dur', 'dive_time', 'surface')
+    whale_df = whale_df %>% transmute(id, x_wh, y_wh, time, call, dive_index, surface)
   } else {
-    colnames(whale_df) = c('x_wh', 'y_wh', 'time', 'ang', 'spd', 'dst', 'dpt', 'r', 'bh', 'call')
-    whale_df = whale_df %>% transmute(x_wh, y_wh, time, call) 
+    colnames(whale_df) = c('x_wh', 'y_wh', 'time', 'ang', 'spd', 'dst', 'dpt', 'r', 'bh', 'call', 'dive_index', 'dive_dur', 'dive_time', 'surface')
+    whale_df = whale_df %>% transmute(x_wh, y_wh, time, call, dive_index, surface) 
   } 
   
   #rename track movement model table 
@@ -283,21 +317,25 @@ simulate_detections = function(whale_df = wh, # whale movement model
   # make data frame using whale movement variables
   df = merge(whale_df, track_df, by='time', all.x=TRUE)
   df$r_wh = sqrt((df$x_wh-df$x_dt)^2 + (df$y_wh-df$y_dt)^2)
+?select  
+  if(det_method == 'acoustic'){
+    # subset to only times with calls
+    detections = df %>% filter(call==1) %>% select(-time, -x_dt, -y_dt, -dive_index, -surface)
+    # apply detection function to the call positions to extract probabilities of detection
+    detections$p = detection_function(x = detections$r_wh, L = L, x0 = x0, k = k)
+    # generate a binomial distribution to see if each call was detected using this probability
+    detections$detected = as.character(rbinom(n = nrow(detections), size = 1, prob = detections$p))
+    # remove NAs
+    detections = detections[complete.cases(detections),]
+  } else if(det_method == 'visual'){
+    # subset to only times with whale at the surface
+    detections = df %>% filter(surface==1) %>% select(-time, -x_dt, -y_dt, -call)
+    # apply detection function to the surfacing positions to extract probabilities of detection
+    detections$p = detection_function(x = detections$r_wh, L=1.0, x0=1, k=-4.8)
+    # generate a binomial distribution to see if each surfacing was detected using this probability
+    detections$detected = as.character(rbinom(n = nrow(detections), size = 1, prob = detections$p))
+  }
   
-  # subset to only times with calls
-  calls = df %>% filter(call==1)
-  
-  # apply detection function to the call positions to extract probabilities of detection
-  calls$p = detection_function(x = calls$r_wh, L = L, x0 = x0, k = k)
-  
-  # generate a binomial distribution to see if each call was detected using this probability
-  calls$detected = as.character(rbinom(n = nrow(calls), size = 1, prob = calls$p))
-
-  # remove NAs
-  calls = calls[complete.cases(calls),]
-  
-  # find total number of detected calls
-  detections = calls %>% filter(detected==1)
-
-  return(calls)
+  return(detections)
 }
+  

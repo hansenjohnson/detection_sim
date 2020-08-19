@@ -234,7 +234,7 @@ df = merge(whales_df, track_df, by='time', all.x=TRUE)
 df$r_wh = sqrt((df$x_wh-df$x_dt)^2 + (df$y_wh-df$y_dt)^2)
 
 # subset to only times with calls
-surfacing = df %>% filter(surface==1) %>% transmute(id, x_wh, y_wh, surface, r_wh)
+surfacing = df %>% filter(surface==1) %>% transmute(id, x_wh, y_wh, dive_index, surface, r_wh)
 
 # apply detection function to the call positions to extract probabilities of detection
 surfacing$p = detection_function(x = surfacing$r_wh, L=1.0, x0=1, k=-4.8)

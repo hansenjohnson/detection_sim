@@ -31,7 +31,7 @@ track_df = make_track(res = res)%>%
   )
 
 # simulate detection capabilities of glider
-det_df = simulate_detections(whale_df = whale_df, track_df = track_df)
+det_df = simulate_detections(whale_df = whale_df, track_df = track_df, det_method = 'visual')
 
 # save
 saveRDS(object = whale_df, file = ofile_wh)
