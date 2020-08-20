@@ -295,46 +295,41 @@ detection_function = function(x,L=1.045,x0=10,k=-0.3){
 
 simulate_detections = function(whale_df = wh, # whale movement model
                                track_df = trk,# glider track
-                               det_method = 'acoustic', # method of detection (calls versus surfacing)
-                               x = x, # independent variable for detection function
-                               L = 1.045, # maximum detection Y value
-                               x0 = 10, # value at detection midpoint
-                               k = -0.3 # detection logistic growth rate
+                               det_method = 'acoustic' # method of detection (calls versus surfacing)
 ){
   
-  #rename whale movement model table and lose unwanted variables 
-  if("id" %in% colnames(whale_df)){
-    colnames(whale_df) = c('id', 'x_wh', 'y_wh', 'time', 'ang', 'spd', 'dst', 'dpt', 'r', 'bh', 'call', 'dive_index', 'dive_dur', 'dive_time', 'surface')
-    whale_df = whale_df %>% transmute(id, x_wh, y_wh, time, call, dive_index, surface)
-  } else {
-    colnames(whale_df) = c('x_wh', 'y_wh', 'time', 'ang', 'spd', 'dst', 'dpt', 'r', 'bh', 'call', 'dive_index', 'dive_dur', 'dive_time', 'surface')
-    whale_df = whale_df %>% transmute(x_wh, y_wh, time, call, dive_index, surface) 
-  } 
+  # deal with missing id column for single whale
+  if(!"id" %in% colnames(whale_df)){
+    whale_df$id = 1
+  }
+  
+  #rename whale movement model table and lose unwanted variables
+  whale_df = whale_df %>% transmute(id, x_wh=x, y_wh=y, time, call, dive_index, surface)
   
   #rename track movement model table 
-  colnames(track_df) = c('x_dt', 'y_dt', 'time')
+  track_df = track_df %>% transmute(x_dt=x, y_dt=y, time)
   
   # make data frame using whale movement variables
   df = merge(whale_df, track_df, by='time', all.x=TRUE)
   df$r_wh = sqrt((df$x_wh-df$x_dt)^2 + (df$y_wh-df$y_dt)^2)
-?select  
+
   if(det_method == 'acoustic'){
     # subset to only times with calls
-    detections = df %>% filter(call==1) %>% select(-time, -x_dt, -y_dt, -dive_index, -surface)
+    detections = df %>% filter(call==1) %>% select(-x_dt, -y_dt, -dive_index, -surface)
     # apply detection function to the call positions to extract probabilities of detection
-    detections$p = detection_function(x = detections$r_wh, L = L, x0 = x0, k = k)
-    # generate a binomial distribution to see if each call was detected using this probability
-    detections$detected = as.character(rbinom(n = nrow(detections), size = 1, prob = detections$p))
-    # remove NAs
-    detections = detections[complete.cases(detections),]
+    detections$p = detection_function(x = detections$r_wh, L = 1.045, x0 = 10, k = -0.3)
   } else if(det_method == 'visual'){
     # subset to only times with whale at the surface
-    detections = df %>% filter(surface==1) %>% select(-time, -x_dt, -y_dt, -call)
+    detections = df %>% filter(surface==1) %>% select(-x_dt, -y_dt, -call)
     # apply detection function to the surfacing positions to extract probabilities of detection
-    detections$p = detection_function(x = detections$r_wh, L=1.0, x0=1, k=-4.8)
-    # generate a binomial distribution to see if each surfacing was detected using this probability
-    detections$detected = as.character(rbinom(n = nrow(detections), size = 1, prob = detections$p))
+    detections$p = detection_function(x = detections$r_wh, L = 1, x0 = 1, k = -4.8)
   }
+  
+  # generate a binomial distribution to see if each call/surfacing was detected using this probability
+  detections$detected = as.character(rbinom(n = nrow(detections), size = 1, prob = detections$p))
+  
+  # remove NAs
+  detections = detections[complete.cases(detections),]
   
   return(detections)
 }
