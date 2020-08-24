@@ -16,7 +16,7 @@ ofile_det = 'data/processed/call_detections.rda'
 res = 60
 
 # produce whale movement model and convert to km
-whale_df = rw_sims(hrs=24*4, nt = res, sub = TRUE, x0 = 5000, y0 = 5000, bh = 'feeding', cr_mn_hr = 10)%>%
+whale_df = rw_sim(hrs=24, nt = res, sub = TRUE, x0 = 5000, y0 = 5000, bh = 'feeding')%>%
   mutate(
     x=x/1000,
     y=y/1000,
@@ -24,7 +24,7 @@ whale_df = rw_sims(hrs=24*4, nt = res, sub = TRUE, x0 = 5000, y0 = 5000, bh = 'f
   )
 
 # produce glider track and convert to km
-track_df = make_track(res = res)%>%
+track_df = make_track(waypoints = 'data/raw/waypoints_plane.csv', res = res, spd = 51)%>%
   mutate(
     x=x/1000,
     y=y/1000
@@ -43,11 +43,13 @@ message('Processed glider data saved as: ', ofile_det)
 
 # plot --------------------------------------------------------------------
 
-# plot whale with calls
+# plot whale with calls and surfacing
 ggplot()+
-  geom_path(data = whale_df,aes(x=x,y=y))+
-  geom_point(data = filter(whale_df,call==1),aes(x=x,y=y),shape=21,fill='red')+
-  coord_fixed()
+  geom_path(data = whale_df, aes(x=x,y=y,group=dive_index,color=surface))+
+  scale_color_manual(values = c('0'='grey', '1'='black'))+
+  geom_point(data=filter(whale_df,call==1), aes(x=x,y=y), shape = 21, fill = 'red')+
+  coord_equal()+
+  theme_bw()
 
 # plot both tracks (no detections)
 ggplot()+
@@ -79,7 +81,7 @@ track_df$hr = track_df$time/60/60
 det_df$hr = det_df$time/60/60
 
 # generate time bin
-tbin = seq(from = 0, to = max(whale_df$hr), by = 12)
+tbin = seq(from = 0, to = max(whale_df$hr), by = 4)
 
 # use cut to assign each row to a given time bin
 whale_df$tbin = cut(x = whale_df$hr, breaks = tbin, include.lowest = TRUE)
@@ -106,10 +108,10 @@ ggplot()+
 
 # produce whale movement model (no need to transform to kms)
 set.seed(1)
-whales_df = rw_sims(nrws = 10, hrs=24*5, nt = res, bh = 'socializing', radius = 5)
+whales_df = rw_sims(nrws = 10, hrs=24, nt = res, bh = 'socializing', radius = 10)
 
 # produce glider track and convert to km
-track_df = make_track(waypoints = 'data/raw/waypoints_box.csv', res = res, spd=0.1)%>%
+track_df = make_track(waypoints = 'data/raw/waypoints_plane.csv', res = res, spd=51)%>%
   mutate(
     x=x/1000,
     y=y/1000
@@ -122,11 +124,13 @@ det_df = simulate_detections(whale_df = whales_df, track_df = track_df, det_meth
 saveRDS(object = whales_df, file = ofile_whs)
 message('Processed glider data saved as: ', ofile_whs)
 
-# plot whales with calls
+# plot whales with calls and surfacings
 ggplot()+
-  geom_path(data = whales_df,aes(x=x,y=y, group=id))+
-  geom_point(data = filter(whales_df,call==1),aes(x=x,y=y),shape=21,fill='red')+
-  coord_fixed()
+  geom_path(data = whales_df, aes(x=x,y=y,group=id,color=surface))+
+  scale_color_manual(values = c('0'='grey', '1'='black'))+
+  geom_point(data=filter(whales_df,call==1), aes(x=x,y=y), shape = 21, fill = 'red')+
+  coord_equal()+
+  theme_bw()
 
 # plot both tracks (no detections)
 ggplot()+
@@ -161,7 +165,7 @@ track_df$hr = track_df$time/60/60
 det_df$hr = det_df$time/60/60
 
 # generate time bin
-tbin = seq(from = 0, to = max(whales_df$hr), by = 24)
+tbin = seq(from = 0, to = max(whales_df$hr), by = 4)
 
 # use cut to assign each row to a given time bin
 whales_df$tbin = cut(x = whales_df$hr, breaks = tbin, include.lowest = TRUE)
