@@ -1,4 +1,4 @@
-## glider_detecting_calls_example ##
+## detection_model_example ##
 # run through a fully-fledged example with all functions read in
 
 # setup -------------------------------------------------------------------
