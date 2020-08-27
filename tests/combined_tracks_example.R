@@ -189,10 +189,37 @@ ggplot()+
 
 # multiple whales and planes --------------------------------------------------
 
+# produce whale movement model (no need to transform to kms)
+set.seed(1)
+whales = rw_sims(nrws = 10, hrs=24*7, nt = res, bh = 'feeding')
+
+# produce glider track and convert to km
+glider = make_track(waypoints = 'data/raw/waypoints_real_GSL_glider.csv', res = res, spd = 0.1)%>%
+  mutate(
+    x=x/1000,
+    y=y/1000
+  )
+
+# produce first plane track and convert to km
+plane_1 = make_track(waypoints = 'data/raw/waypoints_plane.csv', res = res, spd = 51)%>%
+  mutate(
+    x=x/1000,
+    y=y/1000
+  )
+
 plane_2 = make_track(waypoints = 'data/raw/waypoints_plane2.csv', res = res, spd = 50)%>%
   mutate(
     x=x/1000,
     y=y/1000
   )
 
+# plot both tracks (no detections)
+ggplot()+
+  geom_path(data = glider, aes(x=x,y=y), color = 'purple')+
+  geom_path(data = plane_1, aes(x=x,y=y), color = 'light blue')+
+  geom_path(data = plane_2, aes(x=x,y=y), color = 'pink')+
+  geom_path(data = whales, aes(x=x,y=y, group=id), color = 'black')+
+  geom_point(shape=1)+
+  coord_equal()+
+  theme_bw()
 
