@@ -16,7 +16,7 @@ ofile_det = 'data/processed/call_detections.rda'
 res = 60
 
 # produce whale movement model and convert to km
-whale_df = rw_sim(hrs=24, nt = res, sub = TRUE, x0 = 5000, y0 = 5000, bh = 'feeding')%>%
+whale_df = rw_sim(hrs=24, nt = res, sub = TRUE, x0 = 5000, y0 = 5000, bh = 'feeding', cr_mn_hr=1)%>%
   mutate(
     x=x/1000,
     y=y/1000,
@@ -49,7 +49,8 @@ ggplot()+
   scale_color_manual(values = c('0'='grey', '1'='black'))+
   geom_point(data=filter(whale_df,call==1), aes(x=x,y=y), shape = 21, fill = 'red')+
   coord_equal()+
-  theme_bw()
+  theme_bw()+
+  labs(x="x (km)", y="y (km)", title="Simulated Whale Moving", subtitle="red dots indicate calls produced")
 
 # plot both tracks (no detections)
 ggplot()+

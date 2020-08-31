@@ -132,7 +132,7 @@ ggplot()+
 
 # produce whale movement model (no need to transform to kms)
 set.seed(1)
-whales = rw_sims(nrws = 10, hrs=24*7, nt = res, bh = 'feeding')
+whales = rw_sims(nrws = 5, hrs=24*7, nt = res, bh = 'feeding', radius=10)
 
 # plot whale with calls and surfacing
 ggplot()+
@@ -149,7 +149,14 @@ plane_1 = make_track(waypoints = 'data/raw/waypoints_plane.csv', res = res, spd 
     y=y/1000
   )
 
-# simulate detection capabilities of glider
+# produce glider track and convert to km
+glider = make_track(waypoints = 'data/raw/waypoints_box.csv', res = res, spd = 0.1)%>%
+  mutate(
+    x=x/1000,
+    y=y/1000
+  )
+
+# simulate detection capabilities of plane
 visual_det = simulate_detections(whale_df = whales, track_df = plane_1, det_method = 'visual')
 
 # simulate detection capabilities of glider
@@ -167,18 +174,18 @@ ggplot()+
 # group dive index and whale id
 visual_det$grp = paste(visual_det$id, visual_det$dive_index)
 
-# plot both tracks with calls detected
+# plot both tracks with calls and surfacings detected
 ggplot()+
   # plot glider track
-  geom_path(data = glider,aes(x=x,y=y), color = 'black')+
+  geom_path(data = glider,aes(x=x,y=y), color = 'blue')+
   # plot plane track
-  geom_path(data = plane_1, aes(x=x,y=y), color = 'blue')+
+  geom_path(data = plane_1, aes(x=x,y=y), color = 'purple')+
   # plot whale track
   geom_path(data = whales,aes(x=x,y=y, group = id), color = 'grey')+
   # plot surfacings
-  geom_path(data = visual_det,aes(x=x_wh,y=y_wh, group = grp), color = 'pink')+
+  geom_path(data = visual_det,aes(x=x_wh,y=y_wh, group = grp), color = 'black')+
   geom_point(data = filter(visual_det, detected == 1), aes(x=x_wh,y=y_wh), 
-             shape = 21, fill = 'red', size = 2, alpha = 0.7)+
+             shape = 21, fill = 'blue', size = 2, alpha = 0.7)+
   # plot calls
   geom_point(data = filter(acoustic_det, detected == 1), aes(x=x_wh,y=y_wh), 
              shape = 21, fill = 'red', size = 2, alpha = 0.7)+
@@ -187,18 +194,15 @@ ggplot()+
   theme_bw()+
   theme(panel.grid = element_blank())
 
+# know how many calls and surfacings were detected
+acoustic_det %>% group_by(detected) %>% count()
+visual_det %>% group_by(detected) %>% count()
+
 # multiple whales and planes --------------------------------------------------
 
 # produce whale movement model (no need to transform to kms)
 set.seed(1)
-whales = rw_sims(nrws = 10, hrs=24*7, nt = res, bh = 'feeding')
-
-# produce glider track and convert to km
-glider = make_track(waypoints = 'data/raw/waypoints_real_GSL_glider.csv', res = res, spd = 0.1)%>%
-  mutate(
-    x=x/1000,
-    y=y/1000
-  )
+whales = rw_sims(nrws = 5, hrs=24*7, nt = res, bh = 'feeding', radius=5)
 
 # produce first plane track and convert to km
 plane_1 = make_track(waypoints = 'data/raw/waypoints_plane.csv', res = res, spd = 51)%>%
@@ -207,19 +211,156 @@ plane_1 = make_track(waypoints = 'data/raw/waypoints_plane.csv', res = res, spd 
     y=y/1000
   )
 
+# produce second plane track and convert to km
 plane_2 = make_track(waypoints = 'data/raw/waypoints_plane2.csv', res = res, spd = 50)%>%
   mutate(
     x=x/1000,
     y=y/1000
   )
 
-# plot both tracks (no detections)
+# start second flight one day later
+plane_2$time = plane_2$time + 24*60*60
+
+# plot all tracks (no detections)
 ggplot()+
-  geom_path(data = glider, aes(x=x,y=y), color = 'purple')+
   geom_path(data = plane_1, aes(x=x,y=y), color = 'light blue')+
   geom_path(data = plane_2, aes(x=x,y=y), color = 'pink')+
   geom_path(data = whales, aes(x=x,y=y, group=id), color = 'black')+
   geom_point(shape=1)+
   coord_equal()+
   theme_bw()
+
+# simulate detection capabilities of planes
+visual_det_1 = simulate_detections(whale_df = whales, track_df = plane_1, det_method = 'visual')
+visual_det_2 = simulate_detections(whale_df = whales, track_df = plane_2, det_method = 'visual')
+
+# add column identifying flight number
+visual_det_1$flight_id = '1'
+visual_det_2$flight_id = '2'
+
+# merge plane detections
+visual_det = rbind(visual_det_1, visual_det_2)
+
+# facet wrap plot to see movement over time
+# convert time from s to hr
+whales$hr = whales$time/60/60
+plane_1$hr = plane_1$time/60/60
+plane_2$hr = plane_2$time/60/60
+visual_det$hr = visual_det$time/60/60
+
+# generate time bin
+tbin = seq(from = 0, to = max(whales$hr), by = 24)
+
+# use cut to assign each row to a given time bin
+whales$tbin = cut(x = whales$hr, breaks = tbin, include.lowest = TRUE)
+plane_1$tbin = cut(x = plane_1$hr, breaks = tbin, include.lowest = TRUE)
+plane_2$tbin = cut(x = plane_2$hr, breaks = tbin, include.lowest = TRUE)
+visual_det$tbin = cut(x = visual_det$hr, breaks = tbin, include.lowest = TRUE)
+
+# group dive index and whale id
+visual_det$grp = paste(visual_det$id, visual_det$dive_index)
+
+# plot both tracks with calls and surfacings detected
+ggplot()+
+  # plot first plane track
+  geom_path(data = plane_1, aes(x=x,y=y), color = 'light blue')+
+  # plot second plane track
+  geom_path(data = plane_2, aes(x=x,y=y), color = 'purple')+
+  # plot whale track
+  geom_path(data = whales,aes(x=x,y=y, group = id), color = 'grey')+
+  # plot surfacings
+  geom_path(data = visual_det,aes(x=x_wh,y=y_wh, group = grp), color = 'black')+
+  geom_point(data = filter(visual_det, detected == 1), aes(x=x_wh,y=y_wh), 
+             shape = 21, fill = 'blue', size = 2, alpha = 0.7)+
+  # plot calls
+  geom_point(data = filter(acoustic_det, detected == 1), aes(x=x_wh,y=y_wh), 
+             shape = 21, fill = 'red', size = 2, alpha = 0.7)+
+  # formatting
+  #facet_wrap(~tbin)+
+  coord_equal()+
+  theme_bw()+
+  theme(panel.grid = element_blank())
+
+# compare plane and glider swith same track -------------------------------------------
+
+# produce whale movement model (no need to transform to kms)
+set.seed(1)
+whales = rw_sims(nrws = 5, hrs=24, nt = res, bh = 'feeding', radius=5)
+
+# plot whale with calls and surfacing
+ggplot()+
+  geom_path(data = whales, aes(x=x,y=y,group=id,color=surface))+
+  scale_color_manual(values = c('0'='grey', '1'='black'))+
+  geom_point(data=filter(whales,call==1), aes(x=x,y=y), shape = 21, fill = 'red')+
+  coord_equal()+
+  theme_bw()
+
+# produce glider track and convert to km
+glider = make_track(waypoints = 'data/raw/waypoints_plane.csv', res = res, spd = 0.1)%>%
+  mutate(
+    x=x/1000,
+    y=y/1000
+  )
+
+# produce first plane track and convert to km
+plane = make_track(waypoints = 'data/raw/waypoints_plane.csv', res = res, spd = 51)%>%
+  mutate(
+    x=x/1000,
+    y=y/1000
+  )
+
+# plot all tracks (no detections)
+ggplot()+
+  geom_path(data = glider, aes(x=x,y=y), color = 'light blue')+
+  geom_path(data = plane, aes(x=x,y=y), color = 'pink')+
+  geom_path(data = whales, aes(x=x,y=y, group=id), color = 'black')+
+  geom_point(shape=1)+
+  coord_equal()+
+  theme_bw()
+
+# simulate detection capabilities of planes
+acoustic_det = simulate_detections(whale_df = whales, track_df = glider, det_method = 'acoustic')
+visual_det = simulate_detections(whale_df = whales, track_df = plane, det_method = 'visual')
+
+# facet wrap plot to see movement over time
+# convert time from s to hr
+whales$hr = whales$time/60/60
+glider$hr = glider$time/60/60
+plane$hr = plane$time/60/60
+visual_det$hr = visual_det$time/60/60
+acoustic_det$hr = acoustic_det$time/60/60
+
+# generate time bin
+tbin = seq(from = 0, to = max(whales$hr), by = 4)
+
+# use cut to assign each row to a given time bin
+whales$tbin = cut(x = whales$hr, breaks = tbin, include.lowest = TRUE)
+glider$tbin = cut(x = glider$hr, breaks = tbin, include.lowest = TRUE)
+plane$tbin = cut(x = plane$hr, breaks = tbin, include.lowest = TRUE)
+visual_det$tbin = cut(x = visual_det$hr, breaks = tbin, include.lowest = TRUE)
+acoustic_det$tbin = cut(x = acoustic_det$hr, breaks = tbin, include.lowest = TRUE)
+
+# group dive index and whale id
+visual_det$grp = paste(visual_det$id, visual_det$dive_index)
+
+# plot both tracks with calls and surfacings detected
+ggplot()+
+  # plot first plane track
+  geom_path(data = glider, aes(x=x,y=y), color = 'light blue')+
+  # plot second plane track
+  geom_path(data = plane, aes(x=x,y=y), color = 'purple')+
+  # plot whale track
+  geom_path(data = whales,aes(x=x,y=y, group = id), color = 'grey')+
+  # plot surfacings
+  geom_path(data = visual_det,aes(x=x_wh,y=y_wh, group = grp), color = 'black')+
+  geom_point(data = filter(visual_det, detected == 1), aes(x=x_wh,y=y_wh), 
+             shape = 21, fill = 'blue', size = 2, alpha = 0.7)+
+  # plot calls
+  geom_point(data = filter(acoustic_det, detected == 1), aes(x=x_wh,y=y_wh), 
+             shape = 21, fill = 'red', size = 2, alpha = 0.7)+
+  # formatting
+  facet_wrap(~tbin)+
+  coord_equal()+
+  theme_bw()+
+  theme(panel.grid = element_blank())
 
