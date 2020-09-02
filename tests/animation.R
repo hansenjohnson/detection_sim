@@ -95,7 +95,6 @@ p2
 # create animation
 anim = p + 
   transition_reveal(along = time)+
-  ease_aes('linear')+
   ggtitle("Hours: {round(frame_along,0)}")
 
 anim2 = p2 + 
