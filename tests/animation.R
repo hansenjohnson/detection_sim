@@ -59,25 +59,37 @@ wh$time = wh$time/60/60
 wh$grp = seq(1,nrow(wh))
 whs$grp = seq(1,nrow(whs))
 
+# recode values for plotting
+whs$surface[whs$surface == 1] = 'surface'
+whs$surface[whs$surface == 0] = 'dive'
+whs$call[whs$call == 1] = 'call'
+
 # plot tracks
 p = ggplot()+
   geom_path(data=whs, aes(x=x,y=y, group=id,color=surface))+
-  scale_color_manual(values = c('0'='grey', '1'='black'))+
-  geom_point(data=filter(whs,call==1), aes(x=x,y=y,group=grp), shape = 21, fill = 'red')+
+  scale_color_manual(values = c('dive'='grey', 'surface'='black'))+
+  geom_point(data=filter(whs,call=='call'), aes(x=x,y=y,group=grp,fill=call), shape = 21)+
+  scale_fill_manual(values = 'red')+
   coord_equal()+
-  labs(x = 'Easting (km)', y = 'Northing (km)')+
+  labs(x = 'Easting (km)', y = 'Northing (km)', fill = NULL, color = NULL)+
   theme_bw()+
-  theme(panel.grid = element_blank())
+  theme(panel.grid = element_blank(), legend.position = 'bottom')
 p
+
+# recode values for plotting
+wh$surface[wh$surface == 1] = 'surface'
+wh$surface[wh$surface == 0] = 'dive'
+wh$call[wh$call == 1] = 'call'
 
 p2 = ggplot()+
   geom_path(data=wh, aes(x=x,y=y, group=dive_index,color=surface))+
-  scale_color_manual(values = c('0'='grey', '1'='black'))+
-  geom_point(data=filter(wh,call==1), aes(x=x,y=y,group=grp), shape = 21, fill = 'red')+
+  scale_color_manual(values = c('dive'='grey', 'surface'='black'))+
+  geom_point(data=filter(wh,call=='call'), aes(x=x,y=y,group=grp,fill=call), shape = 21)+
+  scale_fill_manual(values = 'red')+
   coord_equal()+
-  labs(x = 'Easting (km)', y = 'Northing (km)')+
+  labs(x = 'Easting (km)', y = 'Northing (km)', fill = NULL, color = NULL)+
   theme_bw()+
-  theme(panel.grid = element_blank())
+  theme(panel.grid = element_blank(), legend.position = 'bottom')
 p2
 
 # create animation
