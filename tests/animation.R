@@ -3,8 +3,6 @@
 
 # setup -------------------------------------------------------------------
 
-install.packages('gifski')
-install.packages('gganimate')
 library(tidyverse)
 library(gifski)
 library(gganimate)
