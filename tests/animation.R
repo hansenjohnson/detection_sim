@@ -57,11 +57,15 @@ wh$time = wh$time/60/60
 # # generate a binomial distribution to see if each call was detected using this probability
 # calls$detected = as.character(rbinom(n = nrow(calls), size = 1, prob = calls$p))
 
+# create new grouping variables for animations
+wh$grp = seq(1,nrow(wh))
+whs$grp = seq(1,nrow(whs))
+
 # plot tracks
 p = ggplot()+
   geom_path(data=whs, aes(x=x,y=y, group=id,color=surface))+
   scale_color_manual(values = c('0'='grey', '1'='black'))+
-  geom_point(data=filter(whs,call==1), aes(x=x,y=y), shape = 21, fill = 'red')+
+  geom_point(data=filter(whs,call==1), aes(x=x,y=y,group=grp), shape = 21, fill = 'red')+
   coord_equal()+
   labs(x = 'Easting (km)', y = 'Northing (km)')+
   theme_bw()+
@@ -71,7 +75,7 @@ p
 p2 = ggplot()+
   geom_path(data=wh, aes(x=x,y=y, group=dive_index,color=surface))+
   scale_color_manual(values = c('0'='grey', '1'='black'))+
-  geom_point(data=filter(wh,call==1), aes(x=x,y=y), shape = 21, fill = 'red')+
+  geom_point(data=filter(wh,call==1), aes(x=x,y=y,group=grp), shape = 21, fill = 'red')+
   coord_equal()+
   labs(x = 'Easting (km)', y = 'Northing (km)')+
   theme_bw()+
