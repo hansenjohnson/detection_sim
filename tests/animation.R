@@ -16,9 +16,6 @@ res = 60 # time res (s)
 
 # run models
 set.seed(1)
-whs = rw_sims(nrws = 10, hrs = 24, nt = res, bh = 'feeding')
-
-set.seed(1)
 wh = rw_sim(hrs = 24, nt = res, sub = TRUE, bh = 'feeding') %>%
   mutate(
     x=x/1000,
@@ -26,9 +23,12 @@ wh = rw_sim(hrs = 24, nt = res, sub = TRUE, bh = 'feeding') %>%
     r=r/1000
   )
 
+set.seed(1)
+whs = rw_sims(nrws = 10, hrs = 24, nt = res, bh = 'feeding', radius=20)
+
 # modify time to hours for animation
-whs$time = whs$time/60/60
 wh$time = wh$time/60/60
+whs$time = whs$time/60/60
 
 # # coordinates of detector
 # x_dt = 20
@@ -105,5 +105,6 @@ anim2 = p2 +
 # render animation and save (might take some time)
 anim
 anim_save('figures/multiple_whales_animation.gif', animation=anim)
+
 anim2
 anim_save('figures/one_whale_animation.gif', animation=anim2)

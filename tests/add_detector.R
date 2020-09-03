@@ -36,6 +36,24 @@ df = tibble(x=x,y=y)
 ggplot()+
   geom_point(data=df,aes(x=x,y=y))
 
+# input parameters
+L2=1
+x02=1000
+k2=-0.0048
+
+# calculate y
+y2 = L2/(1+exp(-1*k2*(x-x02)))
+
+# put in table
+df2 = tibble(x=x,y=y2)
+
+# plot
+ggplot()+
+  geom_point(data=df2,aes(x=x,y=y2), color="blue", size=0.8)+
+  geom_point(data=df,aes(x=x,y=y), color="purple", size=0.8)+
+  theme_bw()+
+  labs(x="Distance from observer (m)", y="Detection probability")
+
 # simulate single whale ----------------------------------------------------
 
 # model parameters

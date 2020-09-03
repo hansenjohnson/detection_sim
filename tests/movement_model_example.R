@@ -11,7 +11,7 @@ set.seed(1) # you have to read this in before the df line if you want the same r
 # is used:
 
 # run the model for a feeding right whale over 24 hr period
-df = rw_sim(hrs = 24, bh = 'feeding')
+df = rw_sim(hrs = 24, bh = 'socializing', nt = 60)
 
 # the columns in the output data are defined as follows:
 # x = x coordinate of the whale (meters)
@@ -27,7 +27,10 @@ df = rw_sim(hrs = 24, bh = 'feeding')
 # plot track
 ggplot(df, aes(x=x,y=y))+
   geom_path()+
-  coord_equal()
+  coord_equal()+
+  theme_bw()+
+  theme(panel.grid=element_blank())+
+  labs(x='Easting (m)', y='Northing (m)', title='Socializing whale')
 
 # plot range from start over time
 ggplot(df, aes(x=t,y=r))+
