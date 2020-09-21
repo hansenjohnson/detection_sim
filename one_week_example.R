@@ -18,7 +18,7 @@ whales = rw_sims(nrws = 10, hrs=24*7, nt = res, bh = 'feeding')
 ggplot()+
   geom_path(data = whales, aes(x=x,y=y,group=id,color=surface))+
   scale_color_manual(values = c('0'='grey', '1'='black'))+
-  geom_point(data=filter(whales,call==1), aes(x=x,y=y), shape = 21, fill = 'red')+
+  geom_point(data=filter(whales,call==1), aes(x=x,y=y), shape = 21, fill = 'dark grey')+
   coord_equal()+
   theme_bw()+
   theme(panel.grid = element_blank())
@@ -181,10 +181,7 @@ vessel_d = make_track(waypoints = 'data/raw/waypoints_plane.csv', res = res, spd
     y=y/1000
   )
 vessel_d$hr = vessel_d$time/60/60
-tbin = seq(from = 0, to = max(vessel_d$hr), by = 10)
-vessel_d$tbin = cut(x = vessel_d$hr, breaks = tbin, include.lowest = TRUE)
-vessel_7 = vessel_d %>% filter(tbin=="[0,10]") %>% select(-tbin)
-vessel_7$time = vessel_7$time + 152*60*60
+vessel_7 = vessel_d %>% filter(hr<=10)
 
 # add mooring
 x_moor = 0
@@ -202,6 +199,17 @@ df = tibble(
 )
 
 # simulate detections ------------------------------------------------
+
+# simulate detections for mooring
+# subset to only times with calls
+calls = df %>% filter(call==1)
+# apply detection function to the call positions to extract probabilities of detection
+# note that the function uses acoustic detection parameters unless otherwise stated
+calls$p = detection_function(x = calls$r_wh)
+# generate a binomial distribution to see if each call was detected using this probability
+calls$detected = as.character(rbinom(n = nrow(calls), size = 1, prob = calls$p))
+# subset to only detected calls
+calls = calls %>% filter(detected==1)
 
 # simulate detection capabilities of platforms
 plane_det_1 = simulate_detections(whale_df = whales, track_df = plane_1, det_method = 'visual')
@@ -246,7 +254,25 @@ plane_det_13$flight_id = '13'
 plane_det_14$flight_id = '14'
 
 # merge plane detections
-visual_det = rbind(plane_det_1, plane_det_2, plane_det_3, plane_det_4, plane_det_5, plane_det_6, 
+visual_det_plane = rbind(plane_det_1, plane_det_2, plane_det_3, plane_det_4, plane_det_5, plane_det_6, 
                    plane_det_7, plane_det_8, plane_det_9, plane_det_10, plane_det_11, plane_det_12,
                    plane_det_13, plane_det_14)
 
+# add column identifying vessel number
+vessel_det_1$vessel_id = '1'
+vessel_det_2$vessel_id = '2'
+vessel_det_3$vessel_id = '3'
+vessel_det_4$vessel_id = '4'
+vessel_det_5$vessel_id = '5'
+vessel_det_6$vessel_id = '6'
+vessel_det_7$vessel_id = '7'
+
+# merge vessel detections
+visual_det_vessel = rbind(vessel_det_1, vessel_det_2, vessel_det_3, vessel_det_4, vessel_det_5, 
+                          vessel_det_6, vessel_det_7)
+
+# know how many calls and surfacings were detected
+glider_det %>% group_by(detected) %>% count()
+visual_det_plane %>% group_by(detected) %>% count()
+visual_det_vessel %>% group_by(detected) %>% count()
+nrow(calls)
