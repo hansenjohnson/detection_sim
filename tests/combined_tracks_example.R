@@ -79,6 +79,58 @@ calls = calls %>% filter(detected==1)
 # select only glider track that occurs while the whale is available
 glider = glider %>% filter(glider$time<=max(whale$time))
 
+# create new grouping variables for animations
+acoustic_det$grp = seq(1,nrow(acoustic_det))
+# modify time to hours for animation
+acoustic_det$time = acoustic_det$time/60/60
+whale$time = whale$time/60/60
+glider$time = glider$time/60/60
+
+# plot both tracks with calls detected
+p = ggplot()+
+  # plot glider track
+  geom_path(data = glider,aes(x=x,y=y), color = 'black')+
+  # plot detector position
+  #geom_point(data = df,aes(x=x_moor,y=y_moor),shape=25,fill='black')+
+  # plot whale track
+  geom_path(data = whale,aes(x=x,y=y), color = 'grey')+
+  # plot mooring detected calls
+  #geom_point(data = calls,aes(x=x_wh,y=y_wh),shape=22,alpha=0.7,size=2,fill='blue')+
+  # plot glider detected calls
+  geom_point(data = acoustic_det,aes(x=x_wh,y=y_wh,group=grp,fill=detected,size=detected),shape=21,alpha=0.7)+
+  scale_fill_manual(values = c('1'='red','0'='grey'))+
+  scale_size_manual(values = c('1'=2,'0'=1))+
+  # formatting
+  coord_equal()+
+  theme_bw()+
+  theme(panel.grid = element_blank(), legend.position="bottom")+
+  labs(x = 'Easting (km)', y = 'Northing (km)')
+
+# animate
+anim = p + 
+  transition_reveal(along = time)+
+  #ease_aes('linear')+
+  ggtitle("Hours: {round(frame_along,0)}")
+
+anim
+anim_save('figures/whale_detection_animation.gif', animation=anim)
+
+# facet wrap plot to see movement over time
+# convert time from s to hr
+# whale$hr = whale$time/60/60
+# glider$hr = glider$time/60/60
+# calls$hr = calls$time/60/60
+# acoustic_det$hr = acoustic_det$time/60/60
+
+# generate time bin
+tbin = seq(from = 0, to = max(whale$time), by = 24)
+
+# use cut to assign each row to a given time bin
+whale$tbin = cut(x = whale$time, breaks = tbin, include.lowest = TRUE)
+glider$tbin = cut(x = glider$time, breaks = tbin, include.lowest = TRUE)
+#calls$tbin = cut(x = calls$hr, breaks = tbin, include.lowest = TRUE)
+acoustic_det$tbin = cut(x = acoustic_det$time, breaks = tbin, include.lowest = TRUE)
+
 # plot both tracks with calls detected
 ggplot()+
   # plot glider track
@@ -89,42 +141,6 @@ ggplot()+
   geom_path(data = whale,aes(x=x,y=y), color = 'grey')+
   # plot mooring detected calls
   #geom_point(data = calls,aes(x=x_wh,y=y_wh),shape=22,alpha=0.7,size=2,fill='blue')+
-  # plot glider detected calls
-  geom_point(data = acoustic_det,aes(x=x_wh,y=y_wh,fill=detected,size=detected),shape=21,alpha=0.7)+
-  scale_fill_manual(values = c('1'='red','0'='grey'))+
-  scale_size_manual(values = c('1'=2,'0'=1))+
-  # formatting
-  coord_equal()+
-  theme_bw()+
-  theme(panel.grid = element_blank())+
-  labs(x = 'Easting (km)', y = 'Northing (km)')
-
-# facet wrap plot to see movement over time
-# convert time from s to hr
-whale$hr = whale$time/60/60
-glider$hr = glider$time/60/60
-calls$hr = calls$time/60/60
-acoustic_det$hr = acoustic_det$time/60/60
-
-# generate time bin
-tbin = seq(from = 0, to = max(whale$hr), by = 48)
-
-# use cut to assign each row to a given time bin
-whale$tbin = cut(x = whale$hr, breaks = tbin, include.lowest = TRUE)
-glider$tbin = cut(x = glider$hr, breaks = tbin, include.lowest = TRUE)
-calls$tbin = cut(x = calls$hr, breaks = tbin, include.lowest = TRUE)
-acoustic_det$tbin = cut(x = acoustic_det$hr, breaks = tbin, include.lowest = TRUE)
-
-# plot both tracks with calls detected
-ggplot()+
-  # plot glider track
-  geom_path(data = glider,aes(x=x,y=y), color = 'black')+
-  # plot detector position
-  geom_point(data = df,aes(x=x_moor,y=y_moor),shape=25,fill='black')+
-  # plot whale track
-  geom_path(data = whale,aes(x=x,y=y), color = 'grey')+
-  # plot mooring detected calls
-  geom_point(data = calls,aes(x=x_wh,y=y_wh),shape=22,alpha=0.7,size=2,fill='blue')+
   # plot glider detected calls
   geom_point(data = acoustic_det,aes(x=x_wh,y=y_wh,fill=detected,size=detected),shape=21,alpha=0.7)+
   scale_fill_manual(values = c('1'='red','0'='grey'))+
@@ -229,7 +245,7 @@ visual_det_vessel %>% group_by(detected) %>% count()
 
 # produce whale movement model (no need to transform to kms)
 set.seed(1)
-whales = rw_sims(nrws = 5, hrs=24*3, nt = res, bh = 'feeding', radius=30)
+whales = rw_sims(nrws = 10, hrs=24*3, nt = res, bh = 'feeding', radius=20)
 
 # plot whale with calls and surfacing
 ggplot()+
@@ -254,6 +270,7 @@ plane_2 = make_track(waypoints = 'data/raw/waypoints_plane2.csv', res = res, spd
     y=y/1000
   )
 
+# produce glider track and convert to km
 glider = make_track(waypoints = 'data/raw/waypoints_real_GSL_glider.csv', res = res, spd = 0.1)%>%
   mutate(
     x=x/1000,

@@ -69,7 +69,7 @@ p = ggplot()+
   geom_path(data=whs, aes(x=x,y=y, group=id,color=surface))+
   scale_color_manual(values = c('dive'='grey', 'surface'='black'))+
   geom_point(data=filter(whs,call=='call'), aes(x=x,y=y,group=grp,fill=call), shape = 21)+
-  scale_fill_manual(values = 'red')+
+  scale_fill_manual(values = 'black')+
   coord_equal()+
   labs(x = 'Easting (km)', y = 'Northing (km)', fill = NULL, color = NULL)+
   theme_bw()+
@@ -85,7 +85,7 @@ p2 = ggplot()+
   geom_path(data=wh, aes(x=x,y=y, group=dive_index,color=surface))+
   scale_color_manual(values = c('dive'='grey', 'surface'='black'))+
   geom_point(data=filter(wh,call=='call'), aes(x=x,y=y,group=grp,fill=call), shape = 21)+
-  scale_fill_manual(values = 'red')+
+  scale_fill_manual(values = 'black')+
   coord_equal()+
   labs(x = 'Easting (km)', y = 'Northing (km)', fill = NULL, color = NULL)+
   theme_bw()+
@@ -104,7 +104,7 @@ anim2 = p2 +
 
 # render animation and save (might take some time)
 anim
-anim_save('figures/multiple_whales_animation.gif', animation=anim)
+anim_save('figures/multiple_whales_animation2.gif', animation=anim)
 
 anim2
 anim_save('figures/one_whale_animation.gif', animation=anim2)
