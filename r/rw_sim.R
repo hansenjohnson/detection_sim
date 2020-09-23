@@ -310,7 +310,7 @@ simulate_detections = function(whale_df = wh, # whale movement model
   track_df = track_df %>% transmute(x_dt=x, y_dt=y, time)
   
   # make data frame using whale movement variables
-  df = merge(whale_df, track_df, by='time', all.x=TRUE)
+  df = left_join(whale_df, track_df, by='time', all.x=TRUE)
   df$r_wh = sqrt((df$x_wh-df$x_dt)^2 + (df$y_wh-df$y_dt)^2)
 
   if(det_method == 'acoustic'){
