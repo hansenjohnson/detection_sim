@@ -117,11 +117,39 @@ glider_trk = make_track(waypoints = 'data/raw/waypoints_plane.csv', res = res, s
 # simulate detections
 glider_det = simulate_detections(whale_df = whales, track_df = glider_trk, det_method = 'acoustic')
 
+# mooring -----------------------------------------------------------------
+
+# add mooring
+x = 0
+y = 0
+
+# make data frame using whale movement variables
+buoy_trk = tibble(
+  x,
+  y,
+  time = glider_trk$time,
+  id = 1,
+  platform = 'buoy'
+)
+
+# simulate detections
+buoy_det = simulate_detections(whale_df = whales, track_df = buoy_trk, det_method = 'acoustic')
+
+# know how many calls and surfacings were detected
+glider_det %>% group_by(detected) %>% count()
+buoy_det %>% group_by(detected) %>% count()
+vessel_det %>% group_by(detected) %>% count()
+plane_det %>% group_by(detected) %>% count()
+
 # format for plotting -----------------------------------------------------
 
 glider_det = glider_det %>%
   select(-call) %>%
   mutate(platform = 'glider')
+
+buoy_det = buoy_det %>%
+  select(-call) %>%
+  mutate(platform = 'buoy')
 
 plane_det = plane_det %>%
   select(-surface,-dive_index) %>%
@@ -132,10 +160,10 @@ vessel_det = vessel_det %>%
   mutate(platform = 'vessel')
 
 # combine detections
-det = rbind(glider_det,plane_det,vessel_det)
+det = rbind(glider_det,buoy_det,plane_det,vessel_det)
 
 # combine tracks
-trk = rbind(glider_trk, plane_trk, vessel_trk)
+trk = rbind(glider_trk, buoy_trk, plane_trk, vessel_trk)
 
 # add day column
 tbins = seq(from = 0, to = 24*7, by = 24)
@@ -144,6 +172,11 @@ trk$day = cut(trk$time/60/60, breaks = tbins, include.lowest = T)
 whales$day = cut(whales$time/60/60, breaks = tbins, include.lowest = T)
 
 # plot --------------------------------------------------------------------
+
+# downsample data
+whales = whales[seq(from = 1, to = nrow(whales), by = round(60/res)),]
+trk = trk[seq(from = 1, to = nrow(trk), by = round(60/res)),]
+det = det[seq(from = 1, to = nrow(det), by = round(60/res)),]
 
 # plot
 p = ggplot()+
