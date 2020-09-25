@@ -5,6 +5,10 @@
 
 source('r/rw_sim.R')
 
+ofile_whs = 'data/processed/multiple_whales_movement.rda'
+ofile_trk = 'data/processed/platforms_movement.rda'
+ofile_det = 'data/processed/all_detections.rda'
+
 # define time resolution (s)
 res = 3
 
@@ -170,6 +174,16 @@ tbins = seq(from = 0, to = 24*7, by = 24)
 det$day = cut(det$time/60/60, breaks = tbins, include.lowest = T)
 trk$day = cut(trk$time/60/60, breaks = tbins, include.lowest = T)
 whales$day = cut(whales$time/60/60, breaks = tbins, include.lowest = T)
+
+# save
+saveRDS(object = whales, file = ofile_whs)
+message('Processed whales movement data saved as: ', ofile_whs)
+
+saveRDS(object = trk, file = ofile_trk)
+message('Processed platforms track data saved as: ', ofile_trk)
+
+saveRDS(object = det, file = ofile_det)
+message('Processed all detections data saved as: ', ofile_det)
 
 # plot --------------------------------------------------------------------
 
