@@ -43,3 +43,8 @@ ggplot(trk, aes(x=time/60/60,y=dist,group=id))+
   facet_wrap(~platform)+
   labs(x = 'Time (hr)', y = 'Distance travelled (km)')+
   theme_bw()
+
+# calculate the total distance covered by each survey
+dst = trk %>%
+  group_by(platform, id) %>%
+  summarize(total_distance = max(dist, na.rm = TRUE))
