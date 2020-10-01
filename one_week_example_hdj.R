@@ -5,9 +5,9 @@
 
 source('r/rw_sim.R')
 
-ofile_whs = 'data/processed/multiple_whales_movement.rda'
-ofile_trk = 'data/processed/platforms_movement.rda'
-ofile_det = 'data/processed/all_detections.rda'
+ofile_whs = 'data/processed/multiple_whales_movement.rds'
+ofile_trk = 'data/processed/platforms_movement.rds'
+ofile_det = 'data/processed/all_detections.rds'
 
 # define time resolution (s)
 res = 3

@@ -6,9 +6,9 @@
 library(tidyverse)
 
 # whale_movement = readRDS('data/processed/whale_movement.rda')
-whales_movement = readRDS('data/processed/multiple_whales_movement.rda')
-platforms_track = readRDS('data/processed/platforms_movement.rda')
-all_detections = readRDS('data/processed/all_detections.rda')
+whales_movement = readRDS('data/processed/multiple_whales_movement.rds')
+platforms_track = readRDS('data/processed/platforms_movement.rds')
+all_detections = readRDS('data/processed/all_detections.rds')
 
 # basic detections summary -------------------------------------------------
 
@@ -101,6 +101,12 @@ message('Detections per unit effort: ', round(dkm_glider, digits = 3), ' detecti
 
 # planes
 # find distance traveled and cumulative distance traveled
+planes_trk$dist = 0
+
+for(ii in 2:nrow(planes_trk)){
+  planes_trk$dist[ii] = sqrt((planes_trk$x[ii]-planes_trk$x[ii-1])^2 
+                             + (planes_trk$y[ii]-planes_trk$y[ii-1])^2)
+}
 
 # divide detections per max cumulative distance
 
@@ -108,6 +114,12 @@ message('Detections per unit effort: ', round(dkm_planes, digits = 3), ' detecti
 
 # vessel
 # find distance traveled and cumulative distance traveled
+vessel_trk$dist = 0
+
+for(ii in 2:nrow(vessel_trk)){
+  vessel_trk$dist[ii] = sqrt((vessel_trk$x[ii]-vessel_trk$x[ii-1])^2 
+                             + (vessel_trk$y[ii]-vessel_trk$y[ii-1])^2)
+}
 
 # divide detections per max cumulative distance
 
