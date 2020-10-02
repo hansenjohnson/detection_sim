@@ -9,52 +9,100 @@ library(tidyverse)
 whales_movement = readRDS('data/processed/multiple_whales_movement.rds')
 platforms_track = readRDS('data/processed/platforms_movement.rds')
 all_detections = readRDS('data/processed/all_detections.rds')
+planes_detections = readRDS('data/processed/planes_detections.rds')
+vessels_detections = readRDS('data/processed/vessels_detections.rds')
 
 # basic detections summary -------------------------------------------------
 
-# # basic call summary from single whale simulation
+# # # basic call summary from single whale simulation
+# # # calculate the number of calls
+# # n_calls = whale_movement %>% 
+# #   filter(call==1) %>%
+# #   nrow()
+# # # calculate the observed call rate
+# # cr_obs = n_calls/((max(whale_movement$time))/60/60)
+# # # print message
+# # message('Total calls: ', n_calls)  
+# # message('Observed call rate: ', round(x = cr_obs, digits = 2), ' calls/whale/hr')
+# # # basic movement summary for single whale
+# # # calculate distances between each point along path
+# # whale_movement$dist = 0
+# # for(ii in 2:nrow(whale_movement)){
+# #   whale_movement$dist[ii] = sqrt((whale_movement$x[ii]-whale_movement$x[ii-1])^2 + 
+# #                                    (whale_movement$y[ii]-whale_movement$y[ii-1])^2)
+# #   }
+# # # convert to cumulative distance traveled (meters)
+# # whale_movement$cdist = cumsum(whale_movement$dist)
+# # # print message
+# # message('Total distance travelled by whale: ', round(max(whale_movement$cdist)), 2, 'km')
+# 
+# # basic call summary from multiple whales simulation
 # # calculate the number of calls
-# n_calls = whale_movement %>% 
+# n_calls = whales_movement %>% 
 #   filter(call==1) %>%
 #   nrow()
-# # calculate the observed call rate
-# cr_obs = n_calls/((max(whale_movement$time))/60/60)
-# # print message
+# # calculate the observed calls
+# calls_obs = all_detections %>% filter(detected==1, platform=='glider'||'buoy') %>% nrow()
+# # print messages
 # message('Total calls: ', n_calls)  
-# message('Observed call rate: ', round(x = cr_obs, digits = 2), ' calls/whale/hr')
-# # basic movement summary for single whale
-# # calculate distances between each point along path
-# whale_movement$dist = 0
-# for(ii in 2:nrow(whale_movement)){
-#   whale_movement$dist[ii] = sqrt((whale_movement$x[ii]-whale_movement$x[ii-1])^2 + 
-#                                    (whale_movement$y[ii]-whale_movement$y[ii-1])^2)
-#   }
-# # convert to cumulative distance traveled (meters)
-# whale_movement$cdist = cumsum(whale_movement$dist)
-# # print message
-# message('Total distance travelled by whale: ', round(max(whale_movement$cdist)), 2, 'km')
+# message('Calls observed: ', round(calls_obs))
+# message('Percent calls detected: ', round((calls_obs/n_calls) *100, digits = 2), '%')
+# 
+# # basic surfacing summary from multiple whales simulation
+# # calculate the number of surfacings
+# 
+# # calculate the observed surfacings
+# 
+# # print messages
+# message('Total calls: ', n_surfacings)  
+# message('Calls observed: ', round(surfacings_obs))
+# message('Percent surfacings detected: ', round((surfacings_obs/n_surfacings) *100, digits = 2), '%')
 
-# basic call summary from multiple whales simulation
-# calculate the number of calls
-n_calls = whales_movement %>% 
-  filter(call==1) %>%
-  nrow()
-# calculate the observed calls
-calls_obs = all_detections %>% filter(detected==1, platform=='glider'||'buoy') %>% nrow()
-# print messages
-message('Total calls: ', n_calls)  
-message('Calls observed: ', round(calls_obs))
-message('Percent calls detected: ', round((calls_obs/n_calls) *100, digits = 2), '%')
+# correct surfacing detections ---------------------------------------------
 
-# basic surfacing summary from multiple whales simulation
-# calculate the number of surfacings
+# for planes
+# count number of detections
+planes_det_orig = planes_detections %>% filter(detected==1) %>% nrow()
+txt1 = paste0('Whale detected on ', round(planes_det_orig/nrow(planes_detections)*100,2), 
+              '% of timesteps (', planes_det_orig, '/', nrow(planes_detections), ')')
+# count detections per surfacing
+planes_srf_df = planes_detections %>%
+  mutate(detected=as.numeric(detected)) %>%
+  group_by(id,dive_index) %>%
+  summarize(
+    time = mean(time),
+    x_wh = mean(x_wh),
+    y_wh = mean(y_wh),
+    detected = sum(detected)
+  )
+# convert to binary (0,1) detection
+planes_srf_df$detected[planes_srf_df$detected>0]=1
+# count number of surface detections
+planes_det_surf = planes_srf_df %>% filter(detected==1) %>% nrow()
+txt2 = paste0('Whale detected on ', round(planes_det_surf/nrow(planes_srf_df)*100,2), 
+              '% of surfacings (', planes_det_surf, '/', nrow(planes_srf_df), ')')
 
-# calculate the observed surfacings
-
-# print messages
-message('Total calls: ', n_surfacings)  
-message('Calls observed: ', round(surfacings_obs))
-message('Percent surfacings detected: ', round((surfacings_obs/n_surfacings) *100, digits = 2), '%')
+# for vessels
+# count number of detections
+vessels_det_orig = vessels_detections %>% filter(detected==1) %>% nrow()
+txt3 = paste0('Whale detected on ', round(vessels_det_orig/nrow(vessels_detections)*100,2), 
+              '% of timesteps (', vessels_det_orig, '/', nrow(vessels_detections), ')')
+# count detections per surfacing
+vessels_srf_df = vessels_detections %>%
+  mutate(detected=as.numeric(detected)) %>%
+  group_by(id,dive_index) %>%
+  summarize(
+    time = mean(time),
+    x_wh = mean(x_wh),
+    y_wh = mean(y_wh),
+    detected = sum(detected)
+  )
+# convert to binary (0,1) detection
+vessels_srf_df$detected[vessels_srf_df$detected>0]=1
+# count number of surface detections
+vessels_det_surf = vessels_srf_df %>% filter(detected==1) %>% nrow()
+txt4 = paste0('Whale detected on ', round(vessels_det_surf/nrow(vessels_srf_df)*100,2), 
+              '% of surfacings (', vessels_det_surf, '/', nrow(vessels_srf_df), ')')
 
 # daily presence -----------------------------------------------------------
 daily_presence = all_detections %>% group_by(day,platform,detected) %>% count()
@@ -74,37 +122,15 @@ message('Detections per unit effort: ', round(dt_buoy, digits = 3), ' detections
 
 # planes
 planes_trk = platforms_track %>% filter(platform=='plane')
-dt_planes = all_detections %>% filter(detected==1, platform=='plane') %>% 
-  count()/max(planes_trk$time/60/60)
+dt_planes = planes_det_surf/max(planes_trk$time/60/60)
 message('Detections per unit effort: ', round(dt_planes, digits = 3), ' detections/hour')
 
 # vessel
 vessel_trk = platforms_track %>% filter(platform=='vessel')
-dt_vessel = all_detections %>% filter(detected==1, platform=='vessel') %>% 
-  count()/max(vessel_trk$time/60/60)
+dt_vessel = vessels_det_surf/max(vessel_trk$time/60/60)
 message('Detections per unit effort: ', round(dt_vessel, digits = 3), ' detections/hour')
 
 # detections per km surveyed  ---------------------------------------------
-# find distance traveled and cumulative distance traveled
-calculate_distance = function(x,y,sum_dist=TRUE){
-  # count rows in df
-  n = length(x)
-  # define x/y vectors
-  x0 = x[1:(n-1)]
-  x1 = x[2:n]
-  y0 = y[1:(n-1)]
-  y1 = y[2:n]
-  # compute distance between subsequent points and
-  # pad with leading zero to match length n
-  dist = c(0, sqrt((x1-x0)^2+(y1-y0)^2))
-  # optionally convert to cumulative along-path distance
-  if(sum_dist){
-    dist = cumsum(dist)
-  }
-  # return distance vector
-  return(dist)
-}
-
 # calculate along-track distance by platform and survey id
 platforms_track = platforms_track %>%
   group_by(platform, id) %>%
@@ -122,24 +148,29 @@ dst = platforms_track %>%
   group_by(platform, id) %>%
   summarize(total_distance = max(dist, na.rm = TRUE))
 
+# calculate total trackline effort by each platform
+total_dst = dst %>%
+  group_by(platform) %>%
+  summarize(total_distance = sum(total_distance))
+
+# calculate total detected per platform
+total_det = readRDS('data/processed/all_detections.rds') %>%
+  mutate(detected=as.numeric(detected))%>%
+  filter(detected == 1) %>%
+  group_by(platform) %>%
+  summarise(total_detections = sum(detected))
+
+# combine and compute detections per km
+total = left_join(total_dst,total_det) %>%
+  mutate(detections_per_km = total_detections/total_distance)
+
 # glider
-# divide detections per max cumulative distance
-calls_glider = all_detections %>% filter(detected==1, platform=='glider') %>% count()
-dst_glider = dst %>% filter(platform=="glider")
-message('Detections per unit effort: ', round(calls_glider/(dst_glider$total_distance), 
-                                              digits = 3), ' detections/km')
-
-# all planes
-# divide detections per max cumulative distance
-surfacings_planes = all_detections %>% filter(detected==1, platform=='plane') %>% count()
-dst_planes = dst %>% filter(platform=="plane", id=='1')
-message('Detections per unit effort: ', round(surfacings_planes/(dst_planes$total_distance), 
-                                              digits = 3), ' detections/km')
-
-# all vessels
-# divide detections per max cumulative distance
-surfacings_vessels = all_detections %>% filter(detected==1, platform=='vessel') %>% count()
-dst_vessels = dst %>% filter(platform=="vessel", id=='1') 
-message('Detections per unit effort: ', round(surfacings_vessels/(dst_vessels$total_distance), 
-                                              digits = 3), ' detections/km')
+message('Detections per unit effort: ', 
+        round(total[2,4], digits = 3), ' detections/km')
+# planes
+message('Detections per unit effort: ', 
+        round(planes_det_surf/total_dst[3,2], digits = 3), ' detections/km')
+# vessels
+message('Detections per unit effort: ', 
+        round(vessels_det_surf/total_dst[4,2], digits = 3), ' detections/km')
 

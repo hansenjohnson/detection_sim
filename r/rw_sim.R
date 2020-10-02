@@ -333,4 +333,22 @@ simulate_detections = function(whale_df = wh, # whale movement model
   
   return(detections)
 }
-  
+
+calculate_distance = function(x,y,sum_dist=TRUE){
+  # count rows in df
+  n = length(x)
+  # define x/y vectors
+  x0 = x[1:(n-1)]
+  x1 = x[2:n]
+  y0 = y[1:(n-1)]
+  y1 = y[2:n]
+  # compute distance between subsequent points and
+  # pad with leading zero to match length n
+  dist = c(0, sqrt((x1-x0)^2+(y1-y0)^2))
+  # optionally convert to cumulative along-path distance
+  if(sum_dist){
+    dist = cumsum(dist)
+  }
+  # return distance vector
+  return(dist)
+}  

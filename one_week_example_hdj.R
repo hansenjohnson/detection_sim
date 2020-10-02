@@ -8,6 +8,8 @@ source('r/rw_sim.R')
 ofile_whs = 'data/processed/multiple_whales_movement.rds'
 ofile_trk = 'data/processed/platforms_movement.rds'
 ofile_det = 'data/processed/all_detections.rds'
+ofile_plane = 'data/processed/planes_detections.rds'
+ofile_vessel = 'data/processed/vessels_detections.rds'
 
 # define time resolution (s)
 res = 3
@@ -65,6 +67,10 @@ plane_trk = bind_rows(PL)
 # process detections
 plane_det = simulate_detections(whale_df = whales, track_df = plane_trk, det_method = 'visual')
 
+# save
+saveRDS(object = plane_det, file = ofile_plane)
+message('Processed all detections data saved as: ', ofile_plane)
+
 # vessel ------------------------------------------------------------------
 
 # vessel start time (in seconds since midnight)
@@ -105,6 +111,10 @@ vessel_trk = bind_rows(VE)
 
 # process detections
 vessel_det = simulate_detections(whale_df = whales, track_df = vessel_trk, det_method = 'visual')
+
+# save
+saveRDS(object = vessel_det, file = ofile_vessel)
+message('Processed all detections data saved as: ', ofile_vessel)
 
 # glider ------------------------------------------------------------------
 
