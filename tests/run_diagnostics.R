@@ -59,8 +59,7 @@ message('Percent surfacings detected: ', round((surfacings_obs/n_surfacings) *10
 # daily presence -----------------------------------------------------------
 daily_presence = all_detections %>% group_by(day,platform,detected) %>% count()
 
-# detections per unit effort  ----------------------------------------------
-# per time surveyed
+# detections per time surveyed  --------------------------------------------
 # glider
 glider_trk = platforms_track %>% filter(platform=='glider')
 dt_glider = all_detections %>% filter(detected==1, platform=='glider') %>% 
@@ -85,43 +84,62 @@ dt_vessel = all_detections %>% filter(detected==1, platform=='vessel') %>%
   count()/max(vessel_trk$time/60/60)
 message('Detections per unit effort: ', round(dt_vessel, digits = 3), ' detections/hour')
 
-# per km surveyed (for moving platforms)
+# detections per km surveyed  ---------------------------------------------
+# find distance traveled and cumulative distance traveled
+calculate_distance = function(x,y,sum_dist=TRUE){
+  # count rows in df
+  n = length(x)
+  # define x/y vectors
+  x0 = x[1:(n-1)]
+  x1 = x[2:n]
+  y0 = y[1:(n-1)]
+  y1 = y[2:n]
+  # compute distance between subsequent points and
+  # pad with leading zero to match length n
+  dist = c(0, sqrt((x1-x0)^2+(y1-y0)^2))
+  # optionally convert to cumulative along-path distance
+  if(sum_dist){
+    dist = cumsum(dist)
+  }
+  # return distance vector
+  return(dist)
+}
+
+# calculate along-track distance by platform and survey id
+platforms_track = platforms_track %>%
+  group_by(platform, id) %>%
+  mutate(dist = calculate_distance(x=x,y=y))
+
+# check with a quick plot
+ggplot(platforms_track, aes(x=time/60/60,y=dist,group=id))+
+  geom_path()+
+  facet_wrap(~platform)+
+  labs(x = 'Time (hr)', y = 'Distance travelled (km)')+
+  theme_bw()
+
+# calculate the total distance covered by each survey
+dst = platforms_track %>%
+  group_by(platform, id) %>%
+  summarize(total_distance = max(dist, na.rm = TRUE))
+
 # glider
-# find distance traveled and cumulative distance traveled
-glider_trk$dist = 0
-for(ii in 2:nrow(glider_trk)){
-  glider_trk$dist[ii] = sqrt((glider_trk$x[ii]-glider_trk$x[ii-1])^2 
-                             + (glider_trk$y[ii]-glider_trk$y[ii-1])^2)
-}
-glider_trk$cdist = cumsum(glider_trk$dist)
 # divide detections per max cumulative distance
-dkm_glider = all_detections %>% filter(detected==1, platform=='glider') %>% 
-  count()/max(glider_trk$cdist)
-message('Detections per unit effort: ', round(dkm_glider, digits = 3), ' detections/km')
+calls_glider = all_detections %>% filter(detected==1, platform=='glider') %>% count()
+dst_glider = dst %>% filter(platform=="glider")
+message('Detections per unit effort: ', round(calls_glider/(dst_glider$total_distance), 
+                                              digits = 3), ' detections/km')
 
-# planes
-# find distance traveled and cumulative distance traveled
-planes_trk$dist = 0
-
-for(ii in 2:nrow(planes_trk)){
-  planes_trk$dist[ii] = sqrt((planes_trk$x[ii]-planes_trk$x[ii-1])^2 
-                             + (planes_trk$y[ii]-planes_trk$y[ii-1])^2)
-}
-
+# all planes
 # divide detections per max cumulative distance
+surfacings_planes = all_detections %>% filter(detected==1, platform=='plane') %>% count()
+dst_planes = dst %>% filter(platform=="plane", id=='1')
+message('Detections per unit effort: ', round(surfacings_planes/(dst_planes$total_distance), 
+                                              digits = 3), ' detections/km')
 
-message('Detections per unit effort: ', round(dkm_planes, digits = 3), ' detections/km')
-
-# vessel
-# find distance traveled and cumulative distance traveled
-vessel_trk$dist = 0
-
-for(ii in 2:nrow(vessel_trk)){
-  vessel_trk$dist[ii] = sqrt((vessel_trk$x[ii]-vessel_trk$x[ii-1])^2 
-                             + (vessel_trk$y[ii]-vessel_trk$y[ii-1])^2)
-}
-
+# all vessels
 # divide detections per max cumulative distance
-
-message('Detections per unit effort: ', round(dkm_vessel, digits = 3), ' detections/km')
+surfacings_vessels = all_detections %>% filter(detected==1, platform=='vessel') %>% count()
+dst_vessels = dst %>% filter(platform=="vessel", id=='1') 
+message('Detections per unit effort: ', round(surfacings_vessels/(dst_vessels$total_distance), 
+                                              digits = 3), ' detections/km')
 

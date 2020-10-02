@@ -5,7 +5,7 @@
 library(tidyverse)
 
 # read in trackline data
-trk = readRDS('data/processed/platforms_movement.rda')
+trk = readRDS('data/processed/platforms_movement.rds')
 
 # define distance calculation function
 calculate_distance = function(x,y,sum_dist=TRUE){
