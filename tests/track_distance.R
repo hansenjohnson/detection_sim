@@ -48,3 +48,23 @@ ggplot(trk, aes(x=time/60/60,y=dist,group=id))+
 dst = trk %>%
   group_by(platform, id) %>%
   summarize(total_distance = max(dist, na.rm = TRUE))
+
+# calculate detections per km ---------------------------------------------
+
+# calculate total trackline effort by each platform
+total_dst = dst %>%
+  group_by(platform) %>%
+  summarize(total_distance = sum(total_distance))
+
+# calculate total detected per platform
+total_det = readRDS('data/processed/all_detections.rds') %>%
+  mutate(detected=as.numeric(detected))%>%
+  filter(detected == 1) %>%
+  group_by(platform) %>%
+  summarise(total_detections = sum(detected))
+
+# combine and compute detections per km
+total = left_join(total_dst,total_det) %>%
+  mutate(detections_per_km = total_detections/total_distance)
+
+
