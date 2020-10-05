@@ -38,8 +38,10 @@ message('Observed call rate: ', round(x = cr_obs, digits = 2), ' calls/whale/hr'
 
 # basic surfacing summary 
 # find mean dive time
-dtime_obs = max(whales_movement$dive_time)/max(whales_movement$dive_index)
-message('Observed mean dive time: ', round(x = dtime_obs, digits = 2), ' seconds')
+tmp = whales_movement %>% group_by(surface) %>% summarise(m = mean(dive_dur))
+# dtime_obs = max(whales_movement$dive_time)/max(whales_movement$dive_index)
+message('Observed mean dive time: ', round(x = tmp$m[tmp$surface==0], digits = 2), ' seconds')
+message('Observed mean surface time: ', round(x = tmp$m[tmp$surface==1], digits = 2), ' seconds')
 
 # check detection probability curve --------------------------------------
 
