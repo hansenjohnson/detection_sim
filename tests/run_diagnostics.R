@@ -70,9 +70,11 @@ planes_srf_df = planes_detections %>%
   mutate(detected=as.numeric(detected)) %>%
   group_by(id,dive_index) %>%
   summarize(
-    time = mean(time),
     x_wh = mean(x_wh),
     y_wh = mean(y_wh),
+    time = mean(time),
+    r_wh = mean(r_wh),
+    p = mean(p),
     detected = sum(detected)
   )
 # convert to binary (0,1) detection
@@ -92,9 +94,11 @@ vessels_srf_df = vessels_detections %>%
   mutate(detected=as.numeric(detected)) %>%
   group_by(id,dive_index) %>%
   summarize(
-    time = mean(time),
     x_wh = mean(x_wh),
     y_wh = mean(y_wh),
+    time = mean(time),
+    r_wh = mean(r_wh),
+    p = mean(p),
     detected = sum(detected)
   )
 # convert to binary (0,1) detection
@@ -105,7 +109,46 @@ txt4 = paste0('Whale detected on ', round(vessels_det_surf/nrow(vessels_srf_df)*
               '% of surfacings (', vessels_det_surf, '/', nrow(vessels_srf_df), ')')
 
 # daily presence -----------------------------------------------------------
-daily_presence = all_detections %>% group_by(day,platform,detected) %>% count()
+
+# correct to include surfacing detections not total time step detections
+all_detections = all_detections %>% filter(!platform=="plane") %>% filter(!platform=="vessel") %>%
+  mutate(detected=as.numeric(detected))
+
+planes_srf_df = planes_srf_df %>%
+  select(-dive_index) %>%
+  mutate(platform = 'plane')
+
+vessels_srf_df = vessels_srf_df %>%
+  select(-dive_index) %>%
+  mutate(platform = 'vessel')
+
+tbins = seq(from = 0, to = 24*7, by = 24)
+planes_srf_df$day = cut(planes_srf_df$time/60/60, breaks = tbins, include.lowest = T)
+vessels_srf_df$day = cut(vessels_srf_df$time/60/60, breaks = tbins, include.lowest = T)
+
+all_det_corrected = bind_rows(all_detections,planes_srf_df,vessels_srf_df)
+daily_presence = all_det_corrected %>% group_by(day,platform,detected) %>% count()
+
+# count days with detections for each platform
+#glider
+glider_daily_det = daily_presence %>% filter(platform=='glider',detected==1) %>% nrow()
+txt5 = paste0('Whale detected by glider on ', glider_daily_det, 
+              '/7 days')
+
+# mooring
+buoy_daily_det = daily_presence %>% filter(platform=='buoy',detected==1) %>% nrow()
+txt6 = paste0('Whale detected by buoy on ', buoy_daily_det, 
+              '/7 days')
+
+# plane
+plane_daily_det = daily_presence %>% filter(platform=='plane',detected==1) %>% nrow()
+txt7 = paste0('Whale detected by plane on ', plane_daily_det, 
+              '/7 days')
+
+# vessel
+vessel_daily_det = daily_presence %>% filter(platform=='vessel',detected==1) %>% nrow()
+txt8 = paste0('Whale detected by vessel on ', vessel_daily_det, 
+              '/7 days')
 
 # detections per time surveyed  --------------------------------------------
 # glider
