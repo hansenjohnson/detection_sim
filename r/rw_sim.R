@@ -137,9 +137,9 @@ rw_sim = function(
   # generate table with alternating diving/surfacing and associated metadata
   cyc = tibble(
     # add dive and surfacing times to create one dive duration
-    dive_dur = c(0, round(c(rbind(dtimes,stimes)),0)),
+    dive_dur = round(c(rbind(dtimes,stimes))),
     # cummulative sum of all dives
-    dive_time = cumsum(dive_dur),
+    dive_time = cumsum(c(0,dive_dur[1:(length(dive_dur)-1)])),
     # dive number
     dive_index = seq(from=1, to = length(dive_time), by = 1),
     # alternate 0 and 1 to know when the whale is at the surface
