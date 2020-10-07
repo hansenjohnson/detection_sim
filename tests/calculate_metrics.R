@@ -4,6 +4,7 @@
 # setup -------------------------------------------------------------------
 
 library(tidyverse)
+source('r/rw_sim.R')
 
 # whale_movement = readRDS('data/processed/whale_movement.rda')
 whales_movement = readRDS('data/processed/multiple_whales_movement.rds')
@@ -171,3 +172,23 @@ message('Detections per unit effort: ',
 message('Detections per unit effort: ', 
         round(vessels_det_surf/total_dst[4,2], digits = 3), ' detections/km')
 
+# make summary table ------------------------------------------------------
+
+summary = tibble(
+  # add column for platform
+  platform = c("glider", "buoy", "plane", "vessel"),
+  # add column for daily presence
+  ddays_with_det = c(glider_daily_det, buoy_daily_det, plane_daily_det, vessel_daily_det),
+  # add column for detections per hour
+  det_per_hr = c(dt_glider, dt_buoy, dt_planes, dt_vessel),
+  # add column for detections per km surveyed
+  det_per_km = c(total[2,4], NA, planes_det_surf/total_dst[3,2], vessels_det_surf/total_dst[4,2]), 
+  # add column for cost per hour 
+  cost_per_hr = c(NA,NA,NA,NA) 
+)
+summary = summary %>% mutate(det_per_hr = as.numeric(det_per_hr)) %>% 
+  mutate(det_per_km = as.numeric(det_per_km)) %>% 
+  mutate(cost_per_hr = as.numeric(cost_per_hr))
+
+# save
+write.table(summary , file = "data/processed/summary_metrics.csv")
