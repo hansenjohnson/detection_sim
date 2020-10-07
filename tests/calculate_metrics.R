@@ -186,9 +186,11 @@ summary = tibble(
   # add column for cost per hour 
   cost_per_hr = c(NA,NA,NA,NA) 
 )
-summary = summary %>% mutate(det_per_hr = as.numeric(det_per_hr)) %>% 
-  mutate(det_per_km = as.numeric(det_per_km)) %>% 
-  mutate(cost_per_hr = as.numeric(cost_per_hr))
+summary = summary %>% 
+  mutate(det_per_hr = round(as.numeric(det_per_hr),3),
+         det_per_km = round(as.numeric(det_per_km),3),
+         cost_per_hr = as.numeric(cost_per_hr)
+  )
 
 # save
-write.table(summary , file = "data/processed/summary_metrics.csv")
+write.csv(x = summary, file = "data/processed/summary_metrics.csv", row.names = FALSE)
