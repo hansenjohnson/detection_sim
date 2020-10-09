@@ -217,44 +217,65 @@ p
 ggsave(plot = p, filename = 'figures/whales_1-week.png', width = 5, height = 10, units = 'in')
 
 # animate
-
 library(gifski)
 library(gganimate)
 
-p2 = ggplot()+
-  geom_path(data=whales, aes(x=x,y=y, group=id, color=id))+
-  #scale_color_manual(values = c('dive'='grey', 'surface'='black'))+
-  #geom_point(data=filter(whs,call=='call'), aes(x=x,y=y,group=grp,fill=call), shape = 21)+
-  #scale_fill_manual(values = 'black')+
-  coord_equal()+
-  labs(x = 'Easting (km)', y = 'Northing (km)', fill = NULL, color = NULL)+
-  theme_bw()+
-  theme(panel.grid = element_blank(), legend.position = 'bottom')
-p2
-anim = p2 + 
-  transition_reveal(along = time)+
-  ggtitle("Hours: {round(frame_along,0)}")
-anim
-anim_save('figures/whales_1-week_animation.gif', animation=anim)
+# p2 = ggplot()+
+#   geom_path(data=whales, aes(x=x,y=y, group=id, color=id))+
+#   #scale_color_manual(values = c('dive'='grey', 'surface'='black'))+
+#   #geom_point(data=filter(whs,call=='call'), aes(x=x,y=y,group=grp,fill=call), shape = 21)+
+#   #scale_fill_manual(values = 'black')+
+#   coord_equal()+
+#   labs(x = 'Easting (km)', y = 'Northing (km)', fill = NULL, color = NULL)+
+#   theme_bw()+
+#   theme(panel.grid = element_blank(), legend.position = 'bottom')
+# p2
+# anim = p2 + 
+#   transition_reveal(along = time)+
+#   ggtitle("Hours: {round(frame_along,0)}")
+# anim
+# anim_save('figures/whales_1-week_animation.gif', animation=anim)
 
-# plot
+# plot faceted by day and platform
 p3 = ggplot()+
-  
   # whales
   geom_path(data = whales, aes(x=x,y=y,group=id),color='grey')+
-  
   # tracks
   geom_path(data = trk, aes(x=x,y=y,group=id),color='blue')+
-  
   # detections
   geom_point(data=filter(det,detected==1), aes(x=x_wh,y=y_wh), shape = 21, fill = 'red')+
-  
   # facet
   facet_grid(day~platform)+
-  
   # formatting
   coord_equal()+
   theme_bw()+
   theme(panel.grid = element_blank())
 
 ggsave(plot = p3, filename = 'figures/1-week.png', width = 5, height = 10, units = 'in')
+
+# plot faceted by platform only
+# change day format for animation
+whales = whales %>% mutate(day=as.numeric(day))
+
+p4 = ggplot()+
+  # whales
+  geom_path(data = whales, aes(x=x,y=y,group=id),color='grey')+
+  # tracks
+  geom_path(data = trk, aes(x=x,y=y,group=id),color='blue')+
+  # detections
+  geom_point(data=filter(det,detected==1), aes(x=x_wh,y=y_wh), shape = 21, fill = 'red')+
+  # facet
+  facet_grid(~platform)+
+  # formatting
+  coord_equal()+
+  labs(x = 'Easting (km)', y = 'Northing (km)')+
+  theme_bw()+
+  theme(panel.grid = element_blank())
+
+ggsave(plot = p4, filename = 'figures/1-week_all_det.png', width = 5, height = 10, units = 'in')
+
+anim = p4 + 
+    transition_reveal(along = day)+
+    ggtitle("Day: {round(frame_along,0)}")
+anim
+anim_save('figures/1-week_all_det_animation.gif', animation=anim)
