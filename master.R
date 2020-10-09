@@ -11,7 +11,7 @@ source('r/rw_sim.R')
 # run 1 week model
 source('r/run_one_week.R')
 
-# run diagnostics
+# calculate performance metrics
 source('r/calculate_metrics.R')
 
 #  plot -------------------------------------------------------------------
