@@ -12,7 +12,7 @@ source('r/rw_sim.R')
 source('r/run_one_week.R')
 
 # run diagnostics
-source('r/run_diagnostics.R')
+source('r/calculate_metrics.R')
 
 #  plot -------------------------------------------------------------------
 
