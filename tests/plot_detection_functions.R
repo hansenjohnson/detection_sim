@@ -11,14 +11,14 @@ r = seq(from = 0, to = 40, by = 0.1)
 aco = tibble(
   r,
   p = detection_function(x = r, L = 1.045, x0 = 10, k = -0.3),
-  type = 'acoustic'
+  type = 'Acoustic'
 )
 
 # visual detection function
 vis = tibble(
   r,
   p = detection_function(x = r, L = 1, x0 = 1, k = -4.8),
-  type = 'visual'
+  type = 'Visual'
 )
 
 # combine
