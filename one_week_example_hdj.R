@@ -202,8 +202,43 @@ whales = whales[seq(from = 1, to = nrow(whales), by = round(60/res)),]
 trk = trk[seq(from = 1, to = nrow(trk), by = round(60/res)),]
 det = det[seq(from = 1, to = nrow(det), by = round(60/res)),]
 
-# plot
+# plot just whales
 p = ggplot()+
+  geom_path(data=whales, aes(x=x,y=y, group=id), color="dark grey")+
+  #scale_color_manual(values = c('dive'='grey', 'surface'='black'))+
+  #geom_point(data=filter(whs,call=='call'), aes(x=x,y=y,group=grp,fill=call), shape = 21)+
+  #scale_fill_manual(values = 'black')+
+  coord_equal()+
+  labs(x = 'Easting (km)', y = 'Northing (km)', fill = NULL, color = NULL)+
+  theme_bw()+
+  theme(panel.grid = element_blank(), legend.position = 'bottom')+
+  facet_grid(~day)
+p
+ggsave(plot = p, filename = 'figures/whales_1-week.png', width = 5, height = 10, units = 'in')
+
+# animate
+
+library(gifski)
+library(gganimate)
+
+p2 = ggplot()+
+  geom_path(data=whales, aes(x=x,y=y, group=id, color=id))+
+  #scale_color_manual(values = c('dive'='grey', 'surface'='black'))+
+  #geom_point(data=filter(whs,call=='call'), aes(x=x,y=y,group=grp,fill=call), shape = 21)+
+  #scale_fill_manual(values = 'black')+
+  coord_equal()+
+  labs(x = 'Easting (km)', y = 'Northing (km)', fill = NULL, color = NULL)+
+  theme_bw()+
+  theme(panel.grid = element_blank(), legend.position = 'bottom')
+p2
+anim = p2 + 
+  transition_reveal(along = time)+
+  ggtitle("Hours: {round(frame_along,0)}")
+anim
+anim_save('figures/whales_1-week_animation.gif', animation=anim)
+
+# plot
+p3 = ggplot()+
   
   # whales
   geom_path(data = whales, aes(x=x,y=y,group=id),color='grey')+
@@ -222,4 +257,4 @@ p = ggplot()+
   theme_bw()+
   theme(panel.grid = element_blank())
 
-ggsave(plot = p, filename = 'figures/1-week.png', width = 5, height = 10, units = 'in')
+ggsave(plot = p3, filename = 'figures/1-week.png', width = 5, height = 10, units = 'in')

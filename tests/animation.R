@@ -107,4 +107,4 @@ anim
 anim_save('figures/multiple_whales_animation2.gif', animation=anim)
 
 anim2
-anim_save('figures/one_whale_animation.gif', animation=anim2)
+anim_save('figures/one_whale_animation2.gif', animation=anim2)
