@@ -39,7 +39,7 @@ message('Observed call rate: ', round(x = cr_obs, digits = 2), ' calls/whale/hr'
 # basic surfacing summary 
 
 # isolate unique dive times
-dives = df %>% group_by(id,dive_index,dive_dur,surface) %>% 
+dives = whales_movement %>% group_by(id,dive_index,dive_dur,surface) %>% 
   summarize()
 
 # calculate mean and sd of dive times
