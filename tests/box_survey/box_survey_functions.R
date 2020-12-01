@@ -138,6 +138,8 @@ rw_sim = function(
   
   # determine if start in a dive or not
   start_in_dive = rbinom(1, 1, prob = 0.5)
+  #gives a 50/50 chance that the whale starts in a dive
+  #the outcome of this test determines which lines within the following `if` statement are executed
   
   # generate table with alternating diving/surfacing and associated metadata
   if(start_in_dive){
@@ -150,6 +152,10 @@ rw_sim = function(
       dive_index = seq(from=1, to = length(dive_time), by = 1),
       # alternate 0 and 1 to know when the whale is at the surface
       surface = as.character(rep(c(0,1), length.out = length(dive_time))) 
+      #This line makes a vector that indicates the whale’s state, 
+      #where 0 indicates the whale is in a dive and 1 indicates it is at the surface 
+      #The order of the 0 and 1 depend on the starting state of the whale, 
+      #hence why they change order for "else"
     )
   } else {
     cyc = tibble(
@@ -280,13 +286,23 @@ simulate_track = function(platform,res=2.5,ymax,ymin,xmax,xmin){
   spd = spd/1e3
   
   # fixed params
-  yres = 0.1
-  ys = seq(from = ymin, to = ymax, by = yres)
+ # yres = 0.1
+  #ys = seq(from = ymin, to = ymax, by = yres)
+  
+  xres = 0.1
+  xs = seq(from = xmin, to = xmax, by = xres)
   
   # define start and end points
+  #wpts = tibble(
+   # x=c(xmax,xmin), 
+    #y=sample(ys, size=2, replace = F),
+    #dist = 0,
+    #time = 0
+  #)
+  
   wpts = tibble(
-    x=c(xmax,xmin), 
-    y=sample(ys, size=2, replace = F),
+    x=sample(xs, size=2, replace = F), 
+    y=c(ymax,ymin),
     dist = 0,
     time = 0
   )
@@ -415,7 +431,7 @@ reflect_rw = function(rw,ymax,ymin,xmax,xmin,verbose=FALSE){
 
 reflect_rws = function(rws,ymax,ymin,xmax,xmin,verbose=FALSE){
   # contain multiple right whales within a box
-  
+
   # reflect
   rw2 = rws %>%
     group_by(id) %>%
