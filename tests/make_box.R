@@ -38,9 +38,12 @@ df = readRDS('data/processed/all_detections.rds') %>%
 
 # convert points to sf object
 df_sf = st_as_sf(df, coords = c("x_wh", "y_wh"))
+#the function st_as_sf converts foreign object to an sf object, which is a collection of geopoints
+#with attributes (vector data)
 
 # which detections were within the box? (use `st_within`)
 df$inside = as.vector(st_within(x = df_sf, y = bx, sparse = F))
+#the function st_within gives a geometric binary of TRUE or FALSE
 
 # plot detections inside the box by platform
 ggplot()+

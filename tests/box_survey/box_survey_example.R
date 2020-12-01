@@ -5,6 +5,7 @@
 
 source('tests/box_survey/box_survey_functions.R')
 set.seed(123)
+#reproduce a particular sequence of 'random' numbers
 
 # define the limits of a box (units in km)
 xmin = -3
