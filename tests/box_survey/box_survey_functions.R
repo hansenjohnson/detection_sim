@@ -83,6 +83,8 @@ rw_sim = function(
   
   # wrap turning angles
   ang = (ang + (2*pi)) %% (2*pi)
+  # causes the angular scale ‘circular’ (but in radians rather than degrees) 
+  # so that if an angle is added to 365, it restarts the scale and doesn't >365
   
   # y movement
   y = c(y0, y0+cumsum(dst*sin(ang)))
@@ -131,15 +133,16 @@ rw_sim = function(
   
   # number of dive cycles to simulate (maximum estimate)
   n_cycles = ceiling(max(df$time)/cycle_dur)*2
+  # we multiply by 2 to ensure that we simulate enough dive cycles
   
   # generate distributions of surfacing and dive times
   stimes = rnorm(n = n_cycles, mean = stime_mean, sd = stime_sd)
   dtimes = rnorm(n = n_cycles, mean = dtime_mean, sd = dtime_sd)
   
   # determine if start in a dive or not
-  start_in_dive = rbinom(1, 1, prob = 0.5)
-  #gives a 50/50 chance that the whale starts in a dive
-  #the outcome of this test determines which lines within the following `if` statement are executed
+  start_in_dive = rbinom(1, 1, prob = (dtime_mean/(dtime_mean+stime_mean)))
+  #gives an 71% chance that the whale starts in a dive (1 is YES or 0 NO)
+  #if it is 1, YES, it starts in a dive, as is written in the if statement
   
   # generate table with alternating diving/surfacing and associated metadata
   if(start_in_dive){
@@ -326,6 +329,7 @@ simulate_track = function(platform,res=2.5,ymax,ymin,xmax,xmin){
   
   # remove times after last waypoint is reached
   trk = trk %>% filter(time<=max(wpts$time))
+  # if this step is not done, trk length may be > than wpts and this creates errors in na.approx
   
   # interpolate (finds x and y positions for the times in between the waypoints)
   trk$x = na.approx(trk$x)
@@ -391,6 +395,7 @@ reflect_rw = function(rw,ymax,ymin,xmax,xmin,verbose=FALSE){
   
   f_all = f_ymax = f_ymin = f_xmax = f_xmin = 0
   while(f_all == 0){
+  # for when you don't know how many for loops you need
     
     if(length(rw$y[rw$y>ymax])>0){
       rw$y[rw$y>ymax] = 2*ymax-rw$y[rw$y>ymax]  
@@ -422,6 +427,7 @@ reflect_rw = function(rw,ymax,ymin,xmax,xmin,verbose=FALSE){
     
     if(f_ymax == 1 & f_ymin == 1 & f_xmax == 1 & f_xmin == 1){
       f_all = 1
+    # only when all the sides are satisfied, the while loop stops because f_all is not 0 anymore
     }
   }
   

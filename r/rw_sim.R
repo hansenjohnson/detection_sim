@@ -81,6 +81,8 @@ rw_sim = function(
   
   # wrap turning angles
   ang = (ang + (2*pi)) %% (2*pi)
+  # causes the angular scale ‘circular’ (but in radians rather than degrees) 
+  # so that if an angle is added to 365, it restarts the scale and doesn't >365
   
   # y movement
   y = c(y0, y0+cumsum(dst*sin(ang)))
@@ -129,6 +131,7 @@ rw_sim = function(
   
   # number of dive cycles to simulate (maximum estimate)
   n_cycles = ceiling(max(df$time)/cycle_dur)*2
+  # we multiply by 2 to ensure that we simulate enough dive cycles
   
   # generate distributions of surfacing and dive times
   stimes = rnorm(n = n_cycles, mean = stime_mean, sd = stime_sd)
