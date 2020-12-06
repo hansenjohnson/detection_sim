@@ -317,7 +317,7 @@ simulate_track = function(platform,res=2.5,ymax,ymin,xmax,xmin){
   wpts$time = wpts$dist/spd
   
   # create time sequence (seconds)
-  tseq = seq(from = res, to = ceiling(wpts$time[2]), by = res)
+  tseq = seq(from = res, to = max((wpts$time[2]) - res), by = res)
   
   # create an empty trackline grid
   tmp = tibble(x=NA, y=NA, time = tseq)
@@ -328,7 +328,7 @@ simulate_track = function(platform,res=2.5,ymax,ymin,xmax,xmin){
     arrange(time)
   
   # remove times after last waypoint is reached
-  trk = trk %>% filter(time<=max(wpts$time))
+  #trk = trk %>% filter(time<=max(wpts$time))
   # if this step is not done, trk length may be > than wpts and this creates errors in na.approx
   
   # interpolate (finds x and y positions for the times in between the waypoints)
