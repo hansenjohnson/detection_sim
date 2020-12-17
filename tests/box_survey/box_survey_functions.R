@@ -511,7 +511,7 @@ run_box_survey = function(height=18,width=12,platform='glider',nrws = 3,n_survey
         platform = platform,
         n_whales = nrws,
         behavior = bh,
-        transit_time = max(trk$time)/60/60,
+        transit_time = nhrs,
         transit_dist = sqrt((trk$x[nrow(trk)]-trk$x[1])^2 + (trk$y[nrow(trk)]-trk$y[1])^2),
         n_available = nrow(det),
         n_detected = nrow(filter(det,detected==1)),
