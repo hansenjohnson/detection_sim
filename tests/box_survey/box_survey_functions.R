@@ -174,8 +174,8 @@ rw_sim = function(
   }
   
   # bin whale movement wh by dive time
-  df$dive_index = cut(x = df$time, breaks = cyc$dive_time, labels = F, include.lowest = TRUE)
-  
+  df$dive_index = cut(x = df$time, breaks = unique(cyc$dive_time), labels = F, include.lowest = TRUE)
+ 
   # merge dfs to include dive cycle info in movement df
   df = left_join(x = df, y = cyc, by = 'dive_index')
   
@@ -484,7 +484,7 @@ run_box_survey = function(height=18,width=12,platform='glider',nrws = 3,n_survey
         platform = platform,
         n_whales = nrws,
         behavior = bh,
-        transit_time = max(trk$time)/60/60,
+        transit_time = nhrs,
         transit_dist = sqrt((trk$x[nrow(trk)]-trk$x[1])^2 + (trk$y[nrow(trk)]-trk$y[1])^2),
         n_available = nrow(det),
         n_detected = nrow(filter(det,detected==1)),
@@ -516,8 +516,8 @@ run_box_survey = function(height=18,width=12,platform='glider',nrws = 3,n_survey
         n_available = nrow(det),
         n_detected = nrow(filter(det,detected==1)),
         detected = ifelse(n_detected>0,1,0),
-        track_df = list(trk),
-        whale_df = list(rws),
+        track_df = list(trk), # stores track dataframe in this column
+        whale_df = list(rws), # stores whale movement dataframe in this column
         det_df = list(det),
         plot = list(p)
       )
