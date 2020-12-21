@@ -13,7 +13,7 @@ width=12
 n_surveys=50          
 
 # numbers of whales to test
-nrwsl = c(1, 3, 5, 10, 25, 50) 
+nrwsl = c(1, 5, 10, 25, 50, 75) 
 
 # numbers of surveys to test
 #snl = c(10, 50) 
@@ -46,7 +46,7 @@ saveRDS(df, file = 'tests/box_surveys.rds')
   
 p = ggplot()+
   geom_path(data = df, aes(x = n_whales, y = transit_p, color = platform, group = platform))+
-  labs(x = 'number of surveys', y = 'probability of detection')+
+  labs(x = 'number of whales', y = 'probability of detection')+
   #facet_grid(~n_whales)+
   theme_bw()+
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
