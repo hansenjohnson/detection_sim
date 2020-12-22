@@ -65,12 +65,12 @@ w_vessel = filter(df, platform == 'vessel', n_whales == 1) %>% select(transit_p)
 w_glider = filter(df, platform == 'glider', n_whales == 1) %>% select(transit_p)
 
 # probability of missing a whale on a single transit
-m_plane = 1-w_plane %>% as.numeric(m_plane)
-m_vessel = 1-w_vessel %>% as.numeric(m_vessel)
-m_glider = 1-w_glider %>% as.numeric(m_glider)
+m_plane = 1-w_plane %>% as.numeric()
+m_vessel = 1-w_vessel %>% as.numeric()
+m_glider = 1-w_glider %>% as.numeric()
 
 # vector of numbers of transits
-n = seq(from = 1, to = 50, by = 1)
+n = seq(from = 1, to = 25, by = 1)
 
 # compute probability of detection on 1 of n transits
 p_plane = 1-m_plane^n
@@ -85,6 +85,24 @@ ggplot()+
   geom_path(data= probs, aes(x=n,y=p_plane, colour = 'green'))+
   geom_path(data= probs, aes(x=n,y=p_vessel, colour = 'blue'))+
   geom_path(data= probs, aes(x=n,y=p_glider, colour = 'red'))+
+  labs(x='Number of transits', y = 'Probability of detection')+
+  ylim(c(0,1))+
+  theme_bw()
+
+# alternative -------------------------------------------------------------
+
+# calculate groupwise transit probabilities 
+probs2 = df %>%
+  group_by(platform,n_whales) %>%
+  summarize(
+    n,
+    p = 1-(1-transit_p)^n
+  )
+
+# plot with number of whales in each facet
+ggplot()+
+  geom_path(data=probs2,aes(x=n,y=p,color=platform))+
+  facet_wrap(~n_whales)+
   labs(x='Number of transits', y = 'Probability of detection')+
   ylim(c(0,1))+
   theme_bw()
