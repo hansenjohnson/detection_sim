@@ -550,8 +550,8 @@ run_box_surveys = function(height=18,width=12,nrws = 3,n_surveys=10,bh='feeding'
       transit_time = mean(transit_time),
       transit_dist = mean(transit_dist),
       transits_with_detections = sum(detected),
-      transit_p = transits_with_detections/transits) %>%
-    ungroup()
+      transit_p = transits_with_detections/transits,
+      .groups = 'drop')
   
   # print output stats
   return(out)
