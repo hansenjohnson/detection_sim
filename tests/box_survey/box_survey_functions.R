@@ -204,7 +204,7 @@ rw_sims = function(nrws = 1e2,          # number of whales in simulation
                    dt = 2.5,            # movement model time resolution (seconds)
                    nt = 300,            # output time resolution (seconds)
                    radius = 100,        # radius of initial positions (km)
-                   run_parallel = FALSE,# run with parallel processing?
+                   run_parallel = TRUE,# run with parallel processing?
                    cr_mn_hr = 0.25,     # mean call rate (calls/whale/hr)
                    quiet = TRUE         # hide startup message?
 ){

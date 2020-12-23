@@ -3,14 +3,20 @@
 
 # input -------------------------------------------------------------------
 
-# height of box (km)
-height=18             
+# height of DFO fishing area box (km)
+dfo_height=18             
 
-# width of box (km)
-width=12              
+# width of DFO fishing area box (km)
+dfo_width=12    
+
+# height of TC speed area box (km)
+tc_height=20             
+
+# width of TC speed area box (km)
+tc_width=100 
 
 # number of surveys to conduct for each parameter combination
-n_surveys=50          
+n_surveys=20          
 
 # numbers of whales to test
 nrwsl = c(1, 5, 10, 25, 50, 75) 
@@ -21,20 +27,22 @@ nrwsl = c(1, 5, 10, 25, 50, 75)
 # setup -------------------------------------------------------------------
 
 source('tests/box_survey/box_survey_functions.R')
+
 library(tidyverse)
-library(dplyr)
-library(ggplot2)
+#library(dplyr)
+#library(ggplot2)
+
 set.seed(123)
 
 # process -----------------------------------------------------------------
 
-# run surveys
+# run surveys for DFO fishing zones 
 DF = vector('list', length = length(nrwsl))
 #cnt = 1
 #for(ii in seq_along(snl)){
   for(jj in seq_along(nrwsl)){
     message('Simulating surveys with ', nrwsl[jj], ' whale(s)')
-    DF[[jj]] = run_box_surveys(height=height,width=width,nrws=nrwsl[jj],n_surveys=n_surveys)
+    DF[[jj]] = run_box_surveys(height=dfo_height,width=dfo_width,nrws=nrwsl[jj],n_surveys=n_surveys)
     #cnt = cnt+1
   }
 #}
@@ -42,9 +50,9 @@ DF = vector('list', length = length(nrwsl))
 # combine
 df = bind_rows(DF)
 
-# save
-saveRDS(df, file = 'tests/box_surveys.rds')
-df = readRDS('tests/box_surveys.rds')
+# save and call
+saveRDS(df, file = 'tests/fishing_box_surveys.rds')
+df = readRDS('tests/fishing_box_surveys.rds')
 
 # plot --------------------------------------------------------------------
 #df$type = paste(df$platform,df$behavior)
