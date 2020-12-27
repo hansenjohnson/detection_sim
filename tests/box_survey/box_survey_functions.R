@@ -182,20 +182,23 @@ rw_sim = function(
   return(df)
 }
 
-init_whales = function(nrws=1e3, radius = 1e4){
-  # initialize field of simulated whales within a given radius (m)
+init_whales = function(nrws=1e3, xmin, xmax, ymin, ymax){
+  # initialize field of simulated whales within a box (km)
+  
   # dropping the points (assigns an angle between 0-2pi based on a specific radius and transforms that into range)
-  
   # calculate angles and ranges
-  a = 2*pi*runif(n = nrws, min = 0, max = 1)
-  r = radius*sqrt(runif(n = nrws, min = 0, max = 1))
-  
+  #a = 2*pi*runif(n = nrws, min = 0, max = 1)
+  #r = radius*sqrt(runif(n = nrws, min = 0, max = 1))
+
   # convert to xy
-  x=r*cos(a)
-  y=r*sin(a)
+  #x=r*cos(a)
+  #y=r*sin(a)
   
+  a = runif(n = nrws, min = xmin, max = xmax)
+  b = runif(n = nrws, min = ymin, max = ymax)
+
   # return data
-  out = data.frame(x=round(x),y=round(y))
+  out = data.frame(x=round(a),y=round(b))
 }
 
 rw_sims = function(nrws = 1e2,          # number of whales in simulation
@@ -203,7 +206,10 @@ rw_sims = function(nrws = 1e2,          # number of whales in simulation
                    bh = 'feeding',      # behaviour
                    dt = 2.5,            # movement model time resolution (seconds)
                    nt = 300,            # output time resolution (seconds)
-                   radius = 100,        # radius of initial positions (km)
+                   xmin,                # xmin of initial positions (km)
+                   xmax,                # xmax of initial positions (km)
+                   ymin,                # ymin of initial positions (km)
+                   ymax,                # ymax of initial positions (km)
                    run_parallel = TRUE,# run with parallel processing?
                    cr_mn_hr = 0.25,     # mean call rate (calls/whale/hr)
                    quiet = TRUE         # hide startup message?
@@ -227,7 +233,7 @@ rw_sims = function(nrws = 1e2,          # number of whales in simulation
   tic = Sys.time()
   
   # initial starting positions
-  ini = init_whales(nrws = nrws, radius = radius*1e3)
+  ini = init_whales(nrws = nrws, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax)
   
   if(run_parallel){
     # determine number of cores available to run function more efficiently
@@ -471,7 +477,7 @@ run_box_survey = function(height=18,width=12,platform='glider',nrws = 3,n_survey
     nhrs = ceiling(max_time/60/60)
     
     # simulate whales and reflect
-    rws = rw_sims(nrws = nrws, hrs = nhrs, bh=bh, dt = res, nt = res, radius = r) %>%
+    rws = rw_sims(nrws = nrws, hrs = nhrs, bh=bh, dt = res, nt = res, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax) %>%
       filter(time <= max_time) %>%
       reflect_rws(.,ymax,ymin,xmax,xmin)
     

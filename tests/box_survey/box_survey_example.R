@@ -16,7 +16,7 @@ ymax = 3
 # reflecting whales -------------------------------------------------------
 
 # simulate movement
-rws1 = rw_sims(nrws = 3, hrs = 3, bh = 'feeding', radius = xmax)
+rws1 = rw_sims(nrws = 3, hrs = 3, bh = 'feeding', xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax)
 
 # reflect the whales off the walls (to keep them within the box)
 rws2 = reflect_rws(rws = rws1,ymax = ymax,ymin = ymin,xmax = xmax,xmin = xmin)
