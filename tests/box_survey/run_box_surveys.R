@@ -16,7 +16,7 @@ tc_height=20
 tc_width=100 
 
 # number of surveys to conduct for each parameter combination
-n_surveys=20          
+n_surveys=10          
 
 # numbers of whales to test
 nrwsl = c(1, 5, 10, 25, 50, 75) 
@@ -53,6 +53,24 @@ df = bind_rows(DF)
 # save and call
 saveRDS(df, file = 'tests/fishing_box_surveys.rds')
 df = readRDS('tests/fishing_box_surveys.rds')
+
+# run surveys for TC speed restriction zones 
+DF_2 = vector('list', length = length(nrwsl))
+#cnt = 1
+#for(ii in seq_along(snl)){
+for(jj in seq_along(nrwsl)){
+  message('Simulating surveys with ', nrwsl[jj], ' whale(s)')
+  DF_2[[jj]] = run_box_surveys(height=tc_height,width=tc_width,nrws=nrwsl[jj],n_surveys=n_surveys)
+  #cnt = cnt+1
+}
+#}
+
+# combine
+df_2 = bind_rows(DF_2)
+
+# save and call
+saveRDS(df_2, file = 'tests/speed_box_surveys.rds')
+df_2 = readRDS('tests/speed_box_surveys.rds')
 
 # plot --------------------------------------------------------------------
 #df$type = paste(df$platform,df$behavior)

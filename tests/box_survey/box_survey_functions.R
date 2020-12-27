@@ -233,7 +233,7 @@ rw_sims = function(nrws = 1e2,          # number of whales in simulation
     # determine number of cores available to run function more efficiently
     numCores = detectCores()
     
-    message('Running in parallel with ', numCores, ' cores...')
+    #message('Running in parallel with ', numCores, ' cores...')
     
     # model movements
     DF = mclapply(X = nseq, FUN = function(i){
@@ -289,26 +289,28 @@ simulate_track = function(platform,res=2.5,ymax,ymin,xmax,xmin){
   spd = spd/1e3
   
   # fixed params
- # yres = 0.1
-  #ys = seq(from = ymin, to = ymax, by = yres)
+  # move from left to right
+  yres = 0.1
+  ys = seq(from = ymin, to = ymax, by = yres)
   
-  xres = 0.1
-  xs = seq(from = xmin, to = xmax, by = xres)
+  # move from top to bottom
+  #xres = 0.1
+  #xs = seq(from = xmin, to = xmax, by = xres)
   
   # define start and end points
-  #wpts = tibble(
-   # x=c(xmax,xmin), 
-    #y=sample(ys, size=2, replace = F),
-    #dist = 0,
-    #time = 0
-  #)
-  
   wpts = tibble(
-    x=sample(xs, size=2, replace = F), 
-    y=c(ymax,ymin),
+    x=c(xmax,xmin), 
+    y=sample(ys, size=2, replace = F),
     dist = 0,
     time = 0
   )
+  
+  #wpts = tibble(
+    #x=sample(xs, size=2, replace = F), 
+    #y=c(ymax,ymin),
+    #dist = 0,
+    #time = 0
+  #)
   
   # calculate travel distance
   wpts$dist[2] = sqrt((wpts$x[2]-wpts$x[1])^2 + (wpts$y[2]-wpts$y[1])^2)
