@@ -121,7 +121,7 @@ ggplot()+
 probs2 = df %>%
   group_by(platform,n_whales) %>%
   summarize(
-    n,
+    n = seq(from = 1, to = 25, by = 1),
     p = 1-(1-transit_p)^n
   )
 
