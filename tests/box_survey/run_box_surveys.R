@@ -132,3 +132,41 @@ ggplot()+
   labs(x='Number of transits', y = 'Probability of detection')+
   ylim(c(0,1))+
   theme_bw()
+
+# functions -----------------------------------------------------------------
+
+box_whales_surveys = function(height = 18, # box height (km), default is dfo
+                              width = 12, # box width (km), default is dfo
+                              n_surveys = 10, # number of times the survey is run
+                              nrwsl = c(1, 5, 10, 25, 50, 75) # numbers of whales to test
+){
+  
+  # run surveys for DFO box 
+  DF = vector('list', length = length(nrwsl))
+
+  for(jj in seq_along(nrwsl)){
+    message('Simulating surveys with ', nrwsl[jj], ' whale(s)')
+    DF[[jj]] = run_box_surveys(height=height,width=width,nrws=nrwsl[jj],n_surveys=n_surveys)
+  }
+  message('Done! Box is ', height, ' km high and ', width, ' km wide')
+  
+  # combine
+  df = bind_rows(DF)
+  
+  # add column for box type
+  if(height == 18 | width == 12){
+    df$box_type = 'DFO'
+  } else if (height == 20 | width == 100){
+    df$box_type = 'TC'
+  } else {
+    df$box_type = 'other'
+  }
+  
+  return(df)
+}
+
+df = box_whales_surveys(nrwsl = c(1,5,10,25,50))
+df_2 = box_whales_surveys(height = 20,width = 100,nrwsl = c(1,5,10,25,50))
+
+# combine
+all_boxes = merge(df, df_2)
