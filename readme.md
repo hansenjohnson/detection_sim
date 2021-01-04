@@ -25,7 +25,19 @@ Install required packages:
 R -e "install.packages(c('tidyverse','parallel','zoo'), repos='https://cran.rstudio.com/')"
 ```
 
-Run:
+Run over ssh:
 ```
 Rscript r/run_box_surveys.R 
+```
+
+Run headless:
+```
+# run job (output will print to nohup.out)
+nohup Rscript r/run_box_surveys.R &
+
+# record PID
+57073
+
+# kill process (only if necessary)
+kill -9 <PID>
 ```
