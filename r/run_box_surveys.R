@@ -2,10 +2,10 @@
 # run box surveys and save output
 
 # number of surveys to run for each combination of platform, n_whale, etc. 
-n_surveys = 10
+n_surveys = 100
 
 # numbers of right whales in box
-n_whales = c(1, 5, 10, 25, 50, 75)
+n_whales = seq(from = 1, to = 60, by = 1)
 
 # dimensions of TC box (km)
 tc_height = 20
