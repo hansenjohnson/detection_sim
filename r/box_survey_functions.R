@@ -568,20 +568,19 @@ box_surveys = function(height=18,width=12,nrws = 3,n_surveys=10,bh='feeding'){
 run_box_surveys = function(height = 18,
                            width = 12,
                            n_surveys = 10,
-                           nrwsl = c(1, 5, 10, 25, 50, 75)) {
+                           n_whales = c(1, 5, 10, 25, 50, 75)) {
   
   # run surveys
-  DF = vector('list', length = length(nrwsl))
-  for (jj in seq_along(nrwsl)) {
-    message('Simulating surveys with ', nrwsl[jj], ' whale(s)')
-    DF[[jj]] = run_box_surveys(
+  DF = vector('list', length = length(n_whales))
+  for (ii in seq_along(n_whales)) {
+    message('Simulating surveys with ', n_whales[ii], ' whale(s)')
+    DF[[ii]] = box_surveys(
       height = height,
       width = width,
-      nrws = nrwsl[jj],
+      nrws = n_whales[ii],
       n_surveys = n_surveys
     ) 
   }
-  message('Done! Box is ', height, ' km high and ', width, ' km wide')
   
   # combine
   df = bind_rows(DF)
