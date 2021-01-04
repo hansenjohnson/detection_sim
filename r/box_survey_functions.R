@@ -1,14 +1,11 @@
 ## box_survey_functions ##
 # help functions for box survey analysis
 
-library(tidyverse)
-
 # setup -------------------------------------------------------------------
 
 # libraries
 library(tidyverse)
 library(parallel)
-library(oce)
 library(zoo)
 
 # functions ---------------------------------------------------------------
@@ -446,13 +443,11 @@ reflect_rw = function(rw,ymax,ymin,xmax,xmin,verbose=FALSE){
 reflect_rws = function(rws,ymax,ymin,xmax,xmin,verbose=FALSE){
   # contain multiple right whales within a box
 
-  # reflect
-  rw2 = rws %>%
+  rws %>%
     group_by(id) %>%
-    do(reflect_rw(.,ymax,ymin,xmax,xmin,verbose)) %>%
-    ungroup()
-  
-  return(rw2)
+    summarize(
+      reflect_rw(across(), ymax, ymin, xmax, xmin, verbose), .groups = 'drop'
+    )
 }
 
 box_survey = function(height=18,width=12,platform='glider',nrws = 3,n_surveys=10,res=2.5,bh='feeding',include_data=F){
@@ -559,7 +554,8 @@ box_surveys = function(height=18,width=12,nrws = 3,n_surveys=10,bh='feeding'){
       transit_dist = mean(transit_dist),
       transits_with_detections = sum(detected),
       transit_p = transits_with_detections/transits,
-      .groups = 'drop')
+      .groups = 'drop'
+    )
   
   # print output stats
   return(out)
