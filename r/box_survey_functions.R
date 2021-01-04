@@ -561,14 +561,13 @@ box_surveys = function(height=18,width=12,nrws = 3,n_surveys=10,bh='feeding'){
   return(out)
 }
 
-run_box_surveys = function(height = 18,
+run_box_surveys = function(box_type = 'DFO',
+                           height = 18,
                            width = 12,
                            n_surveys = 10,
                            n_whales = c(1, 5, 10, 25, 50, 75)) {
   
-  message('\n###############################')
-  message('## NARW DETECTION SIMULATION ##')
-  message('###############################\n')
+  message('Simulating surveys of ', box_type, ' box')
   
   # record start time
   tic = Sys.time()
@@ -586,7 +585,8 @@ run_box_surveys = function(height = 18,
       width = width,
       nrws = n_whales[ii],
       n_surveys = n_surveys
-    ) 
+    ) %>%
+      mutate(box_type = box_type)
     
     # update progress bar
     setTxtProgressBar(pb, ii)
@@ -600,10 +600,7 @@ run_box_surveys = function(height = 18,
   
   # calculate time elapsed
   toc = round(Sys.time()-tic, 2)
-  
-  message('\n#############################')
-  message('## SIMULATION COMPLETE :)  ##')
-  message('#############################\n')
+  message('Done!')
   message('Time elapsed: ', format(toc))
   
   return(df)
