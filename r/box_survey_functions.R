@@ -4,9 +4,9 @@
 # setup -------------------------------------------------------------------
 
 # libraries
-library(tidyverse)
-library(parallel)
-library(zoo)
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(parallel))
+suppressPackageStartupMessages(library(zoo))
 
 # functions ---------------------------------------------------------------
 
@@ -566,20 +566,45 @@ run_box_surveys = function(height = 18,
                            n_surveys = 10,
                            n_whales = c(1, 5, 10, 25, 50, 75)) {
   
+  message('\n###############################')
+  message('## NARW DETECTION SIMULATION ##')
+  message('###############################\n')
+  
+  # record start time
+  tic = Sys.time()
+  
+  # set up progress bar
+  pb = txtProgressBar(min = 0, max = length(n_whales), style = 3)
+  
   # run surveys
   DF = vector('list', length = length(n_whales))
   for (ii in seq_along(n_whales)) {
-    message('Simulating surveys with ', n_whales[ii], ' whale(s)')
+    
+    # run survey
     DF[[ii]] = box_surveys(
       height = height,
       width = width,
       nrws = n_whales[ii],
       n_surveys = n_surveys
     ) 
+    
+    # update progress bar
+    setTxtProgressBar(pb, ii)
   }
   
   # combine
   df = bind_rows(DF)
+  
+  # close progress bar
+  close(pb)
+  
+  # calculate time elapsed
+  toc = round(Sys.time()-tic, 2)
+  
+  message('\n#############################')
+  message('## SIMULATION COMPLETE :)  ##')
+  message('#############################\n')
+  message('Time elapsed: ', format(toc))
   
   return(df)
 }
