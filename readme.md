@@ -13,3 +13,19 @@ Simulate and compare whale detection methods
 4. adapt for a moving platform  
 5. simulate glider- and plane-based detection
 6. compare results, update model parameters as necessary, and repeat  
+
+## Running remotely
+
+Currently set up to run remotely on "kaos" machine at Dal
+
+### kaos setup
+
+Install required packages:
+```
+R -e "install.packages(c('tidyverse','parallel','zoo'), repos='https://cran.rstudio.com/')"
+```
+
+Run:
+```
+Rscript r/run_box_surveys.R 
+```
