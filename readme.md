@@ -36,7 +36,7 @@ Run headless:
 nohup Rscript r/run_box_surveys.R &
 
 # record PID
-57073
+480255
 
 # kill process (only if necessary)
 kill -9 <PID>
