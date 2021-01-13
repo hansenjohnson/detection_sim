@@ -158,37 +158,47 @@ box_whales_surveys = function(height = 18, # box height (km), default is dfo
 
 # plot -----------------------------------------------------------------
 
-df = box_whales_surveys(nrwsl = c(1,5,10,25,50))
+df_1 = box_whales_surveys(nrwsl = c(1,5,10,25,50))
 df_2 = box_whales_surveys(height = 20,width = 100,nrwsl = 1)
 
 # combine
-all_boxes = bind_rows(df, df_2)
+all_boxes = bind_rows(df_1, df_2)
 
 # calculate groupwise whale number probabilities 
-probs = all_boxes %>%
+probs_whale = all_boxes %>%
   group_by(platform,n_whales,box_type)
   
 # calculate groupwise transit probabilities 
-probs2 = all_boxes %>%
+probs_transit = all_boxes %>%
   group_by(platform,n_whales,box_type) %>%
   summarize(
     n = seq(from = 1, to = 25, by = 1),
     p = 1-(1-transit_p)^n
   )
 
+df = readRDS('data/processed/box_surveys.rds')
+
 # probability of detecting at least one whale with increasing numbers of whales, 
 # per platform and box type
 ggplot()+
-  geom_path(data = probs, aes(x = n_whales, y = transit_p, color = platform))+
+  geom_path(data = df, aes(x = n_whales, y = transit_p, color = platform))+
   labs(x = 'number of whales', y = 'probability of detection')+
   facet_grid(~box_type)+
   theme_bw()+
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-# probability of detecting one whale with increasing numbers of transits, 
+# probability of detecting whales with increasing numbers of transits, 
 # per platform and box type
+
+probs = df %>%
+  group_by(platform,n_whales,box_type) %>%
+  summarize(
+    n = seq(from = 1, to = 25, by = 1),
+    p = 1-(1-transit_p)^n
+  )
+
 ggplot()+
-  geom_path(data=probs2,aes(x=n,y=p,color=platform, linetype = box_type))+
+  geom_path(data=probs,aes(x=n,y=p,color=platform, linetype = box_type))+
   facet_wrap(~n_whales)+
   labs(x='Number of transits', y = 'Probability of detection')+
   ylim(c(0,1))+

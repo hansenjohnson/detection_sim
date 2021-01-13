@@ -459,7 +459,7 @@ run_box_survey = function(height=18,width=12,platform='glider',nrws = 3,n_survey
   # complete a multiple transits of a given platform of a box containing nrws 
   
   # define radius
-  r = min(c(height,width))/2
+  #r = min(c(height,width))/2
   
   # define centered on zero
   xmin = 0-width/2
