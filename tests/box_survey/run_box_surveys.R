@@ -52,7 +52,7 @@ set.seed(123)
 
 # save and call
 #saveRDS(df, file = 'tests/fishing_box_surveys.rds')
-#df = readRDS('tests/fishing_box_surveys.rds')
+df_1 = readRDS('tests/fishing_box_surveys.rds')
 
 # run surveys for TC speed restriction zones 
 #DF_2 = vector('list', length = length(nrwsl))
@@ -70,7 +70,7 @@ set.seed(123)
 
 # save and call
 #saveRDS(df_2, file = 'tests/speed_box_surveys.rds')
-#df_2 = readRDS('tests/speed_box_surveys.rds')
+df_2 = readRDS('tests/speed_box_surveys.rds')
 
 # plot --------------------------------------------------------------------
 #df$type = paste(df$platform,df$behavior)
@@ -181,21 +181,20 @@ df = readRDS('data/processed/box_surveys.rds')
 # probability of detecting at least one whale with increasing numbers of whales, 
 # per platform and box type
 ggplot()+
-  geom_path(data = df, aes(x = n_whales, y = transit_p, color = platform))+
+  geom_path(data = tc, aes(x = n_whales, y = transit_p, color = platform))+
   labs(x = 'number of whales', y = 'probability of detection')+
-  facet_grid(~box_type)+
+  #facet_grid(~box_type)+
   theme_bw()+
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 # probability of detecting whales with increasing numbers of transits, 
 # per platform and box type
-
 probs = df %>%
   group_by(platform,n_whales,box_type) %>%
   summarize(
     n = seq(from = 1, to = 25, by = 1),
     p = 1-(1-transit_p)^n
-  )
+  ) %>% filter(n_whales %in% c(1,10,20))
 
 ggplot()+
   geom_path(data=probs,aes(x=n,y=p,color=platform, linetype = box_type))+
