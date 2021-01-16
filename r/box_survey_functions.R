@@ -230,7 +230,7 @@ rw_sims = function(nrws = 1e2,          # number of whales in simulation
   tic = Sys.time()
   
   # initial starting positions
-  ini = init_whales(nrws = nrws, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax)
+  ini = init_whales(nrws = nrws, xmin=xmin*1e3, xmax=xmax*1e3, ymin=ymin*1e3, ymax=ymax*1e3)
   
   if(run_parallel){
     # determine number of cores available to run function more efficiently
