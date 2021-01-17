@@ -236,7 +236,9 @@ rw_sims = function(nrws = 1e2,          # number of whales in simulation
     # determine number of cores available to run function more efficiently
     numCores = detectCores()
     
-    #message('Running in parallel with ', numCores, ' cores...')
+    if(!quiet){
+      message('Running in parallel with ', numCores, ' cores...')
+    }
     
     # model movements
     DF = mclapply(X = nseq, FUN = function(i){
@@ -450,8 +452,15 @@ reflect_rws = function(rws,ymax,ymin,xmax,xmin,verbose=FALSE){
     )
 }
 
-box_survey = function(height=18,width=12,platform='glider',nrws = 3,n_surveys=10,res=2.5,bh='feeding',include_data=F){
-  # complete a multiple transits of a given platform of a box containing nrws 
+box_survey = function(height = 18,
+                      width = 12,
+                      platform = 'glider',
+                      nrws = 3,
+                      res = 2.5,
+                      bh = 'feeding',
+                      include_data = F) {
+  
+  # simulate a transits of a given platform of a box containing nrws 
   
   # define radius
   r = min(c(height,width))/2
@@ -462,112 +471,112 @@ box_survey = function(height=18,width=12,platform='glider',nrws = 3,n_surveys=10
   ymin = 0-height/2
   ymax = 0+height/2
   
-  # allocate output
-  DF = vector('list', length = n_surveys)
-  for(ii in 1:n_surveys){
-    
-    # create survey track
-    trk = simulate_track(platform=platform,res=res,ymax,ymin,xmax,xmin)
-    max_time = max(trk$time,na.rm = T)
-    nhrs = ceiling(max_time/60/60)
-    
-    # simulate whales and reflect
-    rws = rw_sims(nrws = nrws, hrs = nhrs, bh=bh, dt = res, nt = res, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax) %>%
-      filter(time <= max_time) %>%
-      reflect_rws(.,ymax,ymin,xmax,xmin)
-    
-    # simulate detections
-    det_method = ifelse(platform %in% c('glider','buoy'), 'acoustic','visual')
-    det = simulate_detections(whale_df = rws, track_df = trk, det_method = det_method)
-    
-    if(!include_data){
-      # summarize results
-      DF[[ii]] = tibble(
-        run = ii,
-        platform = platform,
-        n_whales = nrws,
-        behavior = bh,
-        transit_time = nhrs,
-        transit_dist = sqrt((trk$x[nrow(trk)]-trk$x[1])^2 + (trk$y[nrow(trk)]-trk$y[1])^2),
-        n_available = nrow(det),
-        n_detected = nrow(filter(det,detected==1)),
-        detected = ifelse(n_detected>0,1,0)
-      )
-    } else {
-      # plot
-      rws$sid = paste0(rws$id, '_',rws$dive_index)
-      p = ggplot()+
-        geom_rect(aes(xmin=xmin,ymin=ymin,xmax=xmax,ymax=ymax),fill=NA,color='grey')+
-        geom_path(data=trk,aes(x=x,y=y),color='blue')+
-        geom_path(data=rws,aes(x=x,y=y,group=sid,color=surface))+
-        geom_point(data=filter(rws,call==1),aes(x=x,y=y),shape=1)+
-        geom_point(data=filter(det,detected==1), aes(x=x_wh,y=y_wh), shape = 21, fill = 'red')+
-        scale_color_manual(values = c('grey','black'))+
-        labs(x='Easting (km)',y='Northing (km)')+
-        coord_equal()+
-        theme_bw()+
-        theme(panel.grid = element_blank(), legend.position = "none")
-      
-      # summarize results
-      DF[[ii]] = tibble(
-        run = ii,
-        platform = platform,
-        n_whales = nrws,
-        behavior = bh,
-        transit_time = nhrs,
-        transit_dist = sqrt((trk$x[nrow(trk)]-trk$x[1])^2 + (trk$y[nrow(trk)]-trk$y[1])^2),
-        n_available = nrow(det),
-        n_detected = nrow(filter(det,detected==1)),
-        detected = ifelse(n_detected>0,1,0),
-        track_df = list(trk), # stores track dataframe in this column
-        whale_df = list(rws), # stores whale movement dataframe in this column
-        det_df = list(det),
-        plot = list(p)
-      )
-    }
-  }
+  # create survey track
+  trk = simulate_track(platform=platform,res=res,ymax,ymin,xmax,xmin)
+  max_time = max(trk$time,na.rm = T)
+  nhrs = ceiling(max_time/60/60)
   
-  # combine all
-  df = bind_rows(DF)
+  # simulate whales and reflect
+  rws = rw_sims(nrws = nrws, hrs = nhrs, bh=bh, dt = res, nt = res, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax) %>%
+    filter(time <= max_time) %>%
+    reflect_rws(.,ymax,ymin,xmax,xmin)
+  
+  # simulate detections
+  det_method = ifelse(platform %in% c('glider','buoy'), 'acoustic','visual')
+  det = simulate_detections(whale_df = rws, track_df = trk, det_method = det_method)
+  
+  if(!include_data){
+    # summarize results
+    df = tibble(
+      platform = platform,
+      n_whales = nrws,
+      behavior = bh,
+      transit_time = max_time,
+      transit_dist = sqrt((trk$x[nrow(trk)]-trk$x[1])^2 + (trk$y[nrow(trk)]-trk$y[1])^2),
+      n_available = nrow(det),
+      n_detected = nrow(filter(det,detected==1)),
+      detected = ifelse(n_detected>0,1,0)
+    )
+  } else {
+    # plot
+    rws$sid = paste0(rws$id, '_',rws$dive_index)
+    p = ggplot()+
+      geom_rect(aes(xmin=xmin,ymin=ymin,xmax=xmax,ymax=ymax),fill=NA,color='grey')+
+      geom_path(data=trk,aes(x=x,y=y),color='blue')+
+      geom_path(data=rws,aes(x=x,y=y,group=sid,color=surface))+
+      geom_point(data=filter(rws,call==1),aes(x=x,y=y),shape=1)+
+      geom_point(data=filter(det,detected==1), aes(x=x_wh,y=y_wh), shape = 21, fill = 'red')+
+      scale_color_manual(values = c('grey','black'))+
+      labs(x='Easting (km)',y='Northing (km)')+
+      coord_equal()+
+      theme_bw()+
+      theme(panel.grid = element_blank(), legend.position = "none")
+    
+    # summarize results
+    df = tibble(
+      platform = platform,
+      n_whales = nrws,
+      behavior = bh,
+      transit_time = nhrs,
+      transit_dist = sqrt((trk$x[nrow(trk)]-trk$x[1])^2 + (trk$y[nrow(trk)]-trk$y[1])^2),
+      n_available = nrow(det),
+      n_detected = nrow(filter(det,detected==1)),
+      detected = ifelse(n_detected>0,1,0),
+      track_df = list(trk), # stores track dataframe in this column
+      whale_df = list(rws), # stores whale movement dataframe in this column
+      det_df = list(det),
+      plot = list(p)
+    )
+  }
   
   return(df)
 }
 
-box_surveys = function(height=18,width=12,nrws = 3,n_surveys=10,bh='feeding'){
-  # complete a single transit of a given platform of a box containing nrws 
+box_surveys = function(platform = 'glider',
+                       height = 18,
+                       width = 12,
+                       nrws = 3,
+                       n_surveys = 10,
+                       bh = 'feeding',
+                       run_parallel = TRUE,
+                       include_data = FALSE) {
   
-  # run each platform
-  pln = box_survey(platform='plane',height=height,width=width,nrws=nrws,n_surveys=n_surveys,bh=bh)
-  ves = box_survey(platform='vessel',height=height,width=width,nrws=nrws,n_surveys=n_surveys,bh=bh)
-  gld = box_survey(platform='glider',height=height,width=width,nrws=nrws,n_surveys=n_surveys,bh=bh)
+  # complete multiple transits of a given platform of a box containing nrws 
   
-  # combine
-  df = rbind(pln,ves,gld)
+  # define transit sequence
+  nseq = seq(from = 1, to = n_surveys, by = 1)
   
-  # compute summary stats
-  out = df %>% group_by(platform) %>%
-    summarize(
-      n_whales = unique(n_whales),
-      behavior = unique(behavior),
-      transits = length(detected),
-      transit_time = mean(transit_time),
-      transit_dist = mean(transit_dist),
-      transits_with_detections = sum(detected),
-      transit_p = transits_with_detections/transits,
-      .groups = 'drop'
-    )
+  if(run_parallel){
+    # determine number of cores available to run function more efficiently
+    numCores = detectCores()
+    
+    # model transits
+    DF = mclapply(X = nseq, FUN = function(i){
+      box_survey(platform=platform,height=height,width=width,nrws=nrws,bh=bh,include_data=include_data)
+    }, mc.cores = numCores)
+    
+  } else {
+    
+    # model transits
+    DF = lapply(X = nseq, FUN = function(i){
+      box_survey(platform=platform,height=height,width=width,nrws=nrws,bh=bh,include_data=include_data)
+    })
+    
+  }
+  
+  # flatten list to combine all surveys
+  df = bind_rows(DF, .id = 'run')
   
   # print output stats
-  return(out)
+  return(df)
 }
 
-run_box_surveys = function(box_type = 'DFO',
-                           height = 18,
+run_box_surveys = function(height = 18,
                            width = 12,
                            n_surveys = 10,
-                           n_whales = c(1, 5, 10, 25, 50, 75)) {
-  
-  message('Simulating surveys of ', box_type, ' box')
+                           n_whales = c(1, 5, 10, 25, 50, 75),
+                           bh='feeding', 
+                           run_parallel=TRUE) {
   
   # record start time
   tic = Sys.time()
@@ -579,14 +588,40 @@ run_box_surveys = function(box_type = 'DFO',
   DF = vector('list', length = length(n_whales))
   for (ii in seq_along(n_whales)) {
     
-    # run survey
-    DF[[ii]] = box_surveys(
+    # run surveys for each platform
+    gld = box_surveys(
+      platform = 'glider',
       height = height,
       width = width,
       nrws = n_whales[ii],
-      n_surveys = n_surveys
-    ) %>%
-      mutate(box_type = box_type)
+      n_surveys = n_surveys,
+      bh = bh,
+      run_parallel = run_parallel,
+      include_data = FALSE
+    )
+    pln = box_surveys(
+      platform = 'plane',
+      height = height,
+      width = width,
+      nrws = n_whales[ii],
+      n_surveys = n_surveys,
+      bh = bh,
+      run_parallel = run_parallel,
+      include_data = FALSE
+    )
+    ves = box_surveys(
+      platform = 'vessel',
+      height = height,
+      width = width,
+      nrws = n_whales[ii],
+      n_surveys = n_surveys,
+      bh = bh,
+      run_parallel = run_parallel,
+      include_data = FALSE
+    )
+    
+    # combine and store
+    DF[[ii]] = bind_rows(gld, pln, ves)
     
     # update progress bar
     setTxtProgressBar(pb, ii)
@@ -603,5 +638,20 @@ run_box_surveys = function(box_type = 'DFO',
   message('Done!')
   message('Time elapsed: ', format(toc))
   
-  return(df)
+  # summarize results
+  out = df %>%
+    group_by(platform, n_whales) %>%
+    summarize(
+      platform = unique(platform),
+      n_whales = unique(n_whales),
+      behavior = unique(behavior),
+      transits = length(unique(run)),
+      transit_time = mean(transit_time),
+      transit_dist = mean(transit_dist),
+      transits_with_detections = sum(detected),
+      transit_p = transits_with_detections/transits,
+      .groups = 'drop'
+    )
+  
+  return(out)
 }
