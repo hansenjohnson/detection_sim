@@ -458,7 +458,8 @@ box_survey = function(height = 18,
                       nrws = 3,
                       res = 2.5,
                       bh = 'feeding',
-                      include_data = F) {
+                      include_data = FALSE,
+                      run_parallel = TRUE) {
   
   # simulate a transits of a given platform of a box containing nrws 
   
@@ -477,9 +478,20 @@ box_survey = function(height = 18,
   nhrs = ceiling(max_time/60/60)
   
   # simulate whales and reflect
-  rws = rw_sims(nrws = nrws, hrs = nhrs, bh=bh, dt = res, nt = res, xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax) %>%
+  rws = rw_sims(
+    nrws = nrws,
+    hrs = nhrs,
+    bh = bh,
+    dt = res,
+    nt = res,
+    xmin = xmin,
+    xmax = xmax,
+    ymin = ymin,
+    ymax = ymax,
+    run_parallel = run_parallel 
+  ) %>% 
     filter(time <= max_time) %>%
-    reflect_rws(.,ymax,ymin,xmax,xmin)
+    reflect_rws(., ymax, ymin, xmax, xmin)
   
   # simulate detections
   det_method = ifelse(platform %in% c('glider','buoy'), 'acoustic','visual')
@@ -538,28 +550,47 @@ box_surveys = function(platform = 'glider',
                        nrws = 3,
                        n_surveys = 10,
                        bh = 'feeding',
-                       run_parallel = TRUE,
+                       whales_parallel = FALSE,
+                       survey_parallel = TRUE,
                        include_data = FALSE) {
-  
   # complete multiple transits of a given platform of a box containing nrws 
+  if(whales_parallel & survey_parallel){
+    stop('Cannot process both whale tracks and surveys in parallel. Please choose one or the other.')
+  }
   
   # define transit sequence
   nseq = seq(from = 1, to = n_surveys, by = 1)
   
-  if(run_parallel){
+  if(survey_parallel){
     # determine number of cores available to run function more efficiently
     numCores = detectCores()
     
     # model transits
     DF = mclapply(X = nseq, FUN = function(i){
-      box_survey(platform=platform,height=height,width=width,nrws=nrws,bh=bh,include_data=include_data)
+      box_survey(
+        platform = platform,
+        height = height,
+        width = width,
+        nrws = nrws,
+        bh = bh,
+        include_data = include_data,
+        run_parallel = whales_parallel
+      )
     }, mc.cores = numCores)
     
   } else {
     
     # model transits
     DF = lapply(X = nseq, FUN = function(i){
-      box_survey(platform=platform,height=height,width=width,nrws=nrws,bh=bh,include_data=include_data)
+      box_survey(
+        platform = platform,
+        height = height,
+        width = width,
+        nrws = nrws,
+        bh = bh,
+        include_data = include_data,
+        run_parallel = whales_parallel
+      )
     })
     
   }
@@ -575,8 +606,10 @@ run_box_surveys = function(height = 18,
                            width = 12,
                            n_surveys = 10,
                            n_whales = c(1, 5, 10, 25, 50, 75),
-                           bh='feeding', 
-                           run_parallel=TRUE) {
+                           bh = 'feeding',
+                           whales_parallel = FALSE,
+                           survey_parallel = TRUE
+                           ) {
   
   # record start time
   tic = Sys.time()
@@ -596,7 +629,8 @@ run_box_surveys = function(height = 18,
       nrws = n_whales[ii],
       n_surveys = n_surveys,
       bh = bh,
-      run_parallel = run_parallel,
+      whales_parallel = whales_parallel,
+      survey_parallel = survey_parallel,
       include_data = FALSE
     )
     pln = box_surveys(
@@ -606,7 +640,8 @@ run_box_surveys = function(height = 18,
       nrws = n_whales[ii],
       n_surveys = n_surveys,
       bh = bh,
-      run_parallel = run_parallel,
+      whales_parallel = whales_parallel,
+      survey_parallel = survey_parallel,
       include_data = FALSE
     )
     ves = box_surveys(
@@ -616,7 +651,8 @@ run_box_surveys = function(height = 18,
       nrws = n_whales[ii],
       n_surveys = n_surveys,
       bh = bh,
-      run_parallel = run_parallel,
+      whales_parallel = whales_parallel,
+      survey_parallel = survey_parallel,
       include_data = FALSE
     )
     
