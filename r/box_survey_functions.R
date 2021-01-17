@@ -689,19 +689,19 @@ run_box_surveys = function(height = 18,
   message('Time elapsed: ', format(toc))
   
   # summarize results
-  out = df %>%
-    group_by(platform, n_whales) %>%
-    summarize(
-      platform = unique(platform),
-      n_whales = unique(n_whales),
-      behavior = unique(behavior),
-      transits = length(unique(run)),
-      transit_time = mean(transit_time),
-      transit_dist = mean(transit_dist),
-      transits_with_detections = sum(detected),
-      transit_p = transits_with_detections/transits,
-      .groups = 'drop'
-    )
+  # out = df %>%
+  #   group_by(platform, n_whales) %>%
+  #   summarize(
+  #     platform = unique(platform),
+  #     n_whales = unique(n_whales),
+  #     behavior = unique(behavior),
+  #     transits = length(unique(run)),
+  #     transit_time = mean(transit_time),
+  #     transit_dist = mean(transit_dist),
+  #     transits_with_detections = sum(detected),
+  #     transit_p = transits_with_detections/transits,
+  #     .groups = 'drop'
+  #   )
   
-  return(out)
+  return(df)
 }
