@@ -37,7 +37,7 @@ message('\n###############################')
 message('## NARW DETECTION SIMULATION ##')
 message('###############################\n')
 
-message('Current time: ', Sys.time(), ' (', Sys.timezone(), ')\n')
+message('Start time: ', Sys.time(), ' (', Sys.timezone(), ')\n')
 
 # run DFO simulation
 message('Running DFO simulation')
