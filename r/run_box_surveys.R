@@ -37,7 +37,7 @@ message('\n###############################')
 message('## NARW DETECTION SIMULATION ##')
 message('###############################\n')
 
-message('Current time: ', Sys.time(), '\n')
+message('Current time: ', Sys.time(), ' (', Sys.timezone(), ')\n')
 
 # run DFO simulation
 message('Running DFO simulation')
@@ -46,7 +46,8 @@ dfo = run_box_surveys(
   width = dfo_width,
   n_surveys = n_surveys,
   n_whales = n_whales,
-  run_parallel = TRUE
+  whales_parallel = FALSE,
+  survey_parallel = TRUE
 ) %>%
   mutate(box_type = 'DFO')
 
@@ -57,17 +58,18 @@ tc = run_box_surveys(
   width = tc_width,
   n_surveys = n_surveys,
   n_whales = n_whales,
-  run_parallel = TRUE
+  whales_parallel = FALSE,
+  survey_parallel = TRUE
 ) %>%
   mutate(box_type = 'TC')
 
 # combine output
-df = rbind(dfo, tc)
+df = bind_rows(dfo, tc)
 
 # save
 saveRDS(df, ofile)
 
-message('Data saved as: ', ofile)
+message('\nData saved as: ', ofile)
 
 message('\n#############################')
 message('## SIMULATION COMPLETE :)  ##')
