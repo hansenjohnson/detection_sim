@@ -37,6 +37,8 @@ message('\n###############################')
 message('## NARW DETECTION SIMULATION ##')
 message('###############################\n')
 
+message('Current time: ', Sys.time(), '\n')
+
 # run DFO simulation
 message('Running DFO simulation')
 dfo = run_box_surveys(
