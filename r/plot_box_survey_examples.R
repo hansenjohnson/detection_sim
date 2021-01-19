@@ -53,6 +53,7 @@ p = ggplot()+
   facet_grid(run~platform)+
   theme_bw()+
   theme(panel.grid = element_blank(), legend.position = "none")
+p
 
 # save plot
 ggsave('figures/box_survey_examples.png', p, height = 7, width = 5, units = 'in', dpi = 300)

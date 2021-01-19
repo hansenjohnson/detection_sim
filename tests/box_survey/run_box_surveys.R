@@ -26,7 +26,7 @@
 
 # setup -------------------------------------------------------------------
 
-source('tests/box_survey/box_survey_functions.R')
+source('r/box_survey_functions.R')
 
 library(tidyverse)
 #library(dplyr)
@@ -176,20 +176,20 @@ probs_transit = all_boxes %>%
     p = 1-(1-transit_p)^n
   )
 
-df = readRDS('data/processed/box_surveys.rds')
+kaos = readRDS('data/processed/box_surveys.rds')
 
 # probability of detecting at least one whale with increasing numbers of whales, 
 # per platform and box type
 ggplot()+
-  geom_path(data = tc, aes(x = n_whales, y = transit_p, color = platform))+
+  geom_path(data = kaos, aes(x = n_whales, y = transit_p, color = platform))+
   labs(x = 'number of whales', y = 'probability of detection')+
-  #facet_grid(~box_type)+
+  facet_grid(~box_type)+
   theme_bw()+
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 # probability of detecting whales with increasing numbers of transits, 
 # per platform and box type
-probs = df %>%
+probs = kaos %>%
   group_by(platform,n_whales,box_type) %>%
   summarize(
     n = seq(from = 1, to = 25, by = 1),
