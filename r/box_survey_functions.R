@@ -705,3 +705,25 @@ run_box_surveys = function(height = 18,
   
   return(df)
 }
+
+# calculate time or distance to first detection
+calc_first = function(x = time_first_det, y = transit_time){
+  
+  # pre-allocate variables
+  td = rep(NA, length(which(!is.na(x))))
+  cnt = 1
+  t = 0
+  
+  # calculate transit x
+  for(ii in 1:length(y)){
+    if(is.na(x[ii])){
+      t = t + y[ii]
+    } else {
+      td[cnt] = t + x[ii]
+      t = 0
+      cnt = cnt + 1
+    }
+  }
+  
+  return(mean(td, na.rm = TRUE))
+}
