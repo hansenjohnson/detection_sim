@@ -4,12 +4,10 @@
 # input -------------------------------------------------------------------
 
 # number of surveys to run for each combination of platform, n_whale, etc.
-#n_surveys = 100
-n_surveys = 10
+n_surveys = 1000
 
 # numbers of right whales in box
-#n_whales = c(seq(1, 10, 1), seq(15, 65, 5))
-n_whales = c(1,5,10,25)
+n_whales = c(seq(1, 10, 1), seq(15, 65, 5))
 
 # dimensions of TC box (km)
 tc_height = 20
@@ -39,31 +37,40 @@ message('\n###############################')
 message('## NARW DETECTION SIMULATION ##')
 message('###############################\n')
 
+message('Start time: ', Sys.time(), ' (', Sys.timezone(), ')\n')
+
 # run DFO simulation
+message('Running DFO simulation')
 dfo = run_box_surveys(
-  box_type = 'DFO',
   height = dfo_height,
   width = dfo_width,
+  n_surveys = n_surveys,
   n_whales = n_whales,
-  n_surveys = n_surveys
-)
+  whales_parallel = FALSE,
+  survey_parallel = TRUE
+) %>%
+  mutate(box_type = 'DFO')
 
 # run TC simulation
+message('\nRunning TC simulation')
 tc = run_box_surveys(
-  box_type = 'TC',
   height = tc_height,
   width = tc_width,
+  n_surveys = n_surveys,
   n_whales = n_whales,
-  n_surveys = n_surveys
-)
+  whales_parallel = FALSE,
+  survey_parallel = TRUE
+) %>%
+  mutate(box_type = 'TC')
 
 # combine output
-df = rbind(dfo, tc)
+df = bind_rows(dfo, tc)
 
 # save
 saveRDS(df, ofile)
 
+message('\nData saved as: ', ofile)
+
 message('\n#############################')
 message('## SIMULATION COMPLETE :)  ##')
 message('#############################\n')
-message('Data saved as: ', ofile)
