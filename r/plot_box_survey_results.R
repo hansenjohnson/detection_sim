@@ -12,6 +12,7 @@ platform_cols = c('glider' = 'blue', 'plane' = 'red', 'vessel' = 'darkslategrey'
 # process -----------------------------------------------------------------
 
 # read in simulated survey data
+# note that some lines for the TC box are missing (kaos crashed)
 df = readRDS('data/processed/box_surveys.rds')
 
 # compute summary statistics by platform, n_whales and box_type
@@ -31,7 +32,11 @@ out = df %>%
     .groups = 'drop'
   )
 
-# calculate probability by transits
+# separate by bpx_type to be able to plot in one graph 
+out_dfo = filter(out,box_type=="DFO")
+out_tc = filter(out,box_type=="TC")
+
+# calculate probability by transits for second plot
 probs = out %>%
   group_by(platform, n_whales, box_type) %>%
   summarize(
@@ -43,14 +48,22 @@ probs = out %>%
 # plot --------------------------------------------------------------------
 
 # plot p vs n_whales
-ggplot()+
-  geom_path(data=out,aes(x=n_whales,y=transit_p,color=platform,group=platform))+
-  facet_wrap(~box_type)+
+p = ggplot()+
+  geom_path(data=out_dfo,aes(x=n_whales,y=transit_p,color=platform,group=platform))+
+  geom_path(data=out_tc,aes(x=n_whales,y=transit_p,color=platform,group=platform),linetype="dashed")+
+  #facet_wrap(~box_type)+
   scale_color_manual(values = platform_cols)+
   labs(x = 'Number of whales', 
        y = 'Probability of detection per transit', 
        color = 'Platform')+
-  theme_bw()
+  theme_bw()+
+  theme(axis.line = element_line(colour = "black"), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        panel.border = element_blank())+
+legend(legend=c("DFO","TC"), title = "Box type")
+# save plot
+ggsave('figures/per_whales_box_surveys.png', p, height = 7, width = 5, units = 'in', dpi = 300)
 
 # plot p vs n_surveys
 prb = probs %>% filter(n_whales %in% c(1,3,5,10,25)) # choose subset to plot
@@ -70,7 +83,7 @@ ggplot()+
   scale_y_log10()+
   scale_color_manual(values = platform_cols)+
   labs(x = 'Number of whales', 
-       y = 'Time to first detection (min)', 
+       y = 'Time to first detection (log(min))', 
        color = 'Platform')+
   theme_bw()
 
