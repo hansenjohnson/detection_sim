@@ -707,6 +707,7 @@ run_box_surveys = function(height = 18,
 }
 
 # calculate time or distance to first detection
+# this is included in the new output 
 calc_first = function(x = time_first_det, y = transit_time){
   
   # pre-allocate variables

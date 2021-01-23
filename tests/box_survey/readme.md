@@ -1,5 +1,5 @@
 # README
-Overview of the box survey concept
+Overview of the box survey concept, as it was first being conceptualized. The final version ff the box surveys that were run 1000 times using the kaos computer are not under the "tests" folder, but the "r" folder.
 
 ## Goal
 
@@ -19,14 +19,14 @@ The modeling approach is to:
 
 ## Structure
 
-`box_survey_functions.R` - all of the code and functions to implement this analysis
+`old_box_survey_functions.R` - all of the code and functions to implement this analysis
 `box_survey_example.R` - simple worked examples / tests of most of the single steps and analysis components outlined above
-`run_box_surveys.R` - script to run larger analysis described in step 5 above. This will take a long time to run, and will save the summary table as output
+`old_run_box_surveys.R` - script to run larger analysis described in step 5 above. This will take a long time to run, and will save the summary table as output. Note that this script contains separate output for DFO boxes, TC boxes, and the kaos run, as all three were being tested separately while troubleshooting.
 
 ## Issues
 
 - All components need more testing
-- Whale position is initialized in a circle of a given radius within the box. This should eventually be updated so that whales are randomly placed within box
 - Not sure if 'reflecting' whales is the best way to keep them in the box, and/or if it introduces any issues/bias
 - I (HDJ) found an issue in the `rw_sim()` function where all whales were starting in a dive. I *think* I fixed this, but it's something to watch out for
+- The whales were started within the specified survey boxes, instead of a radius, but I (VC) forgot to switch to m, not km, so there was an error in the code that made for strange plots - HDJ fixed this
 
