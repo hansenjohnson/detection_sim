@@ -32,7 +32,7 @@ out = df %>%
     .groups = 'drop'
   )
 
-# separate by bpx_type to be able to plot in one graph 
+# separate by box_type to be able to plot in one graph 
 out_dfo = filter(out,box_type=="DFO")
 out_tc = filter(out,box_type=="TC")
 
