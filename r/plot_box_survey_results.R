@@ -49,19 +49,19 @@ probs = out %>%
 
 # plot p vs n_whales
 p = ggplot()+
-  geom_path(data=out_dfo,aes(x=n_whales,y=transit_p,color=platform,group=platform))+
-  geom_path(data=out_tc,aes(x=n_whales,y=transit_p,color=platform,group=platform),linetype="dashed")+
-  #facet_wrap(~box_type)+
+  geom_path(data=out_dfo,aes(x=n_whales,y=transit_p,color=platform,group=platform,linetype=box_type))+
+  geom_path(data=out_tc,aes(x=n_whales,y=transit_p,color=platform,group=platform,linetype=box_type))+
   scale_color_manual(values = platform_cols)+
   labs(x = 'Number of whales', 
        y = 'Probability of detection per transit', 
-       color = 'Platform')+
+       color = 'Platform',
+       linetype = 'Zone')+
   theme_bw()+
   theme(axis.line = element_line(colour = "black"), 
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(), 
-        panel.border = element_blank())+
-legend(legend=c("DFO","TC"), title = "Box type")
+        panel.border = element_blank())
+
 # save plot
 ggsave('figures/per_whales_box_surveys.png', p, height = 7, width = 5, units = 'in', dpi = 300)
 
