@@ -31,13 +31,13 @@ df = rbind(gld, ves, pln)
 df$platform = factor(df$platform, levels = c('plane','vessel','glider'), ordered = TRUE)
 
 # extract plotting data
-whale_df = df %>% 
+whale_df = filter(df,run=="1") %>% 
   select(run, platform, whale_df) %>%
   unnest(whale_df)
-track_df = df %>% 
+track_df = filter(df,run=="1") %>% 
   select(run, platform, track_df) %>%
   unnest(track_df)
-det_df = df %>% 
+det_df = filter(df,run=="1") %>% 
   select(run, platform, det_df) %>%
   unnest(det_df)
 
@@ -50,9 +50,9 @@ p = ggplot()+
   scale_color_manual(values = c('grey','black'))+
   labs(x='Easting (km)',y='Northing (km)')+
   coord_equal(expand = F)+
-  facet_grid(run~platform)+
+  facet_grid(~platform)+
   theme_bw()+
-  theme(panel.grid = element_blank(), legend.position = "none")
+  theme(panel.grid = element_blank(), legend.position = "right")
 p
 
 # save plot

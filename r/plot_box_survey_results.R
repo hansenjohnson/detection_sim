@@ -45,6 +45,10 @@ probs = out %>%
     .groups = 'drop'
   )
 
+# separate by box_type to be able to plot in one graph 
+probs_dfo = filter(probs,box_type=="DFO")
+probs_tc = filter(probs,box_type=="TC")
+
 # plot --------------------------------------------------------------------
 
 # plot p vs n_whales
@@ -63,18 +67,29 @@ p = ggplot()+
         panel.border = element_blank())
 
 # save plot
-ggsave('figures/per_whales_box_surveys.png', p, height = 7, width = 5, units = 'in', dpi = 300)
+ggsave('figures/per_whales_box_surveys.png', p, height = 5, width = 5, units = 'in', dpi = 300)
 
 # plot p vs n_surveys
-prb = probs %>% filter(n_whales %in% c(1,3,5,10,25)) # choose subset to plot
-ggplot()+
-  geom_path(data=prb,aes(x=n,y=p,color=platform,group=platform))+
-  facet_grid(box_type~n_whales)+
+# choose subset to plot
+prb_dfo = probs_dfo %>% filter(n_whales %in% c(1,10,25))
+prb_tc = probs_tc %>% filter(n_whales %in% c(1,10,25))
+
+q = ggplot()+
+  geom_path(data=prb_dfo,aes(x=n,y=p,color=platform,group=platform,linetype=box_type))+
+  geom_path(data=prb_tc,aes(x=n,y=p,color=platform,group=platform,linetype=box_type))+
+  facet_grid(~n_whales)+
   scale_color_manual(values = platform_cols)+
   labs(x = 'Number of transits', 
        y = 'Probability of detection', 
-       color = 'Platform')+
-  theme_bw()
+       color = 'Platform',
+       linetype = 'Zone')+
+  theme_bw()+
+  theme(axis.line = element_line(colour = "black"), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank())
+
+# save plot
+ggsave('figures/per_transits_box_surveys.png', q, height = 5, width = 5, units = 'in', dpi = 300)
 
 # plot time to first detection
 ggplot()+
