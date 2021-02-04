@@ -49,6 +49,16 @@ probs = out %>%
 probs_dfo = filter(probs,box_type=="DFO")
 probs_tc = filter(probs,box_type=="TC")
 
+# calculate average transit times
+transit_times = df %>%
+  group_by(platform, box_type) %>%
+  summarize(
+    seconds = mean(transit_time, na.rm = T),
+    minutes = seconds/60,
+    hours = minutes/60,
+    .groups = 'drop'
+  )
+
 # plot --------------------------------------------------------------------
 
 # plot p vs n_whales
