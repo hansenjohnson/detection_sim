@@ -81,8 +81,8 @@ ggsave('figures/per_whales_box_surveys.png', p, height = 5, width = 5, units = '
 
 # plot p vs n_surveys
 # choose subset to plot
-prb_dfo = probs_dfo %>% filter(n_whales %in% c(1,10,25))
-prb_tc = probs_tc %>% filter(n_whales %in% c(1,10,25))
+prb_dfo = probs_dfo %>% filter(n_whales %in% c(1,10,25)) 
+prb_tc = probs_tc %>% filter(n_whales %in% c(1,10,25)) 
 
 q = ggplot()+
   geom_path(data=prb_dfo,aes(x=n,y=p,color=platform,group=platform,linetype=box_type))+

@@ -16,7 +16,7 @@ aco = tibble(
 
 # visual detection function
 vis = tibble(
-  r = seq(from = 0, to = 3, by = 0.1),
+  r = seq(from = 0, to = 30, by = 0.1),
   p = detection_function(x = r, L = 1, x0 = 1, k = -4.8),
   type = 'Visual'
 )
@@ -27,9 +27,15 @@ df = rbind(aco,vis)
 # same plot
 p1 = ggplot(df,aes(x=r,y=p,group=type,color=type))+
   geom_path()+
-  labs(x='Range (km)', y='Probability', color = 'Method')+
+  labs(x='Range (km)', y='Probability of detection', color = ' Method')+
   # scale_x_continuous(limits = c(0,30))+
-  theme_bw()
+  theme_bw()+
+  theme(axis.line = element_line(colour = "black"), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        panel.border = element_blank())
+# save plot
+ggsave('figures/detection_probability_curves.png', p1, height = 3, width = 6, units = 'in', dpi = 300)
 
 # faceted
 p2 = p1+facet_wrap(~type, scales = "free_x")

@@ -84,13 +84,14 @@ wh$call[wh$call == 1] = 'call'
 p2 = ggplot()+
   geom_path(data=wh, aes(x=x,y=y, group=dive_index,color=surface))+
   scale_color_manual(values = c('dive'='grey', 'surface'='black'))+
-  geom_point(data=filter(wh,call=='call'), aes(x=x,y=y,group=grp,fill=call), shape = 21)+
+  geom_point(data=filter(wh,call=='call'), aes(x=x,y=y,group=grp,fill=call), shape = 1, size=2)+
   scale_fill_manual(values = 'black')+
   coord_equal()+
   labs(x = 'Easting (km)', y = 'Northing (km)', fill = NULL, color = NULL)+
   theme_bw()+
-  theme(panel.grid = element_blank(), legend.position = 'bottom')
+  theme(panel.grid = element_blank(), legend.text=element_text(size=12), legend.position = 'bottom')
 p2
+ggsave('figures/one_whale_figure.png', p2, height = 7, width = 6, units = 'in', dpi = 300)
 
 # create animation
 anim = p + 
