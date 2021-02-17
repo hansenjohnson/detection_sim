@@ -102,7 +102,7 @@ q = ggplot()+
 ggsave('figures/per_transits_box_surveys.png', q, height = 5, width = 5, units = 'in', dpi = 300)
 
 # plot time to first detection
-ggplot()+
+r = ggplot()+
   geom_path(data=out,aes(x=n_whales,y=mean_time_first_det/60,color=platform,group=platform))+
   facet_wrap(~box_type)+
   scale_y_log10()+
@@ -110,15 +110,27 @@ ggplot()+
   labs(x = 'Number of whales', 
        y = 'Time to first detection (log(min))', 
        color = 'Platform')+
-  theme_bw()
+  theme_bw()+
+  theme(axis.line = element_line(colour = "black"), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank())
+
+# save plot
+ggsave('figures/t_first_det.png', r, height = 5, width = 5, units = 'in', dpi = 300)
 
 # plot distance to first detection
-ggplot()+
+s = ggplot()+
   geom_path(data=out,aes(x=n_whales,y=mean_dist_first_det,color=platform,group=platform))+
   facet_wrap(~box_type)+
   scale_y_log10(breaks = c(0.1,1,10,100,1000,10000), labels = c(0.1,1,10,100,1000,10000))+
   scale_color_manual(values = platform_cols)+
   labs(x = 'Number of whales', 
-       y = 'Distance to first detection (km)', 
+       y = 'Distance to first detection (log(km))', 
        color = 'Platform')+
-  theme_bw()
+  theme_bw()+
+  theme(axis.line = element_line(colour = "black"), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank())
+
+# save plot
+ggsave('figures/dist_first_det.png', s, height = 5, width = 5, units = 'in', dpi = 300)
