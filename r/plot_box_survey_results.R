@@ -32,6 +32,8 @@ out = df %>%
     .groups = 'drop'
   )
 
+# compute summary statistics of cues per whale
+
 # separate by box_type to be able to plot in one graph 
 out_dfo = filter(out,box_type=="DFO")
 out_tc = filter(out,box_type=="TC")
@@ -40,7 +42,7 @@ out_tc = filter(out,box_type=="TC")
 probs = out %>%
   group_by(platform, n_whales, box_type) %>%
   summarize(
-    n = seq(from = 1, to = 25, by = 1),
+    n = seq(from = 1, to = 70, by = 1),
     p = 1-(1-transit_p)^n,
     .groups = 'drop'
   )
@@ -81,8 +83,8 @@ ggsave('figures/per_whales_box_surveys.png', p, height = 5, width = 5, units = '
 
 # plot p vs n_surveys
 # choose subset to plot
-prb_dfo = probs_dfo %>% filter(n_whales %in% c(1,10,25)) 
-prb_tc = probs_tc %>% filter(n_whales %in% c(1,10,25)) 
+prb_dfo = probs_dfo %>% filter(n_whales %in% c(1,3,5,10)) 
+prb_tc = probs_tc %>% filter(n_whales %in% c(1,3,5,10)) 
 
 q = ggplot()+
   geom_path(data=prb_dfo,aes(x=n,y=p,color=platform,group=platform,linetype=box_type))+
@@ -134,3 +136,11 @@ s = ggplot()+
 
 # save plot
 ggsave('figures/dist_first_det.png', s, height = 5, width = 5, units = 'in', dpi = 300)
+
+# cite packages
+citation(package='tidyverse')
+citation(package='oce')
+citation(package='zoo')
+citation(package='ggplot2')
+citation()
+
