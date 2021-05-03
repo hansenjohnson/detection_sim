@@ -286,6 +286,8 @@ simulate_track = function(platform,res=2.5,ymax,ymin,xmax,xmin){
     spd = 51 # platform speed (m/s)
   } else if (platform == 'vessel'){
     spd = 4 
+  } else if (platform == 'rpas'){
+    spd = 41 
   } else {
     stop('Platform not recognized!')
   }
@@ -493,7 +495,7 @@ box_survey = function(height = 18,
   # simulate detections
   det_method = ifelse(platform %in% c('glider','buoy'), 'acoustic','visual')
   det = simulate_detections(whale_df = rws, track_df = trk, det_method = det_method)
-  
+
   # select only detections
   det_only = filter(det, detected == 1) 
   
