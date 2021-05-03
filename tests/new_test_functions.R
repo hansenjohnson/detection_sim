@@ -194,3 +194,29 @@ dfo = new_run_box_surveys(
   survey_parallel = TRUE
 ) %>%
   mutate(box_type = 'DFO')
+
+# save
+saveRDS(dfo, 'data/processed/new_box_surveys.rds')
+
+# process -----------------------------------------------------------------
+
+# read in simulated survey data
+# note that some lines for the TC box are missing (kaos crashed)
+df = readRDS('data/processed/new_box_surveys.rds')
+
+# compute summary statistics by platform, n_whales and box_type
+out = df %>%
+  group_by(platform, n_whales, box_type) %>%
+  summarize(
+    platform = unique(platform),
+    n_whales = unique(n_whales),
+    behavior = unique(behavior),
+    transits = length(unique(run)),
+    mean_transit_time = mean(transit_time),
+    mean_transit_dist = mean(transit_dist),
+    mean_time_first_det = calc_first(x = time_first_det, y = transit_time),
+    mean_dist_first_det = calc_first(x = dist_first_det, y = transit_dist),
+    transits_with_detections = sum(detected),
+    transit_p = transits_with_detections/transits,
+    .groups = 'drop'
+  )
