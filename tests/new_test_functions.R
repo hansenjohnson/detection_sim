@@ -195,17 +195,10 @@ dfo = new_run_box_surveys(
 ) %>%
   mutate(box_type = 'DFO')
 
-# save
-saveRDS(dfo, 'data/processed/new_box_surveys.rds')
-
 # process -----------------------------------------------------------------
 
-# read in simulated survey data
-# note that some lines for the TC box are missing (kaos crashed)
-df = readRDS('data/processed/new_box_surveys.rds')
-
 # compute summary statistics by platform, n_whales and box_type
-out = df %>%
+out = dfo %>%
   group_by(platform, n_whales, box_type) %>%
   summarize(
     platform = unique(platform),

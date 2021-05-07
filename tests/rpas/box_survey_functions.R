@@ -280,8 +280,10 @@ simulate_track = function(platform,res=2.5,ymax,ymin,xmax,xmin){
   # simulate a transit of a box by a given platform
   
   # assign speed based on platform
-  if(platform == 'glider'){
+  if(platform == 'glider_s'){
     spd = 0.1 # platform speed (m/s)
+  } else if (platform == 'glider_w'){
+    spd = 1.3 # platform speed (m/s)
   } else if (platform == 'plane'){
     spd = 51 # platform speed (m/s)
   } else if (platform == 'vessel'){
@@ -378,12 +380,19 @@ simulate_detections = function(whale_df = wh, track_df = trk, platform = 'glider
   df = left_join(whale_df, track_df, by='time', all.x=TRUE)
   df$r_wh = sqrt((df$x_wh-df$x_dt)^2 + (df$y_wh-df$y_dt)^2)
   
-  if(platform == 'glider'){
+  if(platform == 'glider_s'){
     # subset to only times with calls
     detections = df %>% filter(call==1) %>% select(-x_dt, -y_dt, -dive_index, -surface)
     # apply detection function to the call positions to extract probabilities of detection
     detections$p = detection_function(x = detections$r_wh, L = 1.045, x0 = 10, k = -0.3)
-  } else if(platform == 'plane'){
+  } 
+  else if(platform == 'glider_w'){
+    # subset to only times with whale at the surface
+    detections = df %>% filter(call==1) %>% select(-x_dt, -y_dt, -dive_index, -surface)
+    # apply detection function to the call positions to extract probabilities of detection
+    detections$p = detection_function(x = detections$r_wh, L = 1.045, x0 = 10, k = -0.3)
+  }
+    else if(platform == 'plane'){
     # subset to only times with whale at the surface
     detections = df %>% filter(surface==1) %>% select(-x_dt, -y_dt, -call)
     # apply detection function to the surfacing positions to extract probabilities of detection
@@ -650,8 +659,19 @@ run_box_surveys = function(height = 18,
   for (ii in seq_along(n_whales)) {
     
     # run surveys for each platform
-    gld = box_surveys(
-      platform = 'glider',
+    gld_s = box_surveys(
+      platform = 'glider_s',
+      height = height,
+      width = width,
+      nrws = n_whales[ii],
+      n_surveys = n_surveys,
+      bh = bh,
+      whales_parallel = whales_parallel,
+      survey_parallel = survey_parallel,
+      include_data = FALSE
+    )
+    gld_w = box_surveys(
+      platform = 'glider_w',
       height = height,
       width = width,
       nrws = n_whales[ii],
@@ -696,7 +716,7 @@ run_box_surveys = function(height = 18,
     )
     
     # combine and store
-    DF[[ii]] = bind_rows(gld, pln, ves, rpa)
+    DF[[ii]] = bind_rows(gld_s, gld_w, pln, ves, rpa)
     
     # update progress bar
     setTxtProgressBar(pb, ii)

@@ -43,7 +43,10 @@ df_plane$plot[[2]]
 # process -----------------------------------------------------------------
 
 # run surveys
-df = run_box_surveys(height = 18, width = 25, n_surveys = 5, n_whales = 50)
+df = run_box_surveys(height = 18, width = 25, n_surveys = 5, c(seq(1, 10, 1), seq(20, 60, 10)))
+
+# save
+saveRDS(df, 'data/processed/new_box_surveys.rds')
 
 # summarize
 out = df %>%
