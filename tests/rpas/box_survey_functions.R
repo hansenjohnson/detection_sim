@@ -279,17 +279,17 @@ rw_sims = function(nrws = 1e2,          # number of whales in simulation
 simulate_track = function(platform,res=2.5,ymax,ymin,xmax,xmin){
   # simulate a transit of a box by a given platform
   
-  # assign speed based on platform
-  if(platform == 'glider_s'){
-    spd = 0.1 # platform speed (m/s)
-  } else if (platform == 'glider_w'){
-    spd = 1.3 # platform speed (m/s)
+  # assign speed (m/s) based on platform
+  if(platform == 'slocum'){
+    spd = 0.1 
+  } else if (platform == 'wave'){
+    spd = 0.7 
   } else if (platform == 'plane'){
-    spd = 51 # platform speed (m/s)
+    spd = 51.4 
   } else if (platform == 'vessel'){
-    spd = 4 
+    spd = 4.1 
   } else if (platform == 'rpas'){
-    spd = 41 
+    spd = 41.2 
   } else {
     stop('Platform not recognized!')
   }
@@ -362,7 +362,7 @@ detection_function = function(x,L=1.045,x0=10,k=-0.3){
   return(y)
 }
 
-simulate_detections = function(whale_df = wh, track_df = trk, platform = 'glider'){
+simulate_detections = function(whale_df = wh, track_df = trk, platform = 'slocum'){
   # simulate detections of whales (from rw_sim) by a platform following a survey track (from simulate_track)
   
   # deal with missing id column for single whale
@@ -380,13 +380,13 @@ simulate_detections = function(whale_df = wh, track_df = trk, platform = 'glider
   df = left_join(whale_df, track_df, by='time', all.x=TRUE)
   df$r_wh = sqrt((df$x_wh-df$x_dt)^2 + (df$y_wh-df$y_dt)^2)
   
-  if(platform == 'glider_s'){
+  if(platform == 'slocum'){
     # subset to only times with calls
     detections = df %>% filter(call==1) %>% select(-x_dt, -y_dt, -dive_index, -surface)
     # apply detection function to the call positions to extract probabilities of detection
     detections$p = detection_function(x = detections$r_wh, L = 1.045, x0 = 10, k = -0.3)
   } 
-  else if(platform == 'glider_w'){
+  else if(platform == 'wave'){
     # subset to only times with whale at the surface
     detections = df %>% filter(call==1) %>% select(-x_dt, -y_dt, -dive_index, -surface)
     # apply detection function to the call positions to extract probabilities of detection
@@ -409,7 +409,7 @@ simulate_detections = function(whale_df = wh, track_df = trk, platform = 'glider
     detections$p = 0
     detections$p[detections$r_wh <= 0.175] = 1
   } else {
-    stop('Unknown platform! Please choose: glider, plane, vessel, or rpas')
+    stop('Unknown platform! Please choose: slocum, wave, plane, vessel, or rpas')
   }
   
   # generate a binomial distribution to see if each call/surfacing was detected using this probability
@@ -478,7 +478,7 @@ reflect_rws = function(rws,ymax,ymin,xmax,xmin,verbose=FALSE){
 
 box_survey = function(height = 18,
                       width = 12,
-                      platform = 'glider',
+                      platform = 'slocum',
                       nrws = 3,
                       res = 2.5,
                       bh = 'feeding',
@@ -581,7 +581,7 @@ box_survey = function(height = 18,
   return(df)
 }
 
-box_surveys = function(platform = 'glider',
+box_surveys = function(platform = 'slocum',
                        height = 18,
                        width = 12,
                        nrws = 3,
@@ -659,8 +659,8 @@ run_box_surveys = function(height = 18,
   for (ii in seq_along(n_whales)) {
     
     # run surveys for each platform
-    gld_s = box_surveys(
-      platform = 'glider_s',
+    slo = box_surveys(
+      platform = 'slocum',
       height = height,
       width = width,
       nrws = n_whales[ii],
@@ -670,8 +670,8 @@ run_box_surveys = function(height = 18,
       survey_parallel = survey_parallel,
       include_data = FALSE
     )
-    gld_w = box_surveys(
-      platform = 'glider_w',
+    wav = box_surveys(
+      platform = 'wave',
       height = height,
       width = width,
       nrws = n_whales[ii],
@@ -716,7 +716,7 @@ run_box_surveys = function(height = 18,
     )
     
     # combine and store
-    DF[[ii]] = bind_rows(gld_s, gld_w, pln, ves, rpa)
+    DF[[ii]] = bind_rows(slo, wav, pln, ves, rpa)
     
     # update progress bar
     setTxtProgressBar(pb, ii)
