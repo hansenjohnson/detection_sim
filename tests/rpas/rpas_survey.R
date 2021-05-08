@@ -43,10 +43,10 @@ df_plane$plot[[2]]
 # process -----------------------------------------------------------------
 
 # run surveys
-df = run_box_surveys(height = 18, width = 25, n_surveys = 5, c(seq(1, 10, 1), seq(20, 60, 10)))
+df = run_box_surveys(height = 18, width = 12, n_surveys = 10, n_whales = c(1,5,10,15,30,60))
 
 # save
-saveRDS(df, 'data/processed/new_box_surveys.rds')
+saveRDS(df, 'tests/rpas/surveys.rds')
 
 # summarize
 out = df %>%
@@ -65,3 +65,17 @@ out = df %>%
 
 # check 
 out
+
+# plot
+p = ggplot()+
+  geom_path(data=out,aes(x=n_whales,y=transit_p,color=platform,group=platform))+
+  scale_color_manual(values = c('slocum' = 'blue', 'plane' = 'red', 'vessel' = 'darkslategrey', 'wave' = 'cornsilk3', 'rpas' = 'purple'))+
+  labs(x = 'Number of whales', 
+       y = 'Probability of detection per transit', 
+       color = 'Platform')+
+  theme_bw()+
+  theme(axis.line = element_line(colour = "black"), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        panel.border = element_blank())
+p
