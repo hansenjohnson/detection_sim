@@ -60,6 +60,8 @@ out = df %>%
     transit_dist = mean(transit_dist),
     transits_with_detections = sum(detected),
     transit_p = transits_with_detections/transits,
+    det_per_time = sum(n_detected)/sum(transit_time),
+    det_per_dist = sum(n_detected)/sum(transit_dist),
     .groups = 'drop'
   )
 
@@ -79,3 +81,14 @@ p = ggplot()+
         panel.grid.minor = element_blank(), 
         panel.border = element_blank())
 p
+
+q = ggplot() +
+  geom_point(data=out,aes(x=det_per_time,y=det_per_dist,colour=platform,group=platform))+
+  labs(x = 'Detections per time (det/s)', 
+       y = 'Detections per distance (det/km)', 
+       color = 'Platform')+
+  theme_bw()+
+  theme(axis.line = element_line(colour = "black"), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        panel.border = element_blank())
