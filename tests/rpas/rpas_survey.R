@@ -92,3 +92,17 @@ q = ggplot() +
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(), 
         panel.border = element_blank())
+q
+
+# find the average det/time and det/dist, and det/cost for each platform
+averages = out %>%
+  group_by(platform) %>%
+  summarize(
+    platform = unique(platform),
+    avg_det_time = mean(det_per_time),
+    avg_det_dist = mean(det_per_dist),
+    .groups = 'drop'
+  )
+
+averages$avg_cost_hour = c(1592,NA,31.25,1350,NA)
+averages$avg_det_cost = (averages$avg_det_time*60*60)/averages$avg_cost_hour
