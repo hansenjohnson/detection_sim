@@ -100,18 +100,34 @@ q = ggplot() +
        y = 'Detections per distance (det/km)', 
        color = 'Platform')+
   facet_wrap(~n_whales)+
-  theme_bw()
+  theme_bw()+
+  theme(axis.line = element_line(colour = "black"), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank())
+
 q
 
-# find the average det/time and det/dist, and det/cost for each platform
-# averages = out %>%
-#   group_by(platform) %>%
-#   summarize(
-#     platform = unique(platform),
-#     avg_det_time = mean(det_per_time),
-#     avg_det_dist = mean(det_per_dist),
-#     .groups = 'drop'
-#   )
-# 
-# averages$avg_cost_hour = c(1592,NA,31.25,1350,NA)
-# averages$avg_det_cost = (averages$avg_det_time*60*60)/averages$avg_cost_hour
+#find the det/time and det/dist for each platform and whale combination
+metrics = out %>%
+  group_by(platform, n_whales) %>%
+  summarize(
+    platform = unique(platform),
+    n_whales = unique(n_whales),
+    det_per_time = mean_detections/mean_transit_time*60*60, # per hour
+    det_per_dist = mean_detections/mean_transit_dist,
+    cost_per_hour = NA,
+    .groups = 'drop'
+  )
+
+#find the cost/det for each platform and whale combination
+metrics_plane = metrics %>% filter(platform=='plane')
+metrics_plane$cost_per_hour = 1592
+metrics_rpas = metrics %>% filter(platform=='rpas')
+metrics_rpas$cost_per_hour = NA
+metrics_slocum = metrics %>% filter(platform=='slocum')
+metrics_slocum$cost_per_hour = 31.25
+metrics_vessel = metrics %>% filter(platform=='vessel')
+metrics_vessel$cost_per_hour = 1350
+
+metrics = bind_rows(metrics_plane,metrics_rpas, metrics_slocum, metrics_vessel)
+metrics$cost_per_det = metrics$cost_per_hour/metrics$det_per_time
