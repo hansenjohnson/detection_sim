@@ -113,13 +113,16 @@ metrics = out %>%
   summarize(
     platform = unique(platform),
     n_whales = unique(n_whales),
+    box_type = 'DFO',
+    mean_detections,
+    transit_p,
     det_per_time = mean_detections/mean_transit_time*60*60, # per hour
     det_per_dist = mean_detections/mean_transit_dist,
     cost_per_hour = NA,
     .groups = 'drop'
   )
 
-#find the cost/det for each platform and whale combination
+# add the cost per hour for every platform
 metrics_plane = metrics %>% filter(platform=='plane')
 metrics_plane$cost_per_hour = 1592
 metrics_rpas = metrics %>% filter(platform=='rpas')
@@ -129,5 +132,9 @@ metrics_slocum$cost_per_hour = 31.25
 metrics_vessel = metrics %>% filter(platform=='vessel')
 metrics_vessel$cost_per_hour = 1350
 
+# find the cost/det for each platform and whale combination
 metrics = bind_rows(metrics_plane,metrics_rpas, metrics_slocum, metrics_vessel)
 metrics$cost_per_det = metrics$cost_per_hour/metrics$det_per_time
+
+# delete cost per hour column
+metrics = metrics %>% subset(select = -cost_per_hour)
