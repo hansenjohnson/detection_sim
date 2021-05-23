@@ -534,8 +534,10 @@ box_survey = function(height = 18,
     # summarize results
     df = tibble(
       platform = platform,
+      whale_id = rws$id,
       n_whales = nrws,
       behavior = bh,
+      dive_index = rws$dive_index,
       transit_time = max_time,
       transit_dist = sqrt((trk$x[nrow(trk)]-trk$x[1])^2 + (trk$y[nrow(trk)]-trk$y[1])^2),
       n_available = nrow(det),
@@ -562,8 +564,10 @@ box_survey = function(height = 18,
     # summarize results
     df = tibble(
       platform = platform,
+      whale_id = rws$id,
       n_whales = nrws,
       behavior = bh,
+      dive_index = rws$dive_index,
       transit_time = nhrs,
       transit_dist = sqrt((trk$x[nrow(trk)]-trk$x[1])^2 + (trk$y[nrow(trk)]-trk$y[1])^2),
       n_available = nrow(det),
