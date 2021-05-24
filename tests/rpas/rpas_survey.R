@@ -29,7 +29,7 @@ if(!file.exists(ofile)){
   )
   
   # show plot
-  df_rpas$plot[[2]]
+  df_rpas$plot[[1]]
   
   # simulate plane surveys and return data
   df_plane = box_surveys(
@@ -48,7 +48,7 @@ if(!file.exists(ofile)){
   df_plane$plot[[2]]
   
   # run surveys
-  df = run_box_surveys(height = 18, width = 12, n_surveys = 10, n_whales = c(1,5,10,15,30,60))
+  df = run_box_surveys(height = 18, width = 12, n_surveys = 10, n_whales = c(1,5,10))
   
   # save
   saveRDS(df, 'tests/rpas/surveys.rds')

@@ -517,6 +517,28 @@ box_survey = function(height = 18,
   # simulate detections
   det = simulate_detections(whale_df = rws, track_df = trk, platform = platform)
   
+  # detections per surfacing
+  if('dive_index' %in% colnames(det)){
+    det = det %>%
+      mutate(
+        id = as.numeric(id),
+        detected = as.numeric(detected)
+      ) %>%
+      group_by(id,dive_index) %>%
+      summarize(
+        surface = unique(surface),
+        p = mean(p),
+        time = mean(time),
+        x_wh = mean(x_wh),
+        y_wh = mean(y_wh),
+        detected = sum(detected),
+        .groups = 'drop'
+      )
+    
+    # convert to binary (0,1) detection
+    det$detected[det$detected>0]=1
+  }
+  
   # select only detections
   det_only = filter(det, detected == 1) 
   
@@ -534,10 +556,8 @@ box_survey = function(height = 18,
     # summarize results
     df = tibble(
       platform = platform,
-      whale_id = rws$id,
       n_whales = nrws,
       behavior = bh,
-      dive_index = rws$dive_index,
       transit_time = max_time,
       transit_dist = sqrt((trk$x[nrow(trk)]-trk$x[1])^2 + (trk$y[nrow(trk)]-trk$y[1])^2),
       n_available = nrow(det),
@@ -564,10 +584,8 @@ box_survey = function(height = 18,
     # summarize results
     df = tibble(
       platform = platform,
-      whale_id = rws$id,
       n_whales = nrws,
       behavior = bh,
-      dive_index = rws$dive_index,
       transit_time = nhrs,
       transit_dist = sqrt((trk$x[nrow(trk)]-trk$x[1])^2 + (trk$y[nrow(trk)]-trk$y[1])^2),
       n_available = nrow(det),
