@@ -59,38 +59,38 @@ if(!file.exists(ofile)){
 # process -----------------------------------------------------------------
 
 # count detections per surfacing
-df_surf = df %>%
-  group_by(whale_id,dive_index) %>%
-  summarize(
-    run = unique(run),
-    platform = unique(platform),
-    whale_id = unique(whale_id),
-    n_whales = unique(n_whales),
-    behavior = unique(behavior),
-    dive_index = unique(dive_index),
-    transits = length(unique(run)),
-    mean_transit_time = mean(transit_time, na.rm = TRUE),
-    mean_transit_dist = mean(transit_dist, na.rm = TRUE),
-    n_detected,
-    detected = sum(detected)
-  )
+# df_surf = df %>%
+#   group_by(whale_id,dive_index) %>%
+#   summarize(
+#     run = unique(run),
+#     platform = unique(platform),
+#     whale_id = unique(whale_id),
+#     n_whales = unique(n_whales),
+#     behavior = unique(behavior),
+#     dive_index = unique(dive_index),
+#     transits = length(unique(run)),
+#     mean_transit_time = mean(transit_time, na.rm = TRUE),
+#     mean_transit_dist = mean(transit_dist, na.rm = TRUE),
+#     n_detected,
+#     detected = sum(detected)
+#   )
 
 # convert to binary (0,1) detection
-df_surf$detected[df_surf$detected>0]=1
+# df_surf$detected[df_surf$detected>0]=1
 
 # summarize
-out = df_surf %>%
+out = df %>%
   group_by(platform,n_whales) %>%
   summarize(
     platform = unique(platform),
     n_whales = unique(n_whales),
     behavior = unique(behavior),
-    transits,
+    transits = length(unique(run)),
     transits_with_detections = sum(detected),
     transit_p = transits_with_detections/transits,
-    mean_transit_time,
-    mean_transit_dist,
-    mean_detections = mean(sum(detected), na.rm = TRUE),
+    mean_transit_time = mean(transit_time, na.rm = TRUE),
+    mean_transit_dist = mean(transit_dist, na.rm = TRUE),
+    mean_detections = mean(n_detected, na.rm = TRUE),
     det_per_time = mean_detections/mean_transit_time*60*60, # per hour
     det_per_dist = mean_detections/mean_transit_dist,
     .groups = 'drop'
