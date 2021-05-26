@@ -282,8 +282,6 @@ simulate_track = function(platform,res=2.5,ymax,ymin,xmax,xmin){
   # assign speed (m/s) based on platform
   if(platform == 'slocum'){
     spd = 0.1 
-  } else if (platform == 'wave'){
-    spd = 0.7 
   } else if (platform == 'plane'){
     spd = 51.4 
   } else if (platform == 'vessel'){
@@ -386,12 +384,6 @@ simulate_detections = function(whale_df = wh, track_df = trk, platform = 'slocum
     # apply detection function to the call positions to extract probabilities of detection
     detections$p = detection_function(x = detections$r_wh, L = 1.045, x0 = 10, k = -0.3)
   } 
-  else if(platform == 'wave'){
-    # subset to only times with whale at the surface
-    detections = df %>% filter(call==1) %>% select(-x_dt, -y_dt, -dive_index, -surface)
-    # apply detection function to the call positions to extract probabilities of detection
-    detections$p = detection_function(x = detections$r_wh, L = 1.045, x0 = 10, k = -0.3)
-  }
     else if(platform == 'plane'){
     # subset to only times with whale at the surface
     detections = df %>% filter(surface==1) %>% select(-x_dt, -y_dt, -call)
@@ -521,22 +513,27 @@ box_survey = function(height = 18,
   if('dive_index' %in% colnames(det)){
     det = det %>%
       mutate(
-        id = as.numeric(id),
         detected = as.numeric(detected)
       ) %>%
       group_by(id,dive_index) %>%
       summarize(
         surface = unique(surface),
-        p = mean(p),
-        time = mean(time),
-        x_wh = mean(x_wh),
-        y_wh = mean(y_wh),
-        detected = sum(detected),
+        p = mean(p, na.rm = TRUE),
+        time = mean(time, na.rm = TRUE),
+        x_wh = mean(x_wh, na.rm = TRUE),
+        y_wh = mean(y_wh, na.rm = TRUE),
+        r_wh = mean(r_wh, na.rm = TRUE),
+        detected = sum(detected, na.rm = TRUE),
         .groups = 'drop'
-      )
+      ) %>%
+      select(id, x_wh, y_wh, time, dive_index, surface, r_wh, p, detected)
     
     # convert to binary (0,1) detection
     det$detected[det$detected>0]=1
+    
+    # convert back to character
+    det$detected = as.character(det$detected)
+    
   }
   
   # select only detections
@@ -545,7 +542,7 @@ box_survey = function(height = 18,
   # calculate time and distance to first detection
   if(nrow(det_only) > 0){
     time_first_det = min(det_only$time, na.rm = TRUE)
-    trk_ind = which(trk$time == time_first_det)
+    trk_ind = which.min(abs(trk$time - time_first_det))
     dist_first_det = sqrt((trk$x[trk_ind]-trk$x[1])^2 + (trk$y[trk_ind]-trk$y[1])^2)
   } else {
     time_first_det = NA
@@ -692,17 +689,6 @@ run_box_surveys = function(height = 18,
       survey_parallel = survey_parallel,
       include_data = FALSE
     )
-    wav = box_surveys(
-      platform = 'wave',
-      height = height,
-      width = width,
-      nrws = n_whales[ii],
-      n_surveys = n_surveys,
-      bh = bh,
-      whales_parallel = whales_parallel,
-      survey_parallel = survey_parallel,
-      include_data = FALSE
-    )
     pln = box_surveys(
       platform = 'plane',
       height = height,
@@ -738,7 +724,7 @@ run_box_surveys = function(height = 18,
     )
     
     # combine and store
-    DF[[ii]] = bind_rows(slo, wav, pln, ves, rpa)
+    DF[[ii]] = bind_rows(slo, pln, ves, rpa)
     
     # update progress bar
     setTxtProgressBar(pb, ii)
