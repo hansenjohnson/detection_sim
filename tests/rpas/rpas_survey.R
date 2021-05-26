@@ -51,7 +51,7 @@ if(!file.exists(ofile)){
   df = run_box_surveys(height = 18, width = 12, n_surveys = 10, n_whales = c(1,5,10,15,30,60))
   
   # save
-  saveRDS(df, 'tests/rpas/surveys.rds')
+  saveRDS(df, file = ofile)
 } else {
   df = readRDS(ofile)
 }
@@ -136,25 +136,20 @@ metrics = out %>%
     box_type = 'DFO',
     mean_detections,
     transit_p,
-    det_per_time = mean_detections/mean_transit_time*60*60, # per hour
+    det_per_hour = mean_detections/mean_transit_time*60*60, # per hour
     det_per_dist = mean_detections/mean_transit_dist,
     cost_per_hour = NA,
     .groups = 'drop'
   )
 
 # add the cost per hour for every platform
-metrics_plane = metrics %>% filter(platform=='plane')
-metrics_plane$cost_per_hour = 1592
-metrics_rpas = metrics %>% filter(platform=='rpas')
-metrics_rpas$cost_per_hour = NA
-metrics_slocum = metrics %>% filter(platform=='slocum')
-metrics_slocum$cost_per_hour = 31.25
-metrics_vessel = metrics %>% filter(platform=='vessel')
-metrics_vessel$cost_per_hour = 1350
+metrics$cost_per_hour = NA
+metrics$cost_per_hour[metrics$platform == 'plane'] = 1592
+metrics$cost_per_hour[metrics$platform == 'vessel'] = 1350
+metrics$cost_per_hour[metrics$platform == 'slocum'] = 31.25
 
-# find the cost/det for each platform and whale combination
-metrics = bind_rows(metrics_plane,metrics_rpas, metrics_slocum, metrics_vessel)
-metrics$cost_per_det = metrics$cost_per_hour/metrics$det_per_time
+# calculate cost per detection
+metrics$cost_per_det = metrics$cost_per_hour/metrics$det_per_hour
 
 # delete cost per hour column
-metrics = metrics %>% subset(select = -cost_per_hour)
+metrics = metrics %>% select(-cost_per_hour)
