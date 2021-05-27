@@ -540,14 +540,14 @@ box_survey = function(height = 18,
   det_only = filter(det, detected == 1) 
   
   # calculate time and distance to first detection
-  if(nrow(det_only) > 0){
-    time_first_det = min(det_only$time, na.rm = TRUE)
-    trk_ind = which.min(abs(trk$time - time_first_det))
-    dist_first_det = sqrt((trk$x[trk_ind]-trk$x[1])^2 + (trk$y[trk_ind]-trk$y[1])^2)
-  } else {
-    time_first_det = NA
-    dist_first_det = NA
-  }
+  # if(nrow(det_only) > 0){
+  #   time_first_det = min(det_only$time, na.rm = TRUE)
+  #   trk_ind = which.min(abs(trk$time - time_first_det))
+  #   dist_first_det = sqrt((trk$x[trk_ind]-trk$x[1])^2 + (trk$y[trk_ind]-trk$y[1])^2)
+  # } else {
+  #   time_first_det = NA
+  #   dist_first_det = NA
+  # }
   
   if(!include_data){
     # summarize results
@@ -559,9 +559,9 @@ box_survey = function(height = 18,
       transit_dist = sqrt((trk$x[nrow(trk)]-trk$x[1])^2 + (trk$y[nrow(trk)]-trk$y[1])^2),
       n_available = nrow(det),
       n_detected = nrow(filter(det,detected==1)),
-      detected = ifelse(n_detected>0,1,0),
-      time_first_det = time_first_det,
-      dist_first_det = dist_first_det,
+      detected = ifelse(n_detected>0,1,0)#,
+      #time_first_det = time_first_det,
+      #dist_first_det = dist_first_det,
     )
   } else {
     # plot
@@ -588,8 +588,8 @@ box_survey = function(height = 18,
       n_available = nrow(det),
       n_detected = nrow(filter(det,detected==1)),
       detected = ifelse(n_detected>0,1,0),
-      time_first_det = time_first_det,
-      dist_first_det = dist_first_det,
+      #time_first_det = time_first_det,
+      #dist_first_det = dist_first_det,
       track_df = list(trk), # stores track dataframe in this column
       whale_df = list(rws), # stores whale movement dataframe in this column
       det_df = list(det),
