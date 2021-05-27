@@ -58,26 +58,6 @@ if(!file.exists(ofile)){
 
 # process -----------------------------------------------------------------
 
-# count detections per surfacing
-# df_surf = df %>%
-#   group_by(whale_id,dive_index) %>%
-#   summarize(
-#     run = unique(run),
-#     platform = unique(platform),
-#     whale_id = unique(whale_id),
-#     n_whales = unique(n_whales),
-#     behavior = unique(behavior),
-#     dive_index = unique(dive_index),
-#     transits = length(unique(run)),
-#     mean_transit_time = mean(transit_time, na.rm = TRUE),
-#     mean_transit_dist = mean(transit_dist, na.rm = TRUE),
-#     n_detected,
-#     detected = sum(detected)
-#   )
-
-# convert to binary (0,1) detection
-# df_surf$detected[df_surf$detected>0]=1
-
 # summarize
 out = df %>%
   group_by(platform,n_whales) %>%
@@ -145,7 +125,7 @@ metrics = out %>%
 # add the cost per hour for every platform
 metrics$cost_per_hour = NA
 metrics$cost_per_hour[metrics$platform == 'plane'] = 1592
-metrics$cost_per_hour[metrics$platform == 'vessel'] = 1350
+metrics$cost_per_hour[metrics$platform == 'vessel'] = 700
 metrics$cost_per_hour[metrics$platform == 'slocum'] = 31.25
 
 # calculate cost per detection
