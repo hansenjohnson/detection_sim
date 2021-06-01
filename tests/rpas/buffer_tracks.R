@@ -43,8 +43,3 @@ plot(lines_sp, col="blue", add=TRUE)
 
 # extract area of buffer (km2)
 a = lines_buffer_sp@polygons[[1]]@area
-
-# add attribute (time column) to the spatial points object
-lines_df <- data.frame(time=c(trk$time))
-lines_spdf <- SpatialLinesDataFrame(lines_sp, data=lines_df)
-summary(lines_spdf)
