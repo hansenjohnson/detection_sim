@@ -6,6 +6,8 @@
 set.seed(123)
 source('tests/rpas/box_survey_functions.R')
 library(sf)
+library(sp)
+library(rgeos)
 
 # process -----------------------------------------------------------------
 
@@ -28,16 +30,19 @@ points_coords <- data.frame(x=trk$x,
 lines_sp <- SpatialLines(list(Lines(Line(points_coords), ID=1)))
 summary(lines_sp)
 # plot
-q <- plot(points_coords, col="red")
-q <- q + plot(lines_sp, col="blue", add=TRUE)
+plot(points_coords, col="red")
+plot(lines_sp, col="blue", add=TRUE)
 
 # buffer line and plot
-lines_buffer_sp <- gBuffer(lines_sp, width = 1)
-r <- plot(points_coords, col="red")
-r <- r + plot(lines_buffer_sp, border="red", lty="dashed", add=TRUE)
-r <- r + plot(lines_sp, col="blue", add=TRUE)
+lines_buffer_sp <- gBuffer(lines_sp, width = 1.5)
+plot(points_coords, col="red")
+plot(lines_buffer_sp, border="red", lty="dashed", add=TRUE)
+plot(lines_sp, col="blue", add=TRUE)
 
 # reintegrate into functions ----------------------------------------------
+
+# extract area of buffer (km2)
+a = lines_buffer_sp@polygons[[1]]@area
 
 # add attribute (time column) to the spatial points object
 lines_df <- data.frame(time=c(trk$time))
