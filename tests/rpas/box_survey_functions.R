@@ -468,6 +468,47 @@ reflect_rws = function(rws,ymax,ymin,xmax,xmin,verbose=FALSE){
     )
 }
 
+calculate_buffer = function(trk, platform, xmin, xmax, ymin, ymax, plot_check = FALSE){
+  
+  # assign buffer based on platform (~50% of platform total range, km)
+  if(platform == 'glider'){
+    bdist = 20 
+  } else if (platform == 'plane'){
+    bdist = 1.9 
+  } else if (platform == 'vessel'){
+    bdist = 1.9
+  } else if (platform == 'rpas'){
+    bdist = 0.088 
+  } else {
+    stop('Platform not recognized!')
+  }
+  
+  # make list of point coordinates from platform track line
+  points_coords = data.frame(x=trk$x, y=trk$y)
+  
+  # make a spatial lines object (turn coordinates into a line)
+  lines_sp = SpatialLines(list(Lines(Line(points_coords), ID=1)))
+  
+  # buffer line
+  lines_buffer_sp = gBuffer(lines_sp, width = bdist)
+  
+  # find extent of survey box and crop crop buffer to within box
+  ext = extent(xmin, xmax, ymin, ymax)
+  lines_buffer_sp_cropped = crop(x = lines_buffer_sp, y = ext)
+  
+  # extract area of buffer (km2)
+  a = lines_buffer_sp_cropped@polygons[[1]]@area
+  track_area = tibble(a)
+  
+  if(plot_check){
+    plot(ext)
+    plot(lines_buffer_sp, border="red", lty="dashed", add=TRUE)
+    plot(lines_buffer_sp_cropped, border="green", lwd = 3, add=TRUE)
+  }
+  
+  return(track_area)
+}
+
 box_survey = function(height = 18,
                       width = 12,
                       platform = 'slocum',
@@ -489,6 +530,9 @@ box_survey = function(height = 18,
   trk = simulate_track(platform=platform,res=res,ymax,ymin,xmax,xmin)
   max_time = max(trk$time,na.rm = T)
   nhrs = ceiling(max_time/60/60)
+  
+  # find area surveyed by survey track
+  area = calculate_buffer(trk,platform,xmin, xmax, ymin, ymax,plot_check = F)
   
   # simulate whales and reflect
   rws = rw_sims(
@@ -557,6 +601,7 @@ box_survey = function(height = 18,
       behavior = bh,
       transit_time = max_time,
       transit_dist = sqrt((trk$x[nrow(trk)]-trk$x[1])^2 + (trk$y[nrow(trk)]-trk$y[1])^2),
+      transit_area = area,
       n_available = nrow(det),
       n_detected = nrow(filter(det,detected==1)),
       detected = ifelse(n_detected>0,1,0)#,
@@ -585,6 +630,7 @@ box_survey = function(height = 18,
       behavior = bh,
       transit_time = nhrs,
       transit_dist = sqrt((trk$x[nrow(trk)]-trk$x[1])^2 + (trk$y[nrow(trk)]-trk$y[1])^2),
+      transit_area = area,
       n_available = nrow(det),
       n_detected = nrow(filter(det,detected==1)),
       detected = ifelse(n_detected>0,1,0),

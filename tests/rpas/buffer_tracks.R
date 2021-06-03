@@ -12,8 +12,14 @@ library(raster)
 
 # process -----------------------------------------------------------------
 
+# set up survey box area
+ymax = 18
+ymin = 0
+xmax = 12
+xmin = 0
+
 # create plane survey track
-trk = simulate_track(platform='plane',res=2.5,ymax=18,ymin=0,xmax=12,xmin=0)
+trk = simulate_track(platform='plane',res=2.5,ymax=ymax,ymin=ymin,xmax=xmax,xmin=xmin)
 
 # plot plane survey track
 p = ggplot()+
@@ -40,29 +46,31 @@ plot(points_coords, col="red")
 plot(lines_buffer_sp, border="red", lty="dashed", add=TRUE)
 plot(lines_sp, col="blue", add=TRUE)
 
-# reintegrate into functions ----------------------------------------------
-
 # extract area of buffer (km2)
 a = lines_buffer_sp@polygons[[1]]@area
+track_area = tibble(a)
 
+# find extent of survey box and crop crop buffer to within box
 ext = extent(xmin, xmax, ymin, ymax)
 crop(x = lines_buffer_sp, y = ext)
+
 # function ----------------------------------------------------------------
 
 # create plane survey track
 trk = simulate_track(platform='plane',res=2.5,ymax=18,ymin=0,xmax=12,xmin=0)
 
+# combine into function
 calculate_buffer = function(trk, platform, xmin, xmax, ymin, ymax, plot_check = FALSE){
   
-  # assign buffer based on platform (km)
+  # assign buffer based on platform (~50% of platform total range, km)
   if(platform == 'glider'){
     bdist = 20 
   } else if (platform == 'plane'){
-    bdist = 2 
+    bdist = 1.9 
   } else if (platform == 'vessel'){
-    bdist = 2
+    bdist = 1.9
   } else if (platform == 'rpas'){
-    bdist = 0.2 
+    bdist = 0.088 
   } else {
     stop('Platform not recognized!')
   }
@@ -73,23 +81,25 @@ calculate_buffer = function(trk, platform, xmin, xmax, ymin, ymax, plot_check = 
   # make a spatial lines object (turn coordinates into a line)
   lines_sp = SpatialLines(list(Lines(Line(points_coords), ID=1)))
 
-  # buffer line and plot
+  # buffer line
   lines_buffer_sp = gBuffer(lines_sp, width = bdist)
   
-  # crop to within box
+  # find extent of survey box and crop crop buffer to within box
   ext = extent(xmin, xmax, ymin, ymax)
   lines_buffer_sp_cropped = crop(x = lines_buffer_sp, y = ext)
   
   # extract area of buffer (km2)
   a = lines_buffer_sp_cropped@polygons[[1]]@area
-  
+  track_area = tibble(a)
+
   if(plot_check){
     plot(ext)
     plot(lines_buffer_sp, border="red", lty="dashed", add=TRUE)
     plot(lines_buffer_sp_cropped, border="green", lwd = 3, add=TRUE)
   }
   
-  return(a)
+  return(track_area)
 }
 
-calculate_buffer(trk, platform = 'plane', ymax=18, ymin=0, xmax=12, xmin=0, plot_check = T)
+# test function
+area = calculate_buffer(trk, platform = 'plane', xmin=0, xmax=12, ymin=0, ymax=18, plot_check = T)
