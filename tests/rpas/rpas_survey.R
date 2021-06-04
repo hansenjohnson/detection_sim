@@ -48,7 +48,8 @@ if(!file.exists(ofile)){
   df_plane$plot[[2]]
   
   # run surveys
-  df = run_box_surveys(height = 18, width = 12, n_surveys = 10, n_whales = c(1,5,10,15,30,60))
+  df = run_box_surveys(height = 18, width = 12, n_surveys = 10, n_whales = c(1,5,10,15,30,60), 
+                       whales_parallel = FALSE, survey_parallel = FALSE)
   
   # save
   saveRDS(df, file = ofile)

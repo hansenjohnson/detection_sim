@@ -472,10 +472,16 @@ reflect_rws = function(rws,ymax,ymin,xmax,xmin,verbose=FALSE){
     )
 }
 
-calculate_buffer = function(trk, platform, xmin, xmax, ymin, ymax, plot_check = FALSE){
+calculate_buffer = function(trk, 
+                            platform='slocum', 
+                            xmin=0, 
+                            xmax=12, 
+                            ymin=0, 
+                            ymax=18, 
+                            plot_check = FALSE){
   
   # assign buffer based on platform (~50% of platform total range, km)
-  if(platform == 'glider'){
+  if(platform == 'slocum'){
     bdist = 20 
   } else if (platform == 'plane'){
     bdist = 1.9 
@@ -499,10 +505,9 @@ calculate_buffer = function(trk, platform, xmin, xmax, ymin, ymax, plot_check = 
   # find extent of survey box and crop crop buffer to within box
   ext = extent(xmin, xmax, ymin, ymax)
   lines_buffer_sp_cropped = crop(x = lines_buffer_sp, y = ext)
-  
+
   # extract area of buffer (km2)
   a = lines_buffer_sp_cropped@polygons[[1]]@area
-  track_area = tibble(a)
   
   if(plot_check){
     plot(ext)
@@ -510,7 +515,7 @@ calculate_buffer = function(trk, platform, xmin, xmax, ymin, ymax, plot_check = 
     plot(lines_buffer_sp_cropped, border="green", lwd = 3, add=TRUE)
   }
   
-  return(track_area)
+  return(a)
 }
 
 box_survey = function(height = 18,
