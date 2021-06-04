@@ -7,6 +7,10 @@
 suppressPackageStartupMessages(library(tidyverse))
 suppressPackageStartupMessages(library(parallel))
 suppressPackageStartupMessages(library(zoo))
+suppressPackageStartupMessages(library(sf))
+suppressPackageStartupMessages(library(sp))
+suppressPackageStartupMessages(library(rgeos))
+suppressPackageStartupMessages(library(raster))
 
 # functions ---------------------------------------------------------------
 
@@ -380,23 +384,23 @@ simulate_detections = function(whale_df = wh, track_df = trk, platform = 'slocum
   
   if(platform == 'slocum'){
     # subset to only times with calls
-    detections = df %>% filter(call==1) %>% select(-x_dt, -y_dt, -dive_index, -surface)
+    detections = df %>% filter(call==1) %>% dplyr::select(-x_dt, -y_dt, -dive_index, -surface)
     # apply detection function to the call positions to extract probabilities of detection
     detections$p = detection_function(x = detections$r_wh, L = 1.045, x0 = 10, k = -0.3)
   } 
     else if(platform == 'plane'){
     # subset to only times with whale at the surface
-    detections = df %>% filter(surface==1) %>% select(-x_dt, -y_dt, -call)
+    detections = df %>% filter(surface==1) %>% dplyr::select(-x_dt, -y_dt, -call)
     # apply detection function to the surfacing positions to extract probabilities of detection
     detections$p = detection_function(x = detections$r_wh, L = 1, x0 = 1, k = -4.8)
   } else if(platform == 'vessel'){
     # subset to only times with whale at the surface
-    detections = df %>% filter(surface==1) %>% select(-x_dt, -y_dt, -call)
+    detections = df %>% filter(surface==1) %>% dplyr::select(-x_dt, -y_dt, -call)
     # apply detection function to the surfacing positions to extract probabilities of detection
     detections$p = detection_function(x = detections$r_wh, L = 1, x0 = 1, k = -4.8)
   } else if(platform == 'rpas'){
     # subset to only times with whale at the surface
-    detections = df %>% filter(surface==1) %>% select(-x_dt, -y_dt, -call)
+    detections = df %>% filter(surface==1) %>% dplyr::select(-x_dt, -y_dt, -call)
     # assume all whales at surface within the field of view are detected
     detections$p = 0
     detections$p[detections$r_wh <= 0.175] = 1
@@ -570,7 +574,7 @@ box_survey = function(height = 18,
         detected = sum(detected, na.rm = TRUE),
         .groups = 'drop'
       ) %>%
-      select(id, x_wh, y_wh, time, dive_index, surface, r_wh, p, detected)
+      dplyr::select(id, x_wh, y_wh, time, dive_index, surface, r_wh, p, detected)
     
     # convert to binary (0,1) detection
     det$detected[det$detected>0]=1
@@ -699,7 +703,7 @@ box_surveys = function(platform = 'slocum',
   
   # flatten list to combine all surveys
   df = bind_rows(DF, .id = 'run')
-  
+ 
   # print output stats
   return(df)
 }
