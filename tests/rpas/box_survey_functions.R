@@ -497,20 +497,23 @@ calculate_buffer = function(trk,
   points_coords = data.frame(x=trk$x, y=trk$y)
   
   # make a spatial lines object (turn coordinates into a line)
-  lines_sp = SpatialLines(list(Lines(Line(points_coords), ID=1)))
+  lines_sp = SpatialLines(list(Lines(Line(points_coords), ID=1)), 
+                          proj4string = CRS("+proj=laea +lat_0=45 +lon_0=-65 +datum=WGS84 +units=km"))
   
   # buffer line
-  lines_buffer_sp = gBuffer(lines_sp, width = bdist)
+  lines_buffer_sp = gBuffer(lines_sp, width = bdist, byid = TRUE)
+  lines_buffer_sp = gBuffer(lines_buffer_sp, width = 0, byid = TRUE) # avoid invalid geom error
   
   # find extent of survey box and crop crop buffer to within box
   ext = extent(xmin, xmax, ymin, ymax)
   lines_buffer_sp_cropped = crop(x = lines_buffer_sp, y = ext)
 
   # extract area of buffer (km2)
-  a = lines_buffer_sp_cropped@polygons[[1]]@area
+  a = area(lines_buffer_sp_cropped)
   
   if(plot_check){
     plot(ext)
+    plot(lines_sp, border="red", add=TRUE)
     plot(lines_buffer_sp, border="red", lty="dashed", add=TRUE)
     plot(lines_buffer_sp_cropped, border="green", lwd = 3, add=TRUE)
   }
