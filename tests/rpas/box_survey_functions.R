@@ -509,7 +509,13 @@ calculate_buffer = function(trk,
   lines_buffer_sp_cropped = crop(x = lines_buffer_sp, y = ext)
 
   # extract area of buffer (km2)
-  a = lines_buffer_sp_cropped@polygons[[1]]@area
+  if(class(lines_buffer_sp_cropped)=="SpatialPolygons"){
+    a = lines_buffer_sp_cropped@polygons[[1]]@area  
+  } else {
+    a = NA
+    message('Could not calculate area for ', platform, ' survey! Setting to NA...')
+  }
+  
   
   if(plot_check){
     plot(ext)
