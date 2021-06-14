@@ -509,7 +509,7 @@ calculate_buffer = function(trk,
   lines_buffer_sp_cropped = crop(x = lines_buffer_sp, y = ext)
 
   # extract area of buffer (km2)
-  a = area(lines_buffer_sp_cropped)
+  a = lines_buffer_sp_cropped@polygons[[1]]@area
   
   if(plot_check){
     plot(ext)
