@@ -50,7 +50,7 @@ if(!file.exists(ofile)){
   # run surveys
   df = run_box_surveys(height = 18, width = 12, n_surveys = 10, n_whales = c(1,5,10,15,30,60), 
                        whales_parallel = FALSE, survey_parallel = FALSE)
-  
+
   # save
   saveRDS(df, file = ofile)
 } else {
@@ -71,9 +71,8 @@ out = df %>%
     transit_p = transits_with_detections/transits,
     mean_transit_time = mean(transit_time, na.rm = TRUE),
     mean_transit_dist = mean(transit_dist, na.rm = TRUE),
+    mean_transit_area = mean(transit_area, na.rm = TRUE),
     mean_detections = mean(n_detected, na.rm = TRUE),
-    det_per_time = mean_detections/mean_transit_time*60*60, # per hour
-    det_per_dist = mean_detections/mean_transit_dist,
     .groups = 'drop'
   )
 
@@ -94,8 +93,25 @@ p = ggplot()+
         panel.border = element_blank())
 p
 
+#find the det/time and det/dist for each platform and whale combination
+metrics = out %>%
+  group_by(platform, n_whales) %>%
+  summarize(
+    platform = unique(platform),
+    n_whales = unique(n_whales),
+    box_type = 'DFO',
+    mean_detections,
+    transit_p,
+    det_per_hour = mean_detections/mean_transit_time*60*60, # per hour
+    det_per_dist = mean_detections/mean_transit_dist,
+    det_per_area = mean_detections/mean_transit_area, # per km squared per hour
+    det_area_time = mean_detections/mean_transit_area/mean_transit_time*60*60,
+    cost_per_hour = NA,
+    .groups = 'drop'
+  )
+
 q = ggplot() +
-  geom_point(data=out,aes(x=det_per_time,y=det_per_dist,shape=platform), size = 3)+
+  geom_point(data=metrics,aes(x=det_per_hour,y=det_per_dist,shape=platform), size = 3)+
   scale_shape_manual(values = c(1,2,3,4,5))+
   labs(x = 'Detections per time (det/hr)', 
        y = 'Detections per distance (det/km)', 
@@ -108,21 +124,6 @@ q = ggplot() +
 
 q
 
-#find the det/time and det/dist for each platform and whale combination
-metrics = out %>%
-  group_by(platform, n_whales) %>%
-  summarize(
-    platform = unique(platform),
-    n_whales = unique(n_whales),
-    box_type = 'DFO',
-    mean_detections,
-    transit_p,
-    det_per_hour = mean_detections/mean_transit_time*60*60, # per hour
-    det_per_dist = mean_detections/mean_transit_dist,
-    cost_per_hour = NA,
-    .groups = 'drop'
-  )
-
 # add the cost per hour for every platform
 metrics$cost_per_hour = NA
 metrics$cost_per_hour[metrics$platform == 'plane'] = 1592
@@ -133,4 +134,4 @@ metrics$cost_per_hour[metrics$platform == 'slocum'] = 31.25
 metrics$cost_per_det = metrics$cost_per_hour/metrics$det_per_hour
 
 # delete cost per hour column
-metrics = metrics %>% select(-cost_per_hour)
+metrics = metrics %>% dplyr::select(-cost_per_hour)
