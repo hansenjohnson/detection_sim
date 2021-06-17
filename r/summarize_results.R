@@ -1,5 +1,6 @@
-## rpas_survey ##
-# test to add rpas surveys
+## summarize_results ##
+# use df output from simulation run to get p and metrics
+# previously, 'rpas_survey.R' in test/rpas to add rpas surveys
 
 
 # input -------------------------------------------------------------------
@@ -135,3 +136,16 @@ metrics$cost_per_det = metrics$cost_per_hour/metrics$det_per_hour
 
 # delete cost per hour column
 metrics = metrics %>% dplyr::select(-cost_per_hour)
+
+r = ggplot() +
+  geom_point(data=metrics,aes(x=cost_per_det,y=det_per_area,shape=platform), size = 3)+
+  scale_shape_manual(values = c(1,2,3,4,5))+
+  labs(x = 'Cost per detection ($)', 
+       y = 'Detections per area (det/km^2)', 
+       color = 'Platform')+
+  facet_wrap(~n_whales)+
+  theme_bw()+
+  theme(axis.line = element_line(colour = "black"), 
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank())
+r
