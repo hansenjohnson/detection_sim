@@ -7,6 +7,10 @@
 suppressPackageStartupMessages(library(tidyverse))
 suppressPackageStartupMessages(library(parallel))
 suppressPackageStartupMessages(library(zoo))
+suppressPackageStartupMessages(library(sf))
+suppressPackageStartupMessages(library(sp))
+suppressPackageStartupMessages(library(rgeos))
+suppressPackageStartupMessages(library(raster))
 
 # functions ---------------------------------------------------------------
 
@@ -172,7 +176,7 @@ rw_sim = function(
   
   # bin whale movement wh by dive time
   df$dive_index = cut(x = df$time, breaks = unique(cyc$dive_time), labels = F, include.lowest = TRUE)
- 
+  
   # merge dfs to include dive cycle info in movement df
   df = left_join(x = df, y = cyc, by = 'dive_index')
   
@@ -182,18 +186,9 @@ rw_sim = function(
 init_whales = function(nrws=1e3, xmin, xmax, ymin, ymax){
   # initialize field of simulated whales within a box (km)
   
-  # dropping the points (assigns an angle between 0-2pi based on a specific radius and transforms that into range)
-  # calculate angles and ranges
-  #a = 2*pi*runif(n = nrws, min = 0, max = 1)
-  #r = radius*sqrt(runif(n = nrws, min = 0, max = 1))
-
-  # convert to xy
-  #x=r*cos(a)
-  #y=r*sin(a)
-  
   a = runif(n = nrws, min = xmin, max = xmax)
   b = runif(n = nrws, min = ymin, max = ymax)
-
+  
   # return data
   out = data.frame(x=round(a),y=round(b))
 }
@@ -279,15 +274,15 @@ rw_sims = function(nrws = 1e2,          # number of whales in simulation
 simulate_track = function(platform,res=2.5,ymax,ymin,xmax,xmin){
   # simulate a transit of a box by a given platform
   
-  # assign speed based on platform
-  if(platform == 'glider'){
-    spd = 0.1 # platform speed (m/s)
+  # assign speed (m/s) based on platform
+  if(platform == 'slocum'){
+    spd = 0.1 
   } else if (platform == 'plane'){
-    spd = 51 # platform speed (m/s)
+    spd = 51.4 
   } else if (platform == 'vessel'){
-    spd = 4 
+    spd = 4.1 
   } else if (platform == 'rpas'){
-    spd = 41 
+    spd = 41.2 
   } else {
     stop('Platform not recognized!')
   }
@@ -300,10 +295,6 @@ simulate_track = function(platform,res=2.5,ymax,ymin,xmax,xmin){
   yres = 0.1
   ys = seq(from = ymin, to = ymax, by = yres)
   
-  # move from top to bottom
-  #xres = 0.1
-  #xs = seq(from = xmin, to = xmax, by = xres)
-  
   # define start and end points
   wpts = tibble(
     x=c(xmax,xmin), 
@@ -311,13 +302,6 @@ simulate_track = function(platform,res=2.5,ymax,ymin,xmax,xmin){
     dist = 0,
     time = 0
   )
-  
-  #wpts = tibble(
-    #x=sample(xs, size=2, replace = F), 
-    #y=c(ymax,ymin),
-    #dist = 0,
-    #time = 0
-  #)
   
   # calculate travel distance
   wpts$dist[2] = sqrt((wpts$x[2]-wpts$x[1])^2 + (wpts$y[2]-wpts$y[1])^2)
@@ -335,10 +319,6 @@ simulate_track = function(platform,res=2.5,ymax,ymin,xmax,xmin){
   trk = full_join(tmp,wpts,by=c("x","y","time")) %>%
     transmute(x, y, time) %>%
     arrange(time)
-  
-  # remove times after last waypoint is reached
-  #trk = trk %>% filter(time<=max(wpts$time))
-  # if this step is not done, trk length may be > than wpts and this creates errors in na.approx
   
   # interpolate (finds x and y positions for the times in between the waypoints)
   trk$x = na.approx(trk$x)
@@ -360,7 +340,7 @@ detection_function = function(x,L=1.045,x0=10,k=-0.3){
   return(y)
 }
 
-simulate_detections = function(whale_df = wh, track_df = trk,det_method = 'acoustic'){
+simulate_detections = function(whale_df = wh, track_df = trk, platform = 'slocum'){
   # simulate detections of whales (from rw_sim) by a platform following a survey track (from simulate_track)
   
   # deal with missing id column for single whale
@@ -378,16 +358,30 @@ simulate_detections = function(whale_df = wh, track_df = trk,det_method = 'acous
   df = left_join(whale_df, track_df, by='time', all.x=TRUE)
   df$r_wh = sqrt((df$x_wh-df$x_dt)^2 + (df$y_wh-df$y_dt)^2)
   
-  if(det_method == 'acoustic'){
+  if(platform == 'slocum'){
     # subset to only times with calls
-    detections = df %>% filter(call==1) %>% select(-x_dt, -y_dt, -dive_index, -surface)
+    detections = df %>% filter(call==1) %>% dplyr::select(-x_dt, -y_dt, -dive_index, -surface)
     # apply detection function to the call positions to extract probabilities of detection
     detections$p = detection_function(x = detections$r_wh, L = 1.045, x0 = 10, k = -0.3)
-  } else if(det_method == 'visual'){
+  } 
+  else if(platform == 'plane'){
     # subset to only times with whale at the surface
-    detections = df %>% filter(surface==1) %>% select(-x_dt, -y_dt, -call)
+    detections = df %>% filter(surface==1) %>% dplyr::select(-x_dt, -y_dt, -call)
     # apply detection function to the surfacing positions to extract probabilities of detection
     detections$p = detection_function(x = detections$r_wh, L = 1, x0 = 1, k = -4.8)
+  } else if(platform == 'vessel'){
+    # subset to only times with whale at the surface
+    detections = df %>% filter(surface==1) %>% dplyr::select(-x_dt, -y_dt, -call)
+    # apply detection function to the surfacing positions to extract probabilities of detection
+    detections$p = detection_function(x = detections$r_wh, L = 1, x0 = 1, k = -4.8)
+  } else if(platform == 'rpas'){
+    # subset to only times with whale at the surface
+    detections = df %>% filter(surface==1) %>% dplyr::select(-x_dt, -y_dt, -call)
+    # assume all whales at surface within the field of view are detected
+    detections$p = 0
+    detections$p[detections$r_wh <= 0.175] = 1
+  } else {
+    stop('Unknown platform! Please choose: slocum, wave, plane, vessel, or rpas')
   }
   
   # generate a binomial distribution to see if each call/surfacing was detected using this probability
@@ -404,7 +398,7 @@ reflect_rw = function(rw,ymax,ymin,xmax,xmin,verbose=FALSE){
   
   f_all = f_ymax = f_ymin = f_xmax = f_xmin = 0
   while(f_all == 0){
-  # for when you don't know how many for loops you need
+    # for when you don't know how many for loops you need
     
     if(length(rw$y[rw$y>ymax])>0){
       rw$y[rw$y>ymax] = 2*ymax-rw$y[rw$y>ymax]  
@@ -436,7 +430,7 @@ reflect_rw = function(rw,ymax,ymin,xmax,xmin,verbose=FALSE){
     
     if(f_ymax == 1 & f_ymin == 1 & f_xmax == 1 & f_xmin == 1){
       f_all = 1
-    # only when all the sides are satisfied, the while loop stops because f_all is not 0 anymore
+      # only when all the sides are satisfied, the while loop stops because f_all is not 0 anymore
     }
   }
   
@@ -446,7 +440,7 @@ reflect_rw = function(rw,ymax,ymin,xmax,xmin,verbose=FALSE){
 
 reflect_rws = function(rws,ymax,ymin,xmax,xmin,verbose=FALSE){
   # contain multiple right whales within a box
-
+  
   rws %>%
     group_by(id) %>%
     summarize(
@@ -454,9 +448,63 @@ reflect_rws = function(rws,ymax,ymin,xmax,xmin,verbose=FALSE){
     )
 }
 
+calculate_buffer = function(trk, 
+                            platform='slocum', 
+                            xmin=0, 
+                            xmax=12, 
+                            ymin=0, 
+                            ymax=18, 
+                            plot_check = FALSE){
+  
+  # assign buffer based on platform (~50% of platform total range, km)
+  if(platform == 'slocum'){
+    bdist = 20 
+  } else if (platform == 'plane'){
+    bdist = 1.9 
+  } else if (platform == 'vessel'){
+    bdist = 1.9
+  } else if (platform == 'rpas'){
+    bdist = 0.088 
+  } else {
+    stop('Platform not recognized!')
+  }
+  
+  # make list of point coordinates from platform track line
+  points_coords = data.frame(x=trk$x, y=trk$y)
+  
+  # make a spatial lines object (turn coordinates into a line)
+  lines_sp = SpatialLines(list(Lines(Line(points_coords), ID=1)), 
+                          proj4string = CRS("+proj=laea +lat_0=45 +lon_0=-65 +datum=WGS84 +units=km"))
+  
+  # buffer line
+  lines_buffer_sp = gBuffer(lines_sp, width = bdist, byid = TRUE)
+  lines_buffer_sp = gBuffer(lines_buffer_sp, width = 0, byid = TRUE) # avoid invalid geom error
+  
+  # find extent of survey box and crop crop buffer to within box
+  ext = extent(xmin, xmax, ymin, ymax)
+  lines_buffer_sp_cropped = crop(x = lines_buffer_sp, y = ext)
+  
+  # extract area of buffer (km2)
+  if(class(lines_buffer_sp_cropped)=="SpatialPolygons"){
+    a = lines_buffer_sp_cropped@polygons[[1]]@area  
+  } else {
+    a = NA
+    message('Could not calculate area for ', platform, ' survey! Setting to NA...')
+  }
+  
+  if(plot_check){
+    plot(ext)
+    plot(lines_sp, border="red", add=TRUE)
+    plot(lines_buffer_sp, border="red", lty="dashed", add=TRUE)
+    plot(lines_buffer_sp_cropped, border="green", lwd = 3, add=TRUE)
+  }
+  
+  return(a)
+}
+
 box_survey = function(height = 18,
                       width = 12,
-                      platform = 'glider',
+                      platform = 'slocum',
                       nrws = 3,
                       res = 2.5,
                       bh = 'feeding',
@@ -476,6 +524,9 @@ box_survey = function(height = 18,
   max_time = max(trk$time,na.rm = T)
   nhrs = ceiling(max_time/60/60)
   
+  # find area surveyed by survey track
+  area = calculate_buffer(trk,platform,xmin, xmax, ymin, ymax,plot_check = F)
+  
   # simulate whales and reflect
   rws = rw_sims(
     nrws = nrws,
@@ -493,21 +544,37 @@ box_survey = function(height = 18,
     reflect_rws(., ymax, ymin, xmax, xmin)
   
   # simulate detections
-  det_method = ifelse(platform %in% c('glider','buoy'), 'acoustic','visual')
-  det = simulate_detections(whale_df = rws, track_df = trk, det_method = det_method)
-
+  det = simulate_detections(whale_df = rws, track_df = trk, platform = platform)
+  
+  # detections per surfacing
+  if('dive_index' %in% colnames(det)){
+    det = det %>%
+      mutate(
+        detected = as.numeric(detected)
+      ) %>%
+      group_by(id,dive_index) %>%
+      summarize(
+        surface = unique(surface),
+        p = mean(p, na.rm = TRUE),
+        time = mean(time, na.rm = TRUE),
+        x_wh = mean(x_wh, na.rm = TRUE),
+        y_wh = mean(y_wh, na.rm = TRUE),
+        r_wh = mean(r_wh, na.rm = TRUE),
+        detected = sum(detected, na.rm = TRUE),
+        .groups = 'drop'
+      ) %>%
+      dplyr::select(id, x_wh, y_wh, time, dive_index, surface, r_wh, p, detected)
+    
+    # convert to binary (0,1) detection
+    det$detected[det$detected>0]=1
+    
+    # convert back to character
+    det$detected = as.character(det$detected)
+    
+  }
+  
   # select only detections
   det_only = filter(det, detected == 1) 
-  
-  # calculate time and distance to first detection
-  if(nrow(det_only) > 0){
-    time_first_det = min(det_only$time, na.rm = TRUE)
-    trk_ind = which(trk$time == time_first_det)
-    dist_first_det = sqrt((trk$x[trk_ind]-trk$x[1])^2 + (trk$y[trk_ind]-trk$y[1])^2)
-  } else {
-    time_first_det = NA
-    dist_first_det = NA
-  }
   
   if(!include_data){
     # summarize results
@@ -517,11 +584,12 @@ box_survey = function(height = 18,
       behavior = bh,
       transit_time = max_time,
       transit_dist = sqrt((trk$x[nrow(trk)]-trk$x[1])^2 + (trk$y[nrow(trk)]-trk$y[1])^2),
+      transit_area = area,
       n_available = nrow(det),
       n_detected = nrow(filter(det,detected==1)),
-      detected = ifelse(n_detected>0,1,0),
-      time_first_det = time_first_det,
-      dist_first_det = dist_first_det,
+      detected = ifelse(n_detected>0,1,0)#,
+      #time_first_det = time_first_det,
+      #dist_first_det = dist_first_det,
     )
   } else {
     # plot
@@ -545,11 +613,12 @@ box_survey = function(height = 18,
       behavior = bh,
       transit_time = nhrs,
       transit_dist = sqrt((trk$x[nrow(trk)]-trk$x[1])^2 + (trk$y[nrow(trk)]-trk$y[1])^2),
+      transit_area = area,
       n_available = nrow(det),
       n_detected = nrow(filter(det,detected==1)),
       detected = ifelse(n_detected>0,1,0),
-      time_first_det = time_first_det,
-      dist_first_det = dist_first_det,
+      #time_first_det = time_first_det,
+      #dist_first_det = dist_first_det,
       track_df = list(trk), # stores track dataframe in this column
       whale_df = list(rws), # stores whale movement dataframe in this column
       det_df = list(det),
@@ -560,7 +629,7 @@ box_survey = function(height = 18,
   return(df)
 }
 
-box_surveys = function(platform = 'glider',
+box_surveys = function(platform = 'slocum',
                        height = 18,
                        width = 12,
                        nrws = 3,
@@ -625,7 +694,7 @@ run_box_surveys = function(height = 18,
                            bh = 'feeding',
                            whales_parallel = FALSE,
                            survey_parallel = TRUE
-                           ) {
+) {
   
   # record start time
   tic = Sys.time()
@@ -638,8 +707,8 @@ run_box_surveys = function(height = 18,
   for (ii in seq_along(n_whales)) {
     
     # run surveys for each platform
-    gld = box_surveys(
-      platform = 'glider',
+    slo = box_surveys(
+      platform = 'slocum',
       height = height,
       width = width,
       nrws = n_whales[ii],
@@ -671,9 +740,20 @@ run_box_surveys = function(height = 18,
       survey_parallel = survey_parallel,
       include_data = FALSE
     )
+    rpa = box_surveys(
+      platform = 'rpas',
+      height = height,
+      width = width,
+      nrws = n_whales[ii],
+      n_surveys = n_surveys,
+      bh = bh,
+      whales_parallel = whales_parallel,
+      survey_parallel = survey_parallel,
+      include_data = FALSE
+    )
     
     # combine and store
-    DF[[ii]] = bind_rows(gld, pln, ves)
+    DF[[ii]] = bind_rows(slo, pln, ves, rpa)
     
     # update progress bar
     setTxtProgressBar(pb, ii)
@@ -689,21 +769,6 @@ run_box_surveys = function(height = 18,
   toc = round(Sys.time()-tic, 2)
   message('Done!')
   message('Time elapsed: ', format(toc))
-  
-  # summarize results
-  # out = df %>%
-  #   group_by(platform, n_whales) %>%
-  #   summarize(
-  #     platform = unique(platform),
-  #     n_whales = unique(n_whales),
-  #     behavior = unique(behavior),
-  #     transits = length(unique(run)),
-  #     transit_time = mean(transit_time),
-  #     transit_dist = mean(transit_dist),
-  #     transits_with_detections = sum(detected),
-  #     transit_p = transits_with_detections/transits,
-  #     .groups = 'drop'
-  #   )
   
   return(df)
 }

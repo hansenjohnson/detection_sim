@@ -23,12 +23,12 @@ out = df %>%
     n_whales = unique(n_whales),
     behavior = unique(behavior),
     transits = length(unique(run)),
-    mean_transit_time = mean(transit_time),
-    mean_transit_dist = mean(transit_dist),
-    mean_time_first_det = calc_first(x = time_first_det, y = transit_time),
-    mean_dist_first_det = calc_first(x = dist_first_det, y = transit_dist),
     transits_with_detections = sum(detected),
     transit_p = transits_with_detections/transits,
+    mean_transit_time = mean(transit_time, na.rm = TRUE),
+    mean_transit_dist = mean(transit_dist, na.rm = TRUE),
+    mean_transit_area = mean(transit_area, na.rm = TRUE),
+    mean_detections = mean(n_detected, na.rm = TRUE),
     .groups = 'drop'
   )
 
@@ -71,7 +71,7 @@ p = ggplot()+
   labs(x = 'Number of whales', 
        y = 'Probability of detection per transit', 
        color = 'Platform',
-       linetype = 'Zone')+
+       linetype = 'Domain')+
   theme_bw()+
   theme(axis.line = element_line(colour = "black"), 
         panel.grid.major = element_blank(), 
@@ -94,7 +94,7 @@ q = ggplot()+
   labs(x = 'Number of transits', 
        y = 'Probability of detection', 
        color = 'Platform',
-       linetype = 'Zone')+
+       linetype = 'Domain')+
   theme_bw()+
   theme(axis.line = element_line(colour = "black"), 
         panel.grid.major = element_blank(), 
@@ -104,38 +104,38 @@ q = ggplot()+
 ggsave('figures/per_transits_box_surveys.png', q, height = 5, width = 5, units = 'in', dpi = 300)
 
 # plot time to first detection
-r = ggplot()+
-  geom_path(data=out,aes(x=n_whales,y=mean_time_first_det/60,color=platform,group=platform))+
-  facet_wrap(~box_type)+
-  scale_y_log10()+
-  scale_color_manual(values = platform_cols)+
-  labs(x = 'Number of whales', 
-       y = 'Time to first detection (log(min))', 
-       color = 'Platform')+
-  theme_bw()+
-  theme(axis.line = element_line(colour = "black"), 
-        panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank())
-
-# save plot
-ggsave('figures/t_first_det.png', r, height = 5, width = 5, units = 'in', dpi = 300)
+# r = ggplot()+
+#   geom_path(data=out,aes(x=n_whales,y=mean_time_first_det/60,color=platform,group=platform))+
+#   facet_wrap(~box_type)+
+#   scale_y_log10()+
+#   scale_color_manual(values = platform_cols)+
+#   labs(x = 'Number of whales', 
+#        y = 'Time to first detection (log(min))', 
+#        color = 'Platform')+
+#   theme_bw()+
+#   theme(axis.line = element_line(colour = "black"), 
+#         panel.grid.major = element_blank(), 
+#         panel.grid.minor = element_blank())
+# 
+# # save plot
+# ggsave('figures/t_first_det.png', r, height = 5, width = 5, units = 'in', dpi = 300)
 
 # plot distance to first detection
-s = ggplot()+
-  geom_path(data=out,aes(x=n_whales,y=mean_dist_first_det,color=platform,group=platform))+
-  facet_wrap(~box_type)+
-  scale_y_log10(breaks = c(0.1,1,10,100,1000,10000), labels = c(0.1,1,10,100,1000,10000))+
-  scale_color_manual(values = platform_cols)+
-  labs(x = 'Number of whales', 
-       y = 'Distance to first detection (log(km))', 
-       color = 'Platform')+
-  theme_bw()+
-  theme(axis.line = element_line(colour = "black"), 
-        panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank())
+# s = ggplot()+
+#   geom_path(data=out,aes(x=n_whales,y=mean_dist_first_det,color=platform,group=platform))+
+#   facet_wrap(~box_type)+
+#   scale_y_log10(breaks = c(0.1,1,10,100,1000,10000), labels = c(0.1,1,10,100,1000,10000))+
+#   scale_color_manual(values = platform_cols)+
+#   labs(x = 'Number of whales', 
+#        y = 'Distance to first detection (log(km))', 
+#        color = 'Platform')+
+#   theme_bw()+
+#   theme(axis.line = element_line(colour = "black"), 
+#         panel.grid.major = element_blank(), 
+#         panel.grid.minor = element_blank())
 
 # save plot
-ggsave('figures/dist_first_det.png', s, height = 5, width = 5, units = 'in', dpi = 300)
+# ggsave('figures/dist_first_det.png', s, height = 5, width = 5, units = 'in', dpi = 300)
 
 # cite packages
 citation(package='tidyverse')

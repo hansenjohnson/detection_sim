@@ -4,7 +4,7 @@
 # input -------------------------------------------------------------------
 
 # number of surveys to run for each combination of platform, n_whale, etc.
-n_surveys = 1000
+n_surveys = 10
 
 # numbers of right whales in box
 n_whales = c(seq(1, 10, 1), seq(15, 65, 5))
@@ -22,6 +22,7 @@ ofile = 'data/processed/box_surveys.rds'
 
 # setup -------------------------------------------------------------------
 
+set.seed(123)
 # read in functions
 source('r/box_survey_functions.R')
 
