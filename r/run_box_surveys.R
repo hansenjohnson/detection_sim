@@ -4,7 +4,7 @@
 # input -------------------------------------------------------------------
 
 # number of surveys to run for each combination of platform, n_whale, etc.
-n_surveys = 10
+n_surveys = 100
 
 # numbers of right whales in box
 n_whales = c(seq(1, 10, 1), seq(15, 65, 5))
