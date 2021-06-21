@@ -7,13 +7,18 @@ library(tidyverse)
 source('r/box_survey_functions.R')
 
 # define colors for each platform
-platform_cols = c('glider' = 'blue', 'plane' = 'red', 'vessel' = 'darkslategrey')
+platform_cols = c('Slocum glider' = 'blue', 'Aircraft' = 'red', 
+                  'Vessel' = 'darkslategrey', 'RPAS' = 'green')
 
 # process -----------------------------------------------------------------
 
 # read in simulated survey data
 # note that some lines for the TC box are missing (kaos crashed)
 df = readRDS('data/processed/box_surveys.rds')
+
+# change platform names for plotting
+df$platform = recode(df$platform, slocum = "Slocum glider", plane = "Aircraft", 
+                     vessel = "Vessel", rpas = "RPAS")
 
 # compute summary statistics by platform, n_whales and box_type
 out = df %>%

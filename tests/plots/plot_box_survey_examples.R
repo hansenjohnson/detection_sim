@@ -20,25 +20,30 @@ set.seed(1)
 # process -----------------------------------------------------------------
 
 # generate example data
-gld = box_surveys(height = height, width = width, platform = 'glider', nrws = nrws, n_surveys = n_surveys, include_data = TRUE)
+gld = box_surveys(height = height, width = width, platform = 'slocum', nrws = nrws, n_surveys = n_surveys, include_data = TRUE)
 ves = box_surveys(height = height, width = width, platform = 'vessel', nrws = nrws, n_surveys = n_surveys, include_data = TRUE)
 pln = box_surveys(height = height, width = width, platform = 'plane', nrws = nrws, n_surveys = n_surveys, include_data = TRUE)
+rpas = box_surveys(height = height, width = width, platform = 'rpas', nrws = nrws, n_surveys = n_surveys, include_data = TRUE)
 
 # combine
-df = rbind(gld, ves, pln)
+df = rbind(gld, ves, pln, rpas)
+
+# change platform names for plotting
+df$platform = recode(df$platform, slocum = "Slocum glider", plane = "Aircraft", 
+                     vessel = "Vessel", rpas = "RPAS")
 
 # define platform factor for plotting order
-df$platform = factor(df$platform, levels = c('plane','vessel','glider'), ordered = TRUE)
+df$platform = factor(df$platform, levels = c('Aircraft','Vessel','Slocum glider','RPAS'), ordered = TRUE)
 
 # extract plotting data
 whale_df = filter(df,run=="1") %>% 
-  select(run, platform, whale_df) %>%
+  dplyr::select(run, platform, whale_df) %>%
   unnest(whale_df)
 track_df = filter(df,run=="1") %>% 
-  select(run, platform, track_df) %>%
+  dplyr::select(run, platform, track_df) %>%
   unnest(track_df)
 det_df = filter(df,run=="1") %>% 
-  select(run, platform, det_df) %>%
+  dplyr::select(run, platform, det_df) %>%
   unnest(det_df)
 
 # plot
