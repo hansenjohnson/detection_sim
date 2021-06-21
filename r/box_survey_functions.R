@@ -7,7 +7,7 @@
 suppressPackageStartupMessages(library(tidyverse))
 suppressPackageStartupMessages(library(parallel))
 suppressPackageStartupMessages(library(zoo))
-suppressPackageStartupMessages(library(sf))
+# suppressPackageStartupMessages(library(sf))
 suppressPackageStartupMessages(library(sp))
 suppressPackageStartupMessages(library(rgeos))
 suppressPackageStartupMessages(library(raster))
