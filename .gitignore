@@ -14,15 +14,15 @@ figures
 wrk
 
 # files
-.rda
-.rds
-.csv
-.txt
-.png
-.jpg
-.mp4
-.gif
-.mov
-.pdf
-.xls
-.docx
+*.rda
+*.rds
+*.csv
+*.txt
+*.png
+*.jpg
+*.mp4
+*.gif
+*.mov
+*.pdf
+*.xls
+*.docx
