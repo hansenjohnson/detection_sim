@@ -19,12 +19,15 @@ Simulate and compare whale detection methods
 
 Currently set up to run remotely on "kaos" machine at Dal
 
-### kaos setup
+### Setup
 
 Install required packages:
 ```
 R -e "install.packages(c('tidyverse','parallel','zoo'), repos='https://cran.rstudio.com/')"
+R -e "install.packages(c('sp','rgeos','raster'), repos='https://cran.rstudio.com/')"
 ```
+
+### Processing
 
 Run over ssh:
 ```
@@ -42,3 +45,10 @@ nohup Rscript r/run_box_surveys.R &
 # kill process (only if necessary)
 kill -9 <PID>
 ```
+
+Transfer results:
+```
+rsync -rtv hansen@kaos:/home/hansen/Projects/detection_sim/nohup.out .
+rsync -rtv hansen@kaos:/home/hansen/Projects/detection_sim/data/processed/box_surveys.rds .
+```
+
