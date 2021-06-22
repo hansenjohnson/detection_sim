@@ -480,16 +480,24 @@ calculate_buffer = function(trk,
   lines_buffer_sp = gBuffer(lines_sp, width = bdist, byid = TRUE)
   lines_buffer_sp = gBuffer(lines_buffer_sp, width = 0, byid = TRUE) # avoid invalid geom error
   
-  # find extent of survey box and crop crop buffer to within box
-  ext = extent(xmin, xmax, ymin, ymax)
-  lines_buffer_sp_cropped = crop(x = lines_buffer_sp, y = ext)
-  
-  # extract area of buffer (km2)
-  if(class(lines_buffer_sp_cropped)=="SpatialPolygons"){
-    a = lines_buffer_sp_cropped@polygons[[1]]@area  
+  # check validity
+  if(gIsValid(lines_buffer_sp)){
+    
+    # find extent of survey box and crop crop buffer to within box
+    ext = extent(xmin, xmax, ymin, ymax)
+    lines_buffer_sp_cropped = crop(x = lines_buffer_sp, y = ext)
+    
+    # extract area of buffer (km2)
+    if(class(lines_buffer_sp_cropped)=="SpatialPolygons"){
+      a = lines_buffer_sp_cropped@polygons[[1]]@area  
+    } else {
+      a = NA
+      message('Could not calculate area for ', platform, ' survey! Setting area to NA...')
+    }
+    
   } else {
     a = NA
-    message('Could not calculate area for ', platform, ' survey! Setting to NA...')
+    message('Invalid buffer for ', platform, ' survey! Setting area to NA...')
   }
   
   if(plot_check){
