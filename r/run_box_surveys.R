@@ -38,19 +38,7 @@ message('\n###############################')
 message('## NARW DETECTION SIMULATION ##')
 message('###############################\n')
 
-message('Start time: ', Sys.time(), ' (', Sys.timezone(), ')\n')
-
-# run DFO simulation
-message('Running DFO simulation')
-dfo = run_box_surveys(
-  height = dfo_height,
-  width = dfo_width,
-  n_surveys = n_surveys,
-  n_whales = n_whales,
-  whales_parallel = FALSE,
-  survey_parallel = TRUE
-) %>%
-  mutate(box_type = 'DFO')
+message('Start time: ', Sys.time(), ' (', Sys.timezone(), ')')
 
 # run TC simulation
 message('\nRunning TC simulation')
@@ -63,6 +51,18 @@ tc = run_box_surveys(
   survey_parallel = TRUE
 ) %>%
   mutate(box_type = 'TC')
+
+# run DFO simulation
+message('\nRunning DFO simulation')
+dfo = run_box_surveys(
+  height = dfo_height,
+  width = dfo_width,
+  n_surveys = n_surveys,
+  n_whales = n_whales,
+  whales_parallel = FALSE,
+  survey_parallel = TRUE
+) %>%
+  mutate(box_type = 'DFO')
 
 # combine output
 df = bind_rows(dfo, tc)
