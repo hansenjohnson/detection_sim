@@ -15,10 +15,16 @@ library(tidyverse)
 # read in data
 df = readRDS(ifile)
 
+df$platform = recode(df$platform, slocum = "Slocum glider", plane = "Aircraft", 
+                     vessel = "Vessel", rpas = "RPAS")
+
 # pivot df for plotting
 dfl = df %>%
   pivot_longer(det_per_hour:cost_per_det, names_to = 'vars', values_to = 'vals') %>%
   dplyr::select(platform, n_whales, box_type, vars, vals)
+
+dfl$vars = recode(dfl$vars, cost_per_det = '$/det', det_area_time = 'det/km^2/hr', 
+                  det_per_area = 'det/km2', det_per_dist = 'det/km', det_per_hour = 'det/hr')
 
 # subset for plotting
 dfl_dfo = dfl %>% dplyr::filter(box_type == 'DFO')
@@ -28,8 +34,13 @@ dfl_tc = dfl %>% dplyr::filter(box_type == 'TC')
 p = ggplot()+
   geom_path(data = dfl_dfo, aes(x = n_whales, y = vals, group = platform, color = platform, linetype = box_type))+
   geom_path(data = dfl_tc, aes(x = n_whales, y = vals, group = platform, color = platform, linetype = box_type))+
+  labs(x='Number of whales', y='Performance metric value', color = ' Platforms', linetype = 'Domain')+
   facet_wrap(~vars, scales = 'free_y')+
-  theme_bw()
+  theme_bw()+
+  theme(axis.line = element_line(colour = "black"),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank(), 
+        panel.border = element_blank())
 
 # save
 ggsave(filename = ofile, plot = p, width = 8, height = 6, units = 'in', dpi = 300)
