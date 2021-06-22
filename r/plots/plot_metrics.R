@@ -23,9 +23,13 @@ dfl = df %>%
   pivot_longer(det_per_hour:cost_per_det, names_to = 'vars', values_to = 'vals') %>%
   dplyr::select(platform, n_whales, box_type, vars, vals)
 
-dfl$vars = recode(dfl$vars, cost_per_det = '$/det', det_area_time = 'det/km^2/hr', 
-                  det_per_area = 'det/km2', det_per_dist = 'det/km', det_per_hour = 'det/hr')
-
+# prepare metric labels for plotting
+my_labeller = as_labeller(c(cost_per_det="cost/det", 
+                            det_area_time="det/hr/km^2", 
+                            det_per_area="det/km^2",
+                            det_per_dist="det/km",
+                            det_per_hour="det/hr"),
+                           default = label_parsed)
 # subset for plotting
 dfl_dfo = dfl %>% dplyr::filter(box_type == 'DFO')
 dfl_tc = dfl %>% dplyr::filter(box_type == 'TC')
@@ -35,7 +39,7 @@ p = ggplot()+
   geom_path(data = dfl_dfo, aes(x = n_whales, y = vals, group = platform, color = platform, linetype = box_type))+
   geom_path(data = dfl_tc, aes(x = n_whales, y = vals, group = platform, color = platform, linetype = box_type))+
   labs(x='Number of whales', y='Performance metric value', color = ' Platforms', linetype = 'Domain')+
-  facet_wrap(~vars, scales = 'free_y')+
+  facet_wrap(~vars, scales = 'free_y', labeller=my_labeller)+
   theme_bw()+
   theme(axis.line = element_line(colour = "black"),
         panel.grid.major = element_blank(), 
