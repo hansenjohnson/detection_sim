@@ -48,7 +48,7 @@ tc = run_box_surveys(
   n_surveys = n_surveys,
   n_whales = n_whales,
   whales_parallel = FALSE,
-  survey_parallel = FALSE
+  survey_parallel = TRUE
 ) %>%
   mutate(box_type = 'TC')
 
