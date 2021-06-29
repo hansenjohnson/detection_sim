@@ -8,7 +8,7 @@ source('r/box_survey_functions.R')
 
 # define colors for each platform
 platform_cols = c('Slocum glider' = 'blue', 'Aircraft' = 'red', 
-                  'Vessel' = 'darkslategrey', 'RPAS' = 'green')
+                  'Vessel' = 'black', 'RPAS' = 'lightslategrey')
 
 # process -----------------------------------------------------------------
 

@@ -33,9 +33,13 @@ rpas = tibble(
 # combine
 df = rbind(aco,vis,rpas)
 
+platform_cols = c('Slocum gliders' = 'blue', 'Aircrafts and vessels' = 'red', 
+                  'RPAS' = 'slategrey')
+
 # same plot
 p = ggplot(df,aes(x=r,y=p, group = platform, color = platform))+
   geom_path()+
+  scale_color_manual(values = platform_cols)+
   labs(x='Range (km)', y='Probability of detection', color = ' Platforms')+
   facet_wrap(~type, scales='free_x')+
   theme_bw()+
