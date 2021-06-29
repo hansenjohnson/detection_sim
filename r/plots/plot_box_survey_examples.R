@@ -46,6 +46,18 @@ det_df = filter(df,run=="1") %>%
   dplyr::select(run, platform, det_df) %>%
   unnest(det_df)
 
+# prepare metric labels for plotting
+my_labeller = as_labeller(c(expression("Aircraft (",Delta,"t = 5 mins)"), 
+                            expression("Vessel (",Delta,"t = 1 hr)"), 
+                            expression("Slocum glider (",Delta,"t = 39 hrs)"),
+                            expression("RPAS (",Delta,"t = 6 mins)")),
+                          default = label_parsed)
+
+facet_labels = (c(expression("Aircraft ("*Delta*"t = 5 mins)"), 
+                  expression("Vessel ("*Delta*"t = 1 hr)"), 
+                  expression("Slocum glider ("*Delta*"t = 39 hrs)"),
+                  expression("RPAS ("*Delta*"t = 6 mins)")))
+
 # plot
 p = ggplot()+
   geom_path(data=track_df,aes(x=x,y=y),color='blue')+
@@ -55,7 +67,7 @@ p = ggplot()+
   scale_color_manual(values = c('grey','black'))+
   labs(x='Easting (km)',y='Northing (km)')+
   coord_equal(expand = F)+
-  facet_grid(~platform)+
+  facet_grid(~platform, labeller = my_labeller)+
   theme_bw()+
   theme(panel.grid = element_blank(), legend.position = "right")
 p
