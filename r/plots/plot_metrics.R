@@ -48,3 +48,20 @@ p = ggplot()+
 
 # save
 ggsave(filename = ofile, plot = p, width = 8, height = 6, units = 'in', dpi = 300)
+
+# make smaller tables with metrics for manuscript
+df_dfo = df %>% dplyr::filter(box_type== 'DFO', n_whales %in% c(1,10,30,60))
+df_dfo = df_dfo %>% 
+  dplyr::select(platform, n_whales, 
+                det_per_hour,det_per_dist, det_per_area, det_area_time, cost_per_det)
+metrics_dfo = data.frame(t(df_dfo))
+
+df_tc = df %>% dplyr::filter(box_type== 'TC', n_whales %in% c(1,10,30,60))
+df_tc = df_tc %>% 
+  dplyr::select(platform, n_whales, 
+                det_per_hour,det_per_dist, det_per_area, det_area_time, cost_per_det)
+metrics_tc = data.frame(t(df_tc))
+
+# save
+write.csv(metrics_dfo, 'data/processed/metrics_table_dfo.csv')
+write.csv(metrics_tc, 'data/processed/metrics_table_tc.csv')
