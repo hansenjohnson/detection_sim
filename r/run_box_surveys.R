@@ -4,7 +4,7 @@
 # input -------------------------------------------------------------------
 
 # number of surveys to run for each combination of platform, n_whale, etc.
-n_surveys = 100
+n_surveys = 1000
 
 # numbers of right whales in box
 n_whales = c(seq(1, 10, 1), seq(15, 65, 5))
@@ -47,8 +47,8 @@ tc = run_box_surveys(
   width = tc_width,
   n_surveys = n_surveys,
   n_whales = n_whales,
-  whales_parallel = FALSE,
-  survey_parallel = TRUE
+  whales_parallel = TRUE,
+  survey_parallel = FALSE
 ) %>%
   mutate(box_type = 'TC')
 
@@ -59,8 +59,8 @@ dfo = run_box_surveys(
   width = dfo_width,
   n_surveys = n_surveys,
   n_whales = n_whales,
-  whales_parallel = FALSE,
-  survey_parallel = TRUE
+  whales_parallel = TRUE,
+  survey_parallel = FALSE
 ) %>%
   mutate(box_type = 'DFO')
 
