@@ -29,11 +29,14 @@ rpas = box_surveys(height = height, width = width, platform = 'rpas', nrws = nrw
 df = rbind(gld, ves, pln, rpas)
 
 # change platform names for plotting
-df$platform = recode(df$platform, slocum = "Slocum glider", plane = "Aircraft", 
-                     vessel = "Vessel", rpas = "RPAS")
+df$platform = recode(df$platform, slocum = "Slocum glider (\u0394t = 39 hrs)", plane = "Aircraft (\u0394t = 5 mins)", 
+                     vessel = "Vessel (\u0394t = 1 hr)", rpas = "RPAS (\u0394t = 6 mins)")
 
 # define platform factor for plotting order
-df$platform = factor(df$platform, levels = c('Aircraft','Vessel','Slocum glider','RPAS'), ordered = TRUE)
+df$platform = factor(df$platform, levels = c("Aircraft (\u0394t = 5 mins)",
+                                             "Vessel (\u0394t = 1 hr)",
+                                             "Slocum glider (\u0394t = 39 hrs)",
+                                             "RPAS (\u0394t = 6 mins)"), ordered = TRUE)
 
 # extract plotting data
 whale_df = filter(df,run=="1") %>% 
@@ -46,18 +49,6 @@ det_df = filter(df,run=="1") %>%
   dplyr::select(run, platform, det_df) %>%
   unnest(det_df)
 
-# prepare metric labels for plotting
-my_labeller = as_labeller(c(expression("Aircraft (",Delta,"t = 5 mins)"), 
-                            expression("Vessel (",Delta,"t = 1 hr)"), 
-                            expression("Slocum glider (",Delta,"t = 39 hrs)"),
-                            expression("RPAS (",Delta,"t = 6 mins)")),
-                          default = label_parsed)
-
-facet_labels = (c(expression("Aircraft ("*Delta*"t = 5 mins)"), 
-                  expression("Vessel ("*Delta*"t = 1 hr)"), 
-                  expression("Slocum glider ("*Delta*"t = 39 hrs)"),
-                  expression("RPAS ("*Delta*"t = 6 mins)")))
-
 # plot
 p = ggplot()+
   geom_path(data=track_df,aes(x=x,y=y),color='blue')+
@@ -67,10 +58,10 @@ p = ggplot()+
   scale_color_manual(values = c('grey','black'))+
   labs(x='Easting (km)',y='Northing (km)')+
   coord_equal(expand = F)+
-  facet_grid(~platform, labeller = my_labeller)+
+  facet_grid(~platform)+
   theme_bw()+
   theme(panel.grid = element_blank(), legend.position = "right")
 p
 
 # save plot
-ggsave('figures/box_survey_examples.png', p, height = 7, width = 5, units = 'in', dpi = 300)
+ggsave('figures/box_survey_examples.png', p, height = 7, width = 8, units = 'in', dpi = 300)
