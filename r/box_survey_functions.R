@@ -456,13 +456,13 @@ calculate_buffer = function(trk,
                             ymax=18, 
                             plot_check = FALSE){
   
-  # assign buffer based on platform (~50% of platform total range, km)
+  # assign buffer based on platform (range at 50% detection probability, km)
   if(platform == 'slocum'){
-    bdist = 20 
+    bdist = 10 
   } else if (platform == 'plane'){
-    bdist = 1.9 
+    bdist = 1.5 
   } else if (platform == 'vessel'){
-    bdist = 1.9
+    bdist = 1.5
   } else if (platform == 'rpas'){
     bdist = 0.088 
   } else {
