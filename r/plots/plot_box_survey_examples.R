@@ -29,14 +29,14 @@ rpas = box_surveys(height = height, width = width, platform = 'rpas', nrws = nrw
 df = rbind(gld, ves, pln, rpas)
 
 # change platform names for plotting
-df$platform = recode(df$platform, slocum = "Slocum glider (\u0394t = 39 hrs)", plane = "Aircraft (\u0394t = 5 mins)", 
+df$platform = recode(df$platform, slocum = "Slocum glider (\u0394t = 39 hr)", plane = "Aircraft (\u0394t = 5 mins)", 
                      vessel = "Vessel (\u0394t = 1 hr)", rpas = "RPAS (\u0394t = 6 mins)")
 
 # define platform factor for plotting order
 df$platform = factor(df$platform, levels = c("Aircraft (\u0394t = 5 mins)",
+                                             "RPAS (\u0394t = 6 mins)",
                                              "Vessel (\u0394t = 1 hr)",
-                                             "Slocum glider (\u0394t = 39 hrs)",
-                                             "RPAS (\u0394t = 6 mins)"), ordered = TRUE)
+                                             "Slocum glider (\u0394t = 39 hr)"), ordered = TRUE)
 
 # extract plotting data
 whale_df = filter(df,run=="1") %>% 

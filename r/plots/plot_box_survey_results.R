@@ -20,6 +20,9 @@ df = readRDS('data/processed/box_surveys.rds')
 df$platform = recode(df$platform, slocum = "Slocum glider", plane = "Aircraft", 
                      vessel = "Vessel", rpas = "RPAS")
 
+# define platform factor for plotting order
+df$platform = factor(df$platform, levels = c("Aircraft", "RPAS", "Vessel", "Slocum glider"), ordered = TRUE)
+
 # compute summary statistics by platform, n_whales and box_type
 out = df %>%
   group_by(platform, n_whales, box_type) %>%
