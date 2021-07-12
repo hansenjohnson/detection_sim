@@ -10,6 +10,9 @@ ofile = 'figures/metrics.png'
 
 library(tidyverse)
 
+platform_cols = c('Slocum glider' = 'blue', 'Aircraft' = 'red', 
+                  'Vessel' = 'black', 'RPAS' = 'lightslategrey')
+
 # process -----------------------------------------------------------------
 
 # read in data
@@ -38,6 +41,7 @@ dfl_tc = dfl %>% dplyr::filter(box_type == 'TC')
 p = ggplot()+
   geom_path(data = dfl_dfo, aes(x = n_whales, y = vals, group = platform, color = platform, linetype = box_type))+
   geom_path(data = dfl_tc, aes(x = n_whales, y = vals, group = platform, color = platform, linetype = box_type))+
+  scale_color_manual(values = platform_cols)+
   labs(x='Number of whales', y='Performance metric value', color = ' Platforms', linetype = 'Domain')+
   facet_wrap(~vars, scales = 'free_y', labeller=my_labeller)+
   theme_bw()+
