@@ -37,10 +37,19 @@ my_labeller = as_labeller(c(cost_per_det="cost/det",
 dfl_dfo = dfl %>% dplyr::filter(box_type == 'DFO')
 dfl_tc = dfl %>% dplyr::filter(box_type == 'TC')
 
+# construct labels for each subplot
+plot_labs = dfl %>% 
+  dplyr::filter(!is.infinite(vals)) %>% # remove infinite cost
+  group_by(vars) %>% 
+  summarize(vals = max(vals, na.rm = TRUE)) %>%
+  mutate(label = c('a)', 'b)', 'c)', 'd)', 'e)'),
+         n_whales = 60) # set to 0 for left-justified letters
+
 # plot
 p = ggplot()+
   geom_path(data = dfl_dfo, aes(x = n_whales, y = vals, group = platform, color = platform, linetype = box_type))+
   geom_path(data = dfl_tc, aes(x = n_whales, y = vals, group = platform, color = platform, linetype = box_type))+
+  geom_text(data = plot_labs, aes(x = n_whales, y = vals, label = label)) +
   scale_color_manual(values = platform_cols)+
   labs(x='Number of whales', y='Performance metric value', color = ' Platforms', linetype = 'Domain')+
   facet_wrap(~vars, scales = 'free_y', labeller=my_labeller)+
