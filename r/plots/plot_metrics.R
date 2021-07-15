@@ -45,12 +45,27 @@ my_labeller = as_labeller(c(cost_per_det="C[d]",
 dfl_dfo = dfl %>% dplyr::filter(box_type == 'DFO')
 dfl_tc = dfl %>% dplyr::filter(box_type == 'TC')
 
+# construct labels for each subplot
+plot_labs_dfo = dfl_dfo %>% 
+  dplyr::filter(!is.infinite(vals)) %>% # remove infinite cost
+  group_by(vars) %>% 
+  summarize(vals = max(vals, na.rm = TRUE)) %>%
+  mutate(label = c('a)', 'b)', 'c)', 'd)', 'e)'),
+         n_whales = 60) # set to 0 for left-justified letters
+plot_labs_tc = dfl_tc %>% 
+  dplyr::filter(!is.infinite(vals)) %>% # remove infinite cost
+  group_by(vars) %>% 
+  summarize(vals = max(vals, na.rm = TRUE)) %>%
+  mutate(label = c('a)', 'b)', 'c)', 'd)', 'e)'),
+         n_whales = 60) # set to 0 for left-justified letters
+
 # plot
 p = ggplot()+
   geom_path(data = dfl_dfo, aes(x = n_whales, y = vals, group = platform, color = platform))+
+  geom_text(data = plot_labs_dfo, aes(x = n_whales, y = vals, label = label)) +
   scale_color_manual(values = platform_cols)+
   labs(x='Number of whales', y='Performance metric value', color = ' Platforms')+
-  facet_wrap(~vars, scales = 'free', labeller=my_labeller)+
+  facet_wrap(~vars, nrow=3, ncol=2, scales = 'free', labeller=my_labeller)+
   theme_bw()+
   theme(axis.line = element_line(colour = "black"),
         panel.grid.major = element_blank(), 
@@ -60,9 +75,10 @@ p
 
 q = ggplot()+
   geom_path(data = dfl_tc, aes(x = n_whales, y = vals, group = platform, color = platform))+
+  geom_text(data = plot_labs_tc, aes(x = n_whales, y = vals, label = label)) +
   scale_color_manual(values = platform_cols)+
   labs(x='Number of whales', y='Performance metric value', color = ' Platforms')+
-  facet_wrap(~vars, scales = 'free', labeller=my_labeller)+
+  facet_wrap(~vars, nrow=3, ncol=2, scales = 'free', labeller=my_labeller)+
   theme_bw()+
   theme(axis.line = element_line(colour = "black"),
         panel.grid.major = element_blank(), 
@@ -71,8 +87,8 @@ q = ggplot()+
 q
 
 # save
-ggsave(filename = 'figures/metrics_dfo.png', plot = p, width = 8, height = 6, units = 'in', dpi = 300)
-ggsave(filename = 'figures/metrics_tc.png', plot = q, width = 8, height = 6, units = 'in', dpi = 300)
+ggsave(filename = 'figures/metrics_dfo.png', plot = p, width = 6, height = 8, units = 'in', dpi = 300)
+ggsave(filename = 'figures/metrics_tc.png', plot = q, width = 6, height = 8, units = 'in', dpi = 300)
 
 # make smaller tables with metrics for manuscript
 df_dfo = df %>% dplyr::filter(box_type== 'DFO', n_whales %in% c(1,10,30,60))
