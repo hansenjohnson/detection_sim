@@ -77,7 +77,7 @@ p = ggplot()+
   geom_path(data=out_tc,aes(x=n_whales,y=transit_p,color=platform,group=platform,linetype=box_type))+
   scale_color_manual(values = platform_cols)+
   labs(x = 'Number of whales', 
-       y = 'Probability of detection per transit', 
+       y = expression(PD[t]*'(1)'), 
        color = 'Platform',
        linetype = 'Domain')+
   theme_bw()+
@@ -85,6 +85,7 @@ p = ggplot()+
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank(), 
         panel.border = element_blank())
+p
 
 # save plot
 ggsave('figures/per_whales_box_surveys.png', p, height = 5, width = 5, units = 'in', dpi = 300)
@@ -100,13 +101,14 @@ q = ggplot()+
   facet_grid(~n_whales)+
   scale_color_manual(values = platform_cols)+
   labs(x = 'Number of transits', 
-       y = 'Probability of detection', 
+       y = expression(PD[t]*'(n)'), 
        color = 'Platform',
        linetype = 'Domain')+
   theme_bw()+
   theme(axis.line = element_line(colour = "black"), 
         panel.grid.major = element_blank(), 
         panel.grid.minor = element_blank())
+q
 
 # save plot
 ggsave('figures/per_transits_box_surveys.png', q, height = 5, width = 5, units = 'in', dpi = 300)
