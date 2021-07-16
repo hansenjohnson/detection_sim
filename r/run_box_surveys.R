@@ -47,8 +47,8 @@ tc = run_box_surveys(
   width = tc_width,
   n_surveys = n_surveys,
   n_whales = n_whales,
-  whales_parallel = TRUE,
-  survey_parallel = FALSE
+  whales_parallel = FALSE,
+  survey_parallel = TRUE
 ) %>%
   mutate(box_type = 'TC')
 
@@ -59,8 +59,8 @@ dfo = run_box_surveys(
   width = dfo_width,
   n_surveys = n_surveys,
   n_whales = n_whales,
-  whales_parallel = TRUE,
-  survey_parallel = FALSE
+  whales_parallel = FALSE,
+  survey_parallel = TRUE
 ) %>%
   mutate(box_type = 'DFO')
 
