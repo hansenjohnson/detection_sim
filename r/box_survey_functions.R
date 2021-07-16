@@ -658,6 +658,11 @@ box_surveys = function(platform = 'slocum',
     # determine number of cores available to run function more efficiently
     numCores = detectCores()
     
+    # reset to not use all available cores on kaos
+    if(numCores == 24){
+      numCores = 12
+    }
+    
     # model transits
     DF = mclapply(X = nseq, FUN = function(i){
       box_survey(
