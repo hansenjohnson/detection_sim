@@ -4,6 +4,7 @@
 # setup -------------------------------------------------------------------
 
 library(tidyverse)
+library(ggpubr)
 source('r/box_survey_functions.R')
 
 # define colors for each platform
@@ -112,6 +113,11 @@ q
 
 # save plot
 ggsave('figures/per_transits_box_surveys.png', q, height = 5, width = 5, units = 'in', dpi = 300)
+
+# combine both plots into one and save
+r = ggarrange(p,q, ncol=2, nrow=1, common.legend=TRUE, labels = c('a)','b)'), legend = 'right')
+r
+ggsave('figures/box_surveys_results.png', r, height = 5, width = 10, units = 'in', dpi = 300)
 
 # plot time to first detection
 # r = ggplot()+
