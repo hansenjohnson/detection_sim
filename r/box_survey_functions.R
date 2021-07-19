@@ -464,7 +464,7 @@ calculate_buffer = function(trk,
   } else if (platform == 'vessel'){
     bdist = 1.5
   } else if (platform == 'rpas'){
-    bdist = 0.088 
+    bdist = 0.172 
   } else {
     stop('Platform not recognized!')
   }
