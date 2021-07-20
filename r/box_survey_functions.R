@@ -516,7 +516,6 @@ box_survey = function(height = 18,
                       nrws = 3,
                       res = 2.5,
                       bh = 'feeding',
-                      include_data = FALSE,
                       run_parallel = TRUE) {
   
   # simulate a transits of a given platform of a box containing nrws 
@@ -528,12 +527,12 @@ box_survey = function(height = 18,
   ymax = 0+height/2
   
   # create survey track
-  trk = simulate_track(platform=platform,res=res,ymax,ymin,xmax,xmin)
-  max_time = max(trk$time,na.rm = T)
+  trk = simulate_track(platform = platform, res = res, ymax, ymin, xmax, xmin)
+  max_time = max(trk$time, na.rm = T)
   nhrs = ceiling(max_time/60/60)
   
   # find area surveyed by survey track
-  area = calculate_buffer(trk,platform,xmin, xmax, ymin, ymax,plot_check = F)
+  area = calculate_buffer(trk, platform, xmin, xmax, ymin, ymax, plot_check = F)
   
   # simulate whales and reflect
   rws = rw_sims(
@@ -581,58 +580,18 @@ box_survey = function(height = 18,
     
   }
   
-  # select only detections
-  det_only = filter(det, detected == 1) 
-  
-  if(!include_data){
-    # summarize results
-    df = tibble(
-      platform = platform,
-      n_whales = nrws,
-      behavior = bh,
-      transit_time = max_time,
-      transit_dist = sqrt((trk$x[nrow(trk)]-trk$x[1])^2 + (trk$y[nrow(trk)]-trk$y[1])^2),
-      transit_area = area,
-      n_available = nrow(det),
-      n_detected = nrow(filter(det,detected==1)),
-      detected = ifelse(n_detected>0,1,0)#,
-      #time_first_det = time_first_det,
-      #dist_first_det = dist_first_det,
-    )
-  } else {
-    # plot
-    rws$sid = paste0(rws$id, '_',rws$dive_index)
-    p = ggplot()+
-      geom_rect(aes(xmin=xmin,ymin=ymin,xmax=xmax,ymax=ymax),fill=NA,color='grey')+
-      geom_path(data=trk,aes(x=x,y=y),color='blue')+
-      geom_path(data=rws,aes(x=x,y=y,group=sid,color=surface))+
-      geom_point(data=filter(rws,call==1),aes(x=x,y=y),shape=1)+
-      geom_point(data=filter(det,detected==1), aes(x=x_wh,y=y_wh), shape = 21, fill = 'red')+
-      scale_color_manual(values = c('grey','black'))+
-      labs(x='Easting (km)',y='Northing (km)')+
-      coord_equal()+
-      theme_bw()+
-      theme(panel.grid = element_blank(), legend.position = "none")
-    
-    # summarize results
-    df = tibble(
-      platform = platform,
-      n_whales = nrws,
-      behavior = bh,
-      transit_time = nhrs,
-      transit_dist = sqrt((trk$x[nrow(trk)]-trk$x[1])^2 + (trk$y[nrow(trk)]-trk$y[1])^2),
-      transit_area = area,
-      n_available = nrow(det),
-      n_detected = nrow(filter(det,detected==1)),
-      detected = ifelse(n_detected>0,1,0),
-      #time_first_det = time_first_det,
-      #dist_first_det = dist_first_det,
-      track_df = list(trk), # stores track dataframe in this column
-      whale_df = list(rws), # stores whale movement dataframe in this column
-      det_df = list(det),
-      plot = list(p)
-    )
-  }
+  # summarize results
+  df = tibble(
+    platform = platform,
+    n_whales = nrws,
+    behavior = bh,
+    transit_time = max_time,
+    transit_dist = sqrt((trk$x[nrow(trk)]-trk$x[1])^2 + (trk$y[nrow(trk)]-trk$y[1])^2),
+    transit_area = area,
+    n_available = nrow(det),
+    n_detected = nrow(filter(det,detected==1)),
+    detected = ifelse(n_detected>0,1,0)
+  )
   
   return(df)
 }
@@ -644,8 +603,7 @@ box_surveys = function(platform = 'slocum',
                        n_surveys = 10,
                        bh = 'feeding',
                        whales_parallel = FALSE,
-                       survey_parallel = TRUE,
-                       include_data = FALSE) {
+                       survey_parallel = TRUE) {
   # complete multiple transits of a given platform of a box containing nrws 
   if(whales_parallel & survey_parallel){
     stop('Cannot process both whale tracks and surveys in parallel. Please choose one or the other.')
@@ -658,11 +616,6 @@ box_surveys = function(platform = 'slocum',
     # determine number of cores available to run function more efficiently
     numCores = detectCores()
     
-    # reset to not use all available cores on kaos
-    if(numCores == 24){
-      numCores = 12
-    }
-    
     # model transits
     DF = mclapply(X = nseq, FUN = function(i){
       box_survey(
@@ -671,7 +624,6 @@ box_surveys = function(platform = 'slocum',
         width = width,
         nrws = nrws,
         bh = bh,
-        include_data = include_data,
         run_parallel = whales_parallel
       )
     }, mc.cores = numCores)
@@ -686,7 +638,6 @@ box_surveys = function(platform = 'slocum',
         width = width,
         nrws = nrws,
         bh = bh,
-        include_data = include_data,
         run_parallel = whales_parallel
       )
     })
@@ -719,6 +670,13 @@ run_box_surveys = function(height = 18,
   DF = vector('list', length = length(n_whales))
   for (ii in seq_along(n_whales)) {
     
+    # overwrite parallel behavior for too many whales
+    if(n_whales > 50 & survey_parallel){
+      message('Too many whales to run surveys in parallel! Switching to serial survey processing...')
+      survey_parallel = FALSE
+      whales_parallel = TRUE
+    }
+    
     # run surveys for each platform
     slo = box_surveys(
       platform = 'slocum',
@@ -728,8 +686,7 @@ run_box_surveys = function(height = 18,
       n_surveys = n_surveys,
       bh = bh,
       whales_parallel = whales_parallel,
-      survey_parallel = survey_parallel,
-      include_data = FALSE
+      survey_parallel = survey_parallel
     )
     pln = box_surveys(
       platform = 'plane',
@@ -739,8 +696,7 @@ run_box_surveys = function(height = 18,
       n_surveys = n_surveys,
       bh = bh,
       whales_parallel = whales_parallel,
-      survey_parallel = survey_parallel,
-      include_data = FALSE
+      survey_parallel = survey_parallel
     )
     ves = box_surveys(
       platform = 'vessel',
@@ -750,8 +706,7 @@ run_box_surveys = function(height = 18,
       n_surveys = n_surveys,
       bh = bh,
       whales_parallel = whales_parallel,
-      survey_parallel = survey_parallel,
-      include_data = FALSE
+      survey_parallel = survey_parallel
     )
     rpa = box_surveys(
       platform = 'rpas',
@@ -761,8 +716,7 @@ run_box_surveys = function(height = 18,
       n_surveys = n_surveys,
       bh = bh,
       whales_parallel = whales_parallel,
-      survey_parallel = survey_parallel,
-      include_data = FALSE
+      survey_parallel = survey_parallel
     )
     
     # combine and store
