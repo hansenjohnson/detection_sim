@@ -1,24 +1,20 @@
 ## f_site_map ##
 # site map of southern GSL
 
-# input -------------------------------------------------------------------
-
-# define focus of map limits (should be consistent with f_effort)
-fmin_lat = 47
-fmin_lon = -65.25
-fmax_lat = 48.75
-fmax_lon = -62.75
-
 # setup -------------------------------------------------------------------
 
-install.packages('rnaturalearthdata')
-install.packages('ggspatial')
 library(tidyverse)
 library(lubridate)
-library(rnaturalearth)
-library(ggspatial)
 library(sf)
+library(ggspatial)
 load('data/processed/map.rda')
+load('data/processed/dfo_tc_layers.rda')
+
+# define focus of map limits (should be consistent with f_effort)
+fmin_lat = 46
+fmin_lon = -67
+fmax_lat = 51
+fmax_lon = -58
 
 #  plot -------------------------------------------------------------------
 
@@ -44,25 +40,13 @@ p = ggplot()+
   scale_fill_brewer(palette = 'Blues') +
 
   # dynamic management zones
-  annotate('rect', xmin = -62.8, xmax = -62.6, ymin = 48.1, ymax = 48.3, 
-           color = 'orangered4', linetype = 1, fill = 'orangered') +
-  annotate('polygon', x = c(-65,-63.9,-63.9,-65), y = c(49.3,49.1,49.3,49.7), 
-           color = 'chartreuse4', linetype = 1, fill = 'chartreuse3', alpha=.5) +
-  annotate('polygon', x = c(-63.9,-62.9,-62.9,-63.9), y = c(49.1,48.8,49,49.3), 
-           color = 'chartreuse4', linetype = 1, fill = 'chartreuse3', alpha=.5) +
-  annotate('polygon', x = c(-62.9,-62,-62,-62.9), y = c(49,48.6,48.4,48.8), 
-           color = 'chartreuse4', linetype = 1, fill = 'chartreuse3') +
-  annotate('polygon', x = c(-62,-60.9,-61,-61.05,-61.1,-62), y = c(48.6,48.2,48,47.9,48.04,48.4), 
-           color = 'chartreuse4', linetype = 1, fill = 'chartreuse3', alpha=.5) +
-  annotate('polygon', x = c(-64,-63,-63,-64), y = c(50.3,50.3,49.9,50), 
-           color = 'chartreuse4', linetype = 1, fill = 'chartreuse3',alpha=.5) +
-  
+  geom_sf(data = dfo, size = 0.15, color = 'darkslategrey', fill = NA, alpha = 0.7)+
+  geom_sf(data = tc, size = 0.3, color = 'darkslategrey', fill = 'orangered', alpha = 0.7)+
+
   # coastline
   geom_sf(data = cf,fill = "cornsilk", color = "cornsilk4", size = 0.1)+
 
-  # ocean labels
-  geom_text(aes(x = -63.15, y = 48.3, label = 'DFO', angle = 0), color = 'black', size = sz)+
-  geom_text(aes(x = -63.2, y = 48.95, label = 'TC', angle = 0), color = 'black', size = sz)+
+  # ocean labels 
   geom_text(aes(x = -64.5, y = 49.4, label = 'Honguedo Strait', angle = -25), color = 'white', size = sz)+
   geom_text(aes(x = -61, y = 48.5, label = 'Laurentian Channel', angle = 0), color = 'white', size = sz)+
   geom_text(aes(x = -64, y = 50.05, label = 'Jacques-Cartier Strait', angle = -5), size = sz)+
@@ -92,15 +76,13 @@ p = ggplot()+
                     ymax = max_lat)+
 
   # formatting
-  coord_sf(expand = FALSE, clip = 'off')+
+  coord_sf(expand = FALSE, clip = 'on', xlim = c(fmin_lon, fmax_lon), ylim = c(fmin_lat, fmax_lat))+
   labs(x = NULL, y = NULL, fill = 'Depth (m)')+
   theme_bw()+
   annotation_scale(location = 'bl') +
   theme(legend.position = "right",
         legend.key = element_rect(color = 'black', fill = NA),
         panel.grid = element_blank())
-
-p
 
 # save
 ggsave(
