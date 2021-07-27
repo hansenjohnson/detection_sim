@@ -574,6 +574,9 @@ box_survey = function(height = 18,
     detected = ifelse(n_detected>0,1,0)
   )
   
+  # remove data to free up memory
+  rm(trk, rws, det)
+  
   return(df)
 }
 
@@ -650,13 +653,6 @@ run_box_surveys = function(height = 18,
   # run surveys
   DF = vector('list', length = length(n_whales))
   for (ii in seq_along(n_whales)) {
-    
-    # overwrite parallel behavior for too many whales
-    if(n_whales > 50 & survey_parallel){
-      message('Too many whales to run surveys in parallel! Switching to serial survey processing...')
-      survey_parallel = FALSE
-      whales_parallel = TRUE
-    }
     
     # run surveys for each platform
     slo = box_surveys(
