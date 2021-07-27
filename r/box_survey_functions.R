@@ -33,8 +33,6 @@ rw_sim = function(
   x0 = 0,         # initial x position
   y0 = 0,         # initial y position
   bh = 'feeding', # behaviour (feeding, traveling, socializing)
-  nt = 60,        # new time resolution after subsampling [sec]
-  sub = TRUE,     # subsample data to new rate, nt
   cr_mn_hr = 0.25,# mean call rate (calls/whale/hr)
   cr_sd_hr = 0.025,# standard deviation of call rate,
   dtime_mean = 720,# mean dive time (s)
@@ -95,11 +93,6 @@ rw_sim = function(
   
   # combine into data frame
   df = tibble(x = x[1:n], y = y[1:n], time, ang = rad2deg(ang), spd, dst, dpt)
-  
-  # downsample data
-  if(sub){
-    df = df[seq(from = 1, to = nrow(df), by = round(nt/dt)),]
-  }
   
   # calculate range from center
   df$r = sqrt(df$x^2 + df$y^2)
@@ -197,7 +190,6 @@ rw_sims = function(nrws = 1e2,          # number of whales in simulation
                    hrs = 48,            # duration of simulation (hours)
                    bh = 'feeding',      # behaviour
                    dt = 2.5,            # movement model time resolution (seconds)
-                   nt = 300,            # output time resolution (seconds)
                    xmin,                # xmin of initial positions (km)
                    xmax,                # xmax of initial positions (km)
                    ymin,                # ymin of initial positions (km)
@@ -214,8 +206,8 @@ rw_sims = function(nrws = 1e2,          # number of whales in simulation
     message('Input parameters:')
     message('   number of whales: ', nrws)
     message('   number of hours: ', hrs)
-    message('   time resolution [sec]: ', nt)
-    message('   number of timesteps: ', hrs*60*60/nt)
+    message('   time resolution [sec]: ', dt)
+    message('   number of timesteps: ', hrs*60*60/dt)
     message('   movement type: ', bh)
     message('Simulating whale movements...')
   }
@@ -237,14 +229,14 @@ rw_sims = function(nrws = 1e2,          # number of whales in simulation
     
     # model movements
     DF = mclapply(X = nseq, FUN = function(i){
-      rw_sim(x0=ini$x[i],y0=ini$y[i],hrs=hrs,bh=bh,dt=dt,nt=nt,cr_mn_hr=cr_mn_hr)
+      rw_sim(x0=ini$x[i],y0=ini$y[i],hrs=hrs,bh=bh,dt=dt,cr_mn_hr=cr_mn_hr)
     }, mc.cores = numCores)
     
   } else {
     
     # model movements
     DF = lapply(X = nseq, FUN = function(i){
-      rw_sim(x0=ini$x[i],y0=ini$y[i],hrs=hrs,bh=bh,dt=dt,nt=nt,cr_mn_hr=cr_mn_hr)
+      rw_sim(x0=ini$x[i],y0=ini$y[i],hrs=hrs,bh=bh,dt=dt,cr_mn_hr=cr_mn_hr)
     })
     
   }
@@ -438,16 +430,6 @@ reflect_rw = function(rw,ymax,ymin,xmax,xmin,verbose=FALSE){
   
 }
 
-reflect_rws = function(rws,ymax,ymin,xmax,xmin,verbose=FALSE){
-  # contain multiple right whales within a box
-  
-  rws %>%
-    group_by(id) %>%
-    summarize(
-      reflect_rw(across(), ymax, ymin, xmax, xmin, verbose), .groups = 'drop'
-    )
-}
-
 calculate_buffer = function(trk, 
                             platform='slocum', 
                             xmin=0, 
@@ -540,7 +522,6 @@ box_survey = function(height = 18,
     hrs = nhrs,
     bh = bh,
     dt = res,
-    nt = res,
     xmin = xmin,
     xmax = xmax,
     ymin = ymin,
@@ -548,7 +529,7 @@ box_survey = function(height = 18,
     run_parallel = run_parallel 
   ) %>% 
     filter(time <= max_time) %>%
-    reflect_rws(., ymax, ymin, xmax, xmin)
+    reflect_rw(., ymax, ymin, xmax, xmin)
   
   # simulate detections
   det = simulate_detections(whale_df = rws, track_df = trk, platform = platform)
