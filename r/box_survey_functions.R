@@ -436,6 +436,7 @@ calculate_buffer = function(trk,
                             xmax=12, 
                             ymin=0, 
                             ymax=18, 
+                            verbose = FALSE,
                             plot_check = FALSE){
   
   # assign buffer based on platform (range at 50% detection probability, km)
@@ -474,12 +475,16 @@ calculate_buffer = function(trk,
       a = lines_buffer_sp_cropped@polygons[[1]]@area  
     } else {
       a = NA
-      message('Could not calculate area for ', platform, ' survey! Setting area to NA...')
+      if(verbose){
+        message('Could not calculate area for ', platform, ' survey! Setting area to NA...')
+      }
     }
     
   } else {
     a = NA
-    message('Invalid buffer for ', platform, ' survey! Setting area to NA...')
+    if(verbose){
+      message('Invalid buffer for ', platform, ' survey! Setting area to NA...')
+    }
   }
   
   if(plot_check){
@@ -639,9 +644,7 @@ run_box_surveys = function(height = 18,
                            width = 12,
                            n_surveys = 10,
                            n_whales = c(1, 5, 10, 25, 50, 75),
-                           bh = 'feeding',
-                           whales_parallel = FALSE,
-                           survey_parallel = TRUE
+                           bh = 'feeding'
 ) {
   
   # record start time
@@ -653,6 +656,15 @@ run_box_surveys = function(height = 18,
   # run surveys
   DF = vector('list', length = length(n_whales))
   for (ii in seq_along(n_whales)) {
+    
+    # switch parallel processing depending on the number of whales
+    if(n_whales[ii] < 50){
+      whales_parallel = FALSE
+      survey_parallel = TRUE
+    } else {
+      whales_parallel = TRUE
+      survey_parallel = FALSE
+    }
     
     # run surveys for each platform
     slo = box_surveys(
