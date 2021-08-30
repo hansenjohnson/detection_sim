@@ -35,12 +35,12 @@ dfl$vars = factor(dfl$vars, levels = c("det_per_hour", "det_per_dist",
 dfl$platform = factor(dfl$platform, levels = c("Aircraft","RPAS","Vessel","Slocum glider"), ordered = TRUE)
 
 # prepare metric labels for plotting
-my_labeller = as_labeller(c(cost_per_det=paste("C[d]  (CAD/detection)"), 
-                            det_area_time="D[ta]   (detections/hr/km^{2})", 
-                            det_per_area="D[a]   (detections/km^{2})",
-                            det_per_dist="D[d]   (detections/km)",
-                            det_per_hour="D[t]   (detections/hr)"),
-                           default = label_parsed)
+dfl$var_labels = as.character(factor(dfl$vars, labels = c(`cost_per_det`=('C[d]~("$"~detection^{-1})'), 
+                                             `det_area_time`="D[ta]~(detections~h^{-1}~km^{-2})", 
+                                             `det_per_area`="D[a]~(detections~km^{-2})",
+                                             `det_per_dist`="D[d]~(detections~km^{-2})",
+                                             `det_per_hour`="D[t]~(detections~h^{-1})")))
+
 
 # subset for plotting
 dfl_dfo = dfl %>% dplyr::filter(box_type == 'DFO')
@@ -49,13 +49,13 @@ dfl_tc = dfl %>% dplyr::filter(box_type == 'TC')
 # construct labels for each subplot
 plot_labs_dfo = dfl_dfo %>% 
   dplyr::filter(!is.infinite(vals)) %>% # remove infinite cost
-  group_by(vars) %>% 
+  group_by(var_labels) %>% 
   summarize(vals = max(vals, na.rm = TRUE)) %>%
   mutate(label = c('a)', 'b)', 'c)', 'd)', 'e)'),
          n_whales = 20) # set to 0 for left-justified letters
 plot_labs_tc = dfl_tc %>% 
   dplyr::filter(!is.infinite(vals)) %>% # remove infinite cost
-  group_by(vars) %>% 
+  group_by(var_labels) %>% 
   summarize(vals = max(vals, na.rm = TRUE)) %>%
   mutate(label = c('a)', 'b)', 'c)', 'd)', 'e)'),
          n_whales = 20) # set to 0 for left-justified letters
@@ -66,7 +66,7 @@ p = ggplot()+
   geom_text(data = plot_labs_dfo, aes(x = n_whales, y = vals, label = label)) +
   scale_color_manual(values = platform_cols)+
   labs(x='Number of whales', y='Performance metric value', color = ' Platforms')+
-  facet_wrap(~vars, nrow=3, ncol=2, scales = 'free', labeller=my_labeller)+
+  facet_wrap(~var_labels, nrow=3, ncol=2, scales = 'free', labeller=label_parsed)+
   theme_bw()+
   theme(axis.line = element_line(colour = "black"),
         panel.grid.major = element_blank(), 
@@ -79,7 +79,7 @@ q = ggplot()+
   geom_text(data = plot_labs_tc, aes(x = n_whales, y = vals, label = label)) +
   scale_color_manual(values = platform_cols)+
   labs(x='Number of whales', y='Performance metric value', color = ' Platforms')+
-  facet_wrap(~vars, nrow=3, ncol=2, scales = 'free', labeller=my_labeller)+
+  facet_wrap(~var_labels, nrow=3, ncol=2, scales = 'free', labeller=label_parsed)+
   theme_bw()+
   theme(axis.line = element_line(colour = "black"),
         panel.grid.major = element_blank(), 
