@@ -78,13 +78,13 @@ p = ggplot()+
   geom_path(data=out_tc,aes(x=n_whales,y=transit_p,color=platform,group=platform,linetype=box_type))+
   scale_color_manual(values = platform_cols)+
   labs(x = 'Number of whales', 
-       y = expression(PD[t]*'(1)'), 
+       y = expression(P[T]*'(1)'), 
        color = 'Platform',
        linetype = 'Domain')+
   theme_bw()+
   theme(axis.line = element_line(colour = "black"), 
-        panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(), 
+        #panel.grid.major = element_blank(), 
+        #panel.grid.minor = element_blank(), 
         panel.border = element_blank())
 p
 
@@ -102,22 +102,23 @@ q = ggplot()+
   facet_grid(~n_whales)+
   scale_color_manual(values = platform_cols)+
   labs(x = 'Number of transits', 
-       y = expression(PD[t]*'(n)'), 
+       y = expression(P[T]*'(n)'), 
        color = 'Platform',
        linetype = 'Domain')+
   theme_bw()+
   theme(axis.line = element_line(colour = "black"), 
-        panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank())
+        #panel.grid.major = element_blank(), 
+        #panel.grid.minor = element_blank())
+  )
 q
 
 # save plot
 ggsave('figures/per_transits_box_surveys.png', q, height = 5, width = 5, units = 'in', dpi = 300)
 
 # combine both plots into one and save
-r = ggarrange(p,q, ncol=2, nrow=1, common.legend=TRUE, labels = c('a)','b)'), legend = 'right')
+r = ggarrange(p,q, ncol=1, nrow=2, common.legend=TRUE, labels = c('a)','b)'), legend = 'right')
 r
-ggsave('figures/box_surveys_results.png', r, height = 5, width = 10, units = 'in', dpi = 300)
+ggsave('figures/box_surveys_results.png', r, height = 10, width = 5, units = 'in', dpi = 300)
 
 # plot time to first detection
 # r = ggplot()+

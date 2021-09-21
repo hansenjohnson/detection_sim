@@ -17,14 +17,14 @@ aco = tibble(
 
 # visual detection function
 vis = tibble(
-  r = seq(from = 0, to = 4, by = 0.1),
+  r = seq(from = 0, to = 2.5, by = 0.1),
   p = detection_function(x = r, L = 1, x0 = 1, k = -4.8),
   platform = 'Aircrafts and vessels',
   type = 'Visual'
 )
 
 rpas = tibble(
-  r = c(0, 0.0875, 0.175, 0.176, 1.5, 4),
+  r = c(0, 0.0875, 0.175, 0.176, 1.5, 2.5),
   p = c(1,1,1,0, 0,0),
   platform = 'RPAS',
   type = 'Visual'

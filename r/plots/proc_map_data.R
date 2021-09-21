@@ -29,7 +29,7 @@ if (!file.exists(map_file)) {
   library(marmap)
   library(tidyverse)
   library(sf)
-  
+
   # download etopo1 bathymetry data
   b = getNOAA.bathy(min_lon, max_lon, min_lat, max_lat, res)
   

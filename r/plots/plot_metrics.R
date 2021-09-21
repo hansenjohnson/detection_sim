@@ -35,11 +35,11 @@ dfl$vars = factor(dfl$vars, levels = c("det_per_hour", "det_per_dist",
 dfl$platform = factor(dfl$platform, levels = c("Aircraft","RPAS","Vessel","Slocum glider"), ordered = TRUE)
 
 # prepare metric labels for plotting
-dfl$var_labels = as.character(factor(dfl$vars, labels = c(`cost_per_det`=('C[d]~("$"~detection^{-1})'), 
-                                             `det_area_time`="D[ta]~(detections~h^{-1}~km^{-2})", 
-                                             `det_per_area`="D[a]~(detections~km^{-2})",
-                                             `det_per_dist`="D[d]~(detections~km^{-2})",
-                                             `det_per_hour`="D[t]~(detections~h^{-1})")))
+dfl$var_labels = as.character(factor(dfl$vars, labels = c(`det_per_hour`="D[t]~(detections~h^{-1})",
+                                                          `det_per_dist`="D[d]~(detections~km^{-1})",
+                                                          `det_per_area`="D[a]~(detections~km^{-2})",
+                                                          `det_area_time`="D[ta]~(detections~h^{-1}~km^{-2})",
+                                                          `cost_per_det`=('C[d]~("$"~detection^{-1})'))))
 
 
 # subset for plotting
@@ -47,7 +47,7 @@ dfl_dfo = dfl %>% dplyr::filter(box_type == 'DFO')
 dfl_tc = dfl %>% dplyr::filter(box_type == 'TC')
 
 # construct labels for each subplot
-plot_labs_dfo = dfl_dfo %>% 
+plot_labs = dfl %>% 
   dplyr::filter(!is.infinite(vals)) %>% # remove infinite cost
   group_by(var_labels) %>% 
   summarize(vals = max(vals, na.rm = TRUE)) %>%
@@ -63,10 +63,11 @@ plot_labs_tc = dfl_tc %>%
 # plot
 p = ggplot()+
   geom_path(data = dfl_dfo, aes(x = n_whales, y = vals, group = platform, color = platform))+
-  geom_text(data = plot_labs_dfo, aes(x = n_whales, y = vals, label = label)) +
+  geom_path(data = dfl_tc, aes(x = n_whales, y = vals, group = platform, color = platform))+
+  geom_text(data = plot_labs, aes(x = n_whales, y = vals, label = label)) +
   scale_color_manual(values = platform_cols)+
   labs(x='Number of whales', y='Performance metric value', color = ' Platforms')+
-  facet_wrap(~var_labels, nrow=3, ncol=2, scales = 'free', labeller=label_parsed)+
+  facet_wrap(var_labels~box_type, nrow=3, ncol=4, scales='free', labeller=label_parsed)+
   theme_bw()+
   theme(axis.line = element_line(colour = "black"),
         panel.grid.major = element_blank(), 
@@ -88,7 +89,7 @@ q = ggplot()+
 q
 
 # save
-ggsave(filename = 'figures/metrics_dfo.png', plot = p, width = 6, height = 8, units = 'in', dpi = 300)
+ggsave(filename = 'figures/metrics_dfo.png', plot = p, width = 9, height = 8, units = 'in', dpi = 300)
 ggsave(filename = 'figures/metrics_tc.png', plot = q, width = 6, height = 8, units = 'in', dpi = 300)
 
 # make smaller tables with metrics for manuscript
