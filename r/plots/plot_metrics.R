@@ -67,7 +67,7 @@ p = ggplot()+
   geom_text(data = plot_labs, aes(x = n_whales, y = vals, label = label)) +
   scale_color_manual(values = platform_cols)+
   labs(x='Number of whales', y='Performance metric value', color = ' Platforms')+
-  facet_wrap(var_labels~box_type, nrow=3, ncol=4, scales='free', labeller=label_parsed)+
+  facet_grid(var_labels~box_type, scales='free', labeller=label_parsed)+
   theme_bw()+
   theme(axis.line = element_line(colour = "black"),
         panel.grid.major = element_blank(), 
