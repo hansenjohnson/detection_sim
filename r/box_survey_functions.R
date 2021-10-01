@@ -33,8 +33,6 @@ rw_sim = function(
   x0 = 0,         # initial x position
   y0 = 0,         # initial y position
   bh = 'feeding', # behaviour (feeding, traveling, socializing)
-  cr_mn_hr = 0.25,# mean call rate (calls/whale/hr)
-  cr_sd_hr = 0.025,# standard deviation of call rate,
   dtime_mean = 720,# mean dive time (s)
   dtime_sd = 180, # standard dev dive time (s)
   stime_mean = 300,# mean surface time (s)
@@ -104,8 +102,11 @@ rw_sim = function(
   # calculate the time interval
   dt = df$time[2] - df$time[1]
   
-  # generate a normal distribution to assign call rate in each timestep
-  cr_hr = rnorm(n = nrow(df), mean = cr_mn_hr, sd = cr_sd_hr)
+  # generate a distribution to assign call rate in each timestep
+  cr_hr = rexp(n = nrow(df), rate = 4.271893)
+  
+  # reassign outliers
+  cr_hr[cr_hr>2]=0
   
   # convert from hours to seconds
   cr_sec = cr_hr/60/60
@@ -195,7 +196,6 @@ rw_sims = function(nrws = 1e2,          # number of whales in simulation
                    ymin,                # ymin of initial positions (km)
                    ymax,                # ymax of initial positions (km)
                    run_parallel = TRUE,# run with parallel processing?
-                   cr_mn_hr = 0.25,     # mean call rate (calls/whale/hr)
                    quiet = TRUE         # hide startup message?
 ){
   # simulate movements of a field of numerous whales
@@ -229,14 +229,14 @@ rw_sims = function(nrws = 1e2,          # number of whales in simulation
     
     # model movements
     DF = mclapply(X = nseq, FUN = function(i){
-      rw_sim(x0=ini$x[i],y0=ini$y[i],hrs=hrs,bh=bh,dt=dt,cr_mn_hr=cr_mn_hr)
+      rw_sim(x0=ini$x[i],y0=ini$y[i],hrs=hrs,bh=bh,dt=dt)
     }, mc.cores = numCores)
     
   } else {
     
     # model movements
     DF = lapply(X = nseq, FUN = function(i){
-      rw_sim(x0=ini$x[i],y0=ini$y[i],hrs=hrs,bh=bh,dt=dt,cr_mn_hr=cr_mn_hr)
+      rw_sim(x0=ini$x[i],y0=ini$y[i],hrs=hrs,bh=bh,dt=dt)
     })
     
   }
