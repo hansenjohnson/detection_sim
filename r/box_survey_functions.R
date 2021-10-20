@@ -658,7 +658,7 @@ run_box_surveys = function(height = 18,
   for (ii in seq_along(n_whales)) {
     
     # switch parallel processing depending on the number of whales
-    if(n_whales[ii] < 30){
+    if(n_whales[ii] < 10){
       slo_surveys = n_surveys
     }else{
       slo_surveys = 1
