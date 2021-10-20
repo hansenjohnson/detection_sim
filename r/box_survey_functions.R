@@ -658,12 +658,10 @@ run_box_surveys = function(height = 18,
   for (ii in seq_along(n_whales)) {
     
     # switch parallel processing depending on the number of whales
-    if(n_whales[ii] < 50){
-      whales_parallel = FALSE
-      survey_parallel = TRUE
-    } else {
-      whales_parallel = TRUE
-      survey_parallel = FALSE
+    if(n_whales[ii] < 30){
+      slo_surveys = n_surveys
+    }else{
+      slo_surveys = 1
     }
     
     # run surveys for each platform
@@ -673,9 +671,7 @@ run_box_surveys = function(height = 18,
       width = width,
       nrws = n_whales[ii],
       n_surveys = n_surveys,
-      bh = bh,
-      whales_parallel = whales_parallel,
-      survey_parallel = survey_parallel
+      bh = bh
     )
     pln = box_surveys(
       platform = 'plane',
@@ -683,9 +679,7 @@ run_box_surveys = function(height = 18,
       width = width,
       nrws = n_whales[ii],
       n_surveys = n_surveys,
-      bh = bh,
-      whales_parallel = whales_parallel,
-      survey_parallel = survey_parallel
+      bh = bh
     )
     ves = box_surveys(
       platform = 'vessel',
@@ -693,9 +687,7 @@ run_box_surveys = function(height = 18,
       width = width,
       nrws = n_whales[ii],
       n_surveys = n_surveys,
-      bh = bh,
-      whales_parallel = whales_parallel,
-      survey_parallel = survey_parallel
+      bh = bh
     )
     rpa = box_surveys(
       platform = 'rpas',
@@ -703,9 +695,7 @@ run_box_surveys = function(height = 18,
       width = width,
       nrws = n_whales[ii],
       n_surveys = n_surveys,
-      bh = bh,
-      whales_parallel = whales_parallel,
-      survey_parallel = survey_parallel
+      bh = bh
     )
     
     # combine and store
