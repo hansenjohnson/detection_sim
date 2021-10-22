@@ -591,8 +591,8 @@ box_surveys = function(platform = 'slocum',
                        nrws = 3,
                        n_surveys = 10,
                        bh = 'feeding',
-                       whales_parallel = FALSE,
-                       survey_parallel = TRUE) {
+                       whales_parallel = TRUE,
+                       survey_parallel = FALSE) {
   # complete multiple transits of a given platform of a box containing nrws 
   if(whales_parallel & survey_parallel){
     stop('Cannot process both whale tracks and surveys in parallel. Please choose one or the other.')
