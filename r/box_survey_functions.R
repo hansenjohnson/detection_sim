@@ -603,7 +603,7 @@ box_surveys = function(platform = 'slocum',
   
   if(survey_parallel){
     # determine number of cores available to run function more efficiently
-    numCores = detectCores()
+    numCores = 24
     
     # model transits
     DF = mclapply(X = nseq, FUN = function(i){
@@ -658,11 +658,7 @@ run_box_surveys = function(height = 18,
   for (ii in seq_along(n_whales)) {
     
     # switch parallel processing depending on the number of whales
-    if(n_whales[ii] < 10){
-      slo_surveys = n_surveys
-    }else{
-      slo_surveys = 1
-    }
+    slo_surveys = ifelse(test = n_whales[ii] < 5, yes = n_surveys, no = 1)
     
     # run surveys for each platform
     slo = box_surveys(
@@ -670,7 +666,7 @@ run_box_surveys = function(height = 18,
       height = height,
       width = width,
       nrws = n_whales[ii],
-      n_surveys = n_surveys,
+      n_surveys = slo_surveys,
       bh = bh
     )
     pln = box_surveys(
