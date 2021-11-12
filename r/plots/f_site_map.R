@@ -86,7 +86,7 @@ p = ggplot()+
 
 # save
 ggsave(
-  filename = 'figures/site_map.png',
+  filename = 'figures/site_map.pdf',
   plot = p,
   width = 8,
   height = 6,
