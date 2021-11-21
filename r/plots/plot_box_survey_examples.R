@@ -21,10 +21,10 @@ set.seed(1)
 
 # generate example data
 
-gld = box_surveys(height = height, width = width, platform = 'slocum', nrws = nrws, n_surveys = n_surveys)
-ves = box_surveys(height = height, width = width, platform = 'vessel', nrws = nrws, n_surveys = n_surveys)
-pln = box_surveys(height = height, width = width, platform = 'plane', nrws = nrws, n_surveys = n_surveys)
-rpas = box_surveys(height = height, width = width, platform = 'rpas', nrws = nrws, n_surveys = n_surveys)
+gld = box_surveys(height = height, width = width, platform = 'slocum', nrws = nrws, include_data = TRUE)
+ves = box_surveys(height = height, width = width, platform = 'vessel', nrws = nrws, include_data = TRUE)
+pln = box_surveys(height = height, width = width, platform = 'plane', nrws = nrws, include_data = TRUE)
+rpas = box_surveys(height = height, width = width, platform = 'rpas', nrws = nrws, include_data = TRUE)
 
 # combine
 df = rbind(gld, ves, pln, rpas)
