@@ -503,7 +503,8 @@ box_survey = function(height = 18,
                       nrws = 3,
                       res = 2.5,
                       bh = 'feeding',
-                      run_parallel = TRUE) {
+                      run_parallel = TRUE,
+                      include_data = FALSE) {
   
   # simulate a transits of a given platform of a box containing nrws 
   
@@ -566,18 +567,38 @@ box_survey = function(height = 18,
     
   }
   
-  # summarize results
-  df = tibble(
-    platform = platform,
-    n_whales = nrws,
-    behavior = bh,
-    transit_time = max_time,
-    transit_dist = sqrt((trk$x[nrow(trk)]-trk$x[1])^2 + (trk$y[nrow(trk)]-trk$y[1])^2),
-    transit_area = area,
-    n_available = nrow(det),
-    n_detected = nrow(filter(det,detected==1)),
-    detected = ifelse(n_detected>0,1,0)
-  )
+  if(!include_data){
+    # summarize results
+    df = tibble(
+      platform = platform,
+      n_whales = nrws,
+      behavior = bh,
+      transit_time = max_time,
+      transit_dist = sqrt((trk$x[nrow(trk)]-trk$x[1])^2 + (trk$y[nrow(trk)]-trk$y[1])^2),
+      transit_area = area,
+      n_available = nrow(det),
+      n_detected = nrow(filter(det,detected==1)),
+      detected = ifelse(n_detected>0,1,0)
+    )
+  } else {
+    # add surface index
+    rws$sid = paste0(rws$id, '_',rws$dive_index)
+    # summarize results
+    df = tibble(
+      platform = platform,
+      n_whales = nrws,
+      behavior = bh,
+      transit_time = max_time,
+      transit_dist = sqrt((trk$x[nrow(trk)]-trk$x[1])^2 + (trk$y[nrow(trk)]-trk$y[1])^2),
+      transit_area = area,
+      n_available = nrow(det),
+      n_detected = nrow(filter(det,detected==1)),
+      detected = ifelse(n_detected>0,1,0),
+      track_df = list(trk), # stores track dataframe in this column
+      whale_df = list(rws), # stores whale movement dataframe in this column
+      det_df = list(det) # stores whale detection dataframe in this column
+    )
+  }
   
   # remove data to free up memory
   rm(trk, rws, det)
@@ -592,7 +613,8 @@ box_surveys = function(platform = 'slocum',
                        n_surveys = 10,
                        bh = 'feeding',
                        whales_parallel = FALSE,
-                       survey_parallel = TRUE) {
+                       survey_parallel = TRUE,
+                       include_data = FALSE) {
   # complete multiple transits of a given platform of a box containing nrws 
   if(whales_parallel & survey_parallel){
     stop('Cannot process both whale tracks and surveys in parallel. Please choose one or the other.')
@@ -613,7 +635,8 @@ box_surveys = function(platform = 'slocum',
         width = width,
         nrws = nrws,
         bh = bh,
-        run_parallel = whales_parallel
+        run_parallel = whales_parallel,
+        include_data = include_data
       )
     }, mc.cores = numCores)
     
@@ -627,7 +650,8 @@ box_surveys = function(platform = 'slocum',
         width = width,
         nrws = nrws,
         bh = bh,
-        run_parallel = whales_parallel
+        run_parallel = whales_parallel,
+        include_data = include_data
       )
     })
     
