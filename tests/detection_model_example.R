@@ -16,7 +16,7 @@ ofile_det = 'data/processed/call_detections.rda'
 res = 60
 
 # produce whale movement model and convert to km
-whale_df = rw_sim(hrs=24, nt = res, sub = TRUE, x0 = 5000, y0 = 5000, bh = 'feeding', cr_mn_hr=1)%>%
+whale_df = rw_sim(hrs=24, nt = res, sub = TRUE, x0 = 5000, y0 = 5000, bh = 'feeding', cr_mn_hr=0.25)%>%
   mutate(
     x=x/1000,
     y=y/1000,
@@ -47,10 +47,10 @@ message('Processed glider data saved as: ', ofile_det)
 ggplot()+
   geom_path(data = whale_df, aes(x=x,y=y,group=dive_index,color=surface))+
   scale_color_manual(values = c('0'='grey', '1'='black'))+
-  geom_point(data=filter(whale_df,call==1), aes(x=x,y=y), shape = 21, fill = 'red')+
+  geom_point(data=filter(whale_df,call==1), aes(x=x,y=y), shape = 21, fill = 'black')+
   coord_equal()+
   theme_bw()+
-  labs(x="x (km)", y="y (km)", title="Simulated Whale Moving", subtitle="red dots indicate calls produced")
+  labs(x="Easting (km)", y="Northing (km)", title="Simulated Whale Moving", subtitle="circles indicate calls produced")
 
 # plot both tracks (no detections)
 ggplot()+
