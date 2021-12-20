@@ -70,8 +70,6 @@ p = ggplot()+
   facet_grid(var_labels~box_type, scales='free', labeller=label_parsed)+
   theme_bw()+
   theme(axis.line = element_line(colour = "black"),
-        panel.grid.major = element_blank(), 
-        panel.grid.minor = element_blank(), 
         panel.border = element_blank())
 p
 
