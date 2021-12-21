@@ -70,6 +70,20 @@ transit_times = df %>%
     .groups = 'drop'
   )
 
+# find transits needed for p = 0.5 per platform
+# use the probability of detection for one whale only to calculate
+new_probs = filter(probs,n==1)
+
+# calculate number of transits needed
+det_prob_example = new_probs %>%
+  group_by(platform, n_whales, box_type) %>%
+  summarize(
+    transits_50_prob = log(0.5)/(log(1-p)),
+    .groups = 'drop'
+  )
+
+saveRDS(det_prob_example, 'data/processed/calculate_new_metrics.rds')
+
 # plot --------------------------------------------------------------------
 
 # plot p vs n_whales
