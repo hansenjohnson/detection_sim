@@ -175,3 +175,63 @@ citation(package='zoo')
 citation(package='ggplot2')
 citation()
 
+# prob example ------------------------------------------------------------
+
+## calculations ##
+
+# calculate number of transits needed (different from method above)
+det_prob_example = probs %>%
+  group_by(platform, n_whales, box_type) %>%
+  summarize(
+    transits_50_prob = n[which.min(abs(p-0.5))],
+    .groups = 'drop'
+  )
+
+# format transit times
+tt = transit_times %>% transmute(platform, box_type, transit_time_h = hours)
+
+# define hourly costs
+tc = tibble(platform = c('Aircraft', 'RPAS', 'Vessel', 'Slocum glider'), cost_h = c(1592,NA,700,31.25))
+
+# add transit times to probs
+d1 = left_join(det_prob_example, tt)
+
+# add hourly cost to probs
+d2 = left_join(d1, tc)
+
+# calc time to 50% prob
+d2$time_50_prob = d2$transits_50_prob*d2$transit_time_h
+
+# calc cost to 50% prob
+d2$cost = d2$time_50_prob*d2$cost_h
+
+## plots ##
+
+# Number of transits to 50% detection
+ggplot(d2)+
+  geom_path(aes(x=n_whales,y=transits_50_prob,group=platform,color=platform))+
+  scale_color_manual(values = platform_cols)+
+  facet_wrap(~box_type, nrow = 1)+
+  labs(x = 'Number of whales', y = 'Number of transits to 50% detection', color = 'Platform')+
+  theme_bw()
+
+# Transit time to 50% detection
+ggplot(d2)+
+  geom_path(aes(x=n_whales,y=time_50_prob,group=platform,color=platform))+
+  scale_color_manual(values = platform_cols)+
+  facet_wrap(~box_type, nrow = 1)+
+  labs(x = 'Number of whales', y = 'Transit time (h) to 50% detection', color = 'Platform')+
+  theme_bw()
+
+# Cost to 50% detection
+ggplot(d2)+
+  geom_path(aes(x=n_whales,y=cost,group=platform,color=platform))+
+  scale_color_manual(values = platform_cols)+
+  facet_wrap(~box_type, nrow = 1)+
+  labs(x = 'Number of whales', y = 'Cost to 50% detection', color = 'Platform')+
+  theme_bw()
+
+
+
+
+
