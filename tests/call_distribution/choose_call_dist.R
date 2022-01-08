@@ -77,3 +77,5 @@ ggplot()+
   geom_density(data = df, aes(x=upcall_production_rate), color = 'black')+
   geom_density(data = tmp, aes(x=x), color = 'blue')
 
+citation("fitdistrplus")
+citation("AICcmodavg")
