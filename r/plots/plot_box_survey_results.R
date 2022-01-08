@@ -70,20 +70,6 @@ transit_times = df %>%
     .groups = 'drop'
   )
 
-# find transits needed for p = 0.5 per platform
-# use the probability of detection for one whale only to calculate
-new_probs = filter(probs,n==1)
-
-# calculate number of transits needed
-det_prob_example = new_probs %>%
-  group_by(platform, n_whales, box_type) %>%
-  summarize(
-    transits_50_prob = log(0.5)/(log(1-p)),
-    .groups = 'drop'
-  )
-
-saveRDS(det_prob_example, 'data/processed/calculate_new_metrics.rds')
-
 # plot --------------------------------------------------------------------
 
 # plot p vs n_whales
@@ -183,11 +169,13 @@ citation()
 det_prob_example = probs %>%
   group_by(platform, n_whales, box_type) %>%
   summarize(
-    transits_50_prob = n[which.min(abs(p-0.5))],
+    transits_50_prob = n[which.min(abs(p-0.5))], 
+    # finds the number of transits needed for each combination of 
+    # platform/whale number/zone to approach a 0.5 probability as close as possible
     .groups = 'drop'
   )
 
-# format transit times
+# format transit times (in hours)
 tt = transit_times %>% transmute(platform, box_type, transit_time_h = hours)
 
 # define hourly costs
@@ -231,7 +219,47 @@ ggplot(d2)+
   labs(x = 'Number of whales', y = 'Cost to 50% detection', color = 'Platform')+
   theme_bw()
 
+# plot all three together
 
+# remove time per transit and cost per hour columns
+d2 = subset(d2, select = -c(transit_time_h,cost_h))
 
+# pivot df and limit whale number for plotting
+d3 = d2 %>%
+  pivot_longer(transits_50_prob:cost, names_to = 'vars', values_to = 'vals') %>%
+  dplyr::select(platform, n_whales, box_type, vars, vals) %>%
+  dplyr::filter(n_whales <= 15)
 
+# define factors for plotting order
+d3$vars = factor(d3$vars, levels = c("transits_50_prob", "time_50_prob", "cost", ordered = TRUE))
+
+# define factors for plotting order
+d3$platform = factor(d3$platform, levels = c("Aircraft","RPAS","Vessel","Slocum glider"), ordered = TRUE)
+
+# subset for plotting
+d3_dfo = d3 %>% dplyr::filter(box_type == 'DFO')
+d3_tc = d3 %>% dplyr::filter(box_type == 'TC')
+
+# construct labels for each subplot
+plot_labs = d3 %>% 
+  dplyr::filter(!is.infinite(vals)) %>% # remove infinite cost
+  group_by(vars) %>% 
+  summarize(vals = max(vals, na.rm = TRUE)) %>%
+  mutate(label = c('a)', 'b)', 'c)'),
+         n_whales = 15) # set to 0 for left-justified letters
+
+# plot
+s = ggplot()+
+  geom_path(data = d3_dfo, aes(x = n_whales, y = vals, group = platform, color = platform))+
+  geom_path(data = d3_tc, aes(x = n_whales, y = vals, group = platform, color = platform))+
+  geom_text(data = plot_labs, aes(x = n_whales, y = vals, label = label)) +
+  scale_color_manual(values = platform_cols)+
+  labs(x='Number of whales', y='Performance metric value', color = ' Platforms')+
+  facet_grid(vars~box_type, scales='free', labeller=label_parsed)+
+  theme_bw()+
+  theme(axis.line = element_line(colour = "black"),
+        panel.border = element_blank())
+s
+
+ggsave('figures/example_prob_metrics.pdf', s, height = 9, width = 8, units = 'in', dpi = 300)
 

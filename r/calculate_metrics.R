@@ -48,14 +48,14 @@ metrics$cost_per_det = metrics$cost_per_hour/metrics$det_per_hour
 # new metrics with 50% det prob
 
 # find new metrics with example 50% det probability
-metrics2 = readRDS('data/processed/calculate_new_metrics.rds')
-
-metrics$transits_50_prob = metrics2$transits_50_prob
-metrics$time_50_prob = metrics$transits_50_prob*metrics$mean_transit_time/60/60 #in hours
-metrics$dist_50_prob = metrics$transits_50_prob*metrics$mean_transit_dist
-metrics$area_50_prob = metrics$transits_50_prob*metrics$mean_transit_area
-metrics$area_time_50 = NA
-metrics$cost_50_prob = metrics$time_50_prob*metrics$cost_per_hour
+# metrics2 = readRDS('data/processed/calculate_new_metrics.rds')
+# 
+# metrics$transits_50_prob = metrics2$transits_50_prob
+# metrics$time_50_prob = metrics$transits_50_prob*metrics$mean_transit_time/60/60 #in hours
+# metrics$dist_50_prob = metrics$transits_50_prob*metrics$mean_transit_dist
+# metrics$area_50_prob = metrics$transits_50_prob*metrics$mean_transit_area
+# metrics$area_time_50 = NA
+# metrics$cost_50_prob = metrics$time_50_prob*metrics$cost_per_hour
 
 # delete cost per hour column
 metrics = metrics %>% dplyr::select(-cost_per_hour)
