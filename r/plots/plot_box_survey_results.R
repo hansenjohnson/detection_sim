@@ -190,6 +190,12 @@ d2 = left_join(d1, tc)
 # calc time to 50% prob
 d2$time_50_prob = d2$transits_50_prob*d2$transit_time_h
 
+# calc dist to 50% prob
+d2$dist_50_prob = d2$transits_50_prob*out$mean_transit_dist
+
+# calc area to 50% prob
+d2$area_50_prob = d2$transits_50_prob*out$mean_transit_area
+
 # calc cost to 50% prob
 d2$cost = d2$time_50_prob*d2$cost_h
 
@@ -211,6 +217,22 @@ ggplot(d2)+
   labs(x = 'Number of whales', y = 'Transit time (h) to 50% detection', color = 'Platform')+
   theme_bw()
 
+# Transit dist to 50% detection
+ggplot(d2)+
+  geom_path(aes(x=n_whales,y=dist_50_prob,group=platform,color=platform))+
+  scale_color_manual(values = platform_cols)+
+  facet_wrap(~box_type, nrow = 1)+
+  labs(x = 'Number of whales', y = 'Transit dist (km) to 50% detection', color = 'Platform')+
+  theme_bw()
+
+# Transit area to 50% detection
+ggplot(d2)+
+  geom_path(aes(x=n_whales,y=area_50_prob,group=platform,color=platform))+
+  scale_color_manual(values = platform_cols)+
+  facet_wrap(~box_type, nrow = 1)+
+  labs(x = 'Number of whales', y = 'Transit area (km^2) to 50% detection', color = 'Platform')+
+  theme_bw()
+
 # Cost to 50% detection
 ggplot(d2)+
   geom_path(aes(x=n_whales,y=cost,group=platform,color=platform))+
@@ -219,7 +241,7 @@ ggplot(d2)+
   labs(x = 'Number of whales', y = 'Cost to 50% detection', color = 'Platform')+
   theme_bw()
 
-# plot all three together
+# plot all together
 
 # remove time per transit and cost per hour columns
 d2 = subset(d2, select = -c(transit_time_h,cost_h))
@@ -231,7 +253,8 @@ d3 = d2 %>%
   dplyr::filter(n_whales <= 15)
 
 # define factors for plotting order
-d3$vars = factor(d3$vars, levels = c("transits_50_prob", "time_50_prob", "cost", ordered = TRUE))
+d3$vars = factor(d3$vars, levels = c("transits_50_prob", "time_50_prob", 
+                                    "dist_50_prob", "area_50_prob", "cost", ordered = TRUE))
 
 # define factors for plotting order
 d3$platform = factor(d3$platform, levels = c("Aircraft","RPAS","Vessel","Slocum glider"), ordered = TRUE)
@@ -245,7 +268,7 @@ plot_labs = d3 %>%
   dplyr::filter(!is.infinite(vals)) %>% # remove infinite cost
   group_by(vars) %>% 
   summarize(vals = max(vals, na.rm = TRUE)) %>%
-  mutate(label = c('a)', 'b)', 'c)'),
+  mutate(label = c('a)', 'b)', 'c)', 'd)', 'e)'),
          n_whales = 15) # set to 0 for left-justified letters
 
 # plot
