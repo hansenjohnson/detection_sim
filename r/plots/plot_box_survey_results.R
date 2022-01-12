@@ -191,7 +191,7 @@ d2 = left_join(d1, tc)
 d2$time_50_prob = d2$transits_50_prob*d2$transit_time_h
 
 # calc dist to 50% prob
-d2$dist_50_prob = d2$transits_50_prob*out$mean_transit_dist
+# d2$dist_50_prob = d2$transits_50_prob*out$mean_transit_dist
 
 # calc area to 50% prob
 d2$area_50_prob = d2$transits_50_prob*out$mean_transit_area
@@ -218,12 +218,12 @@ ggplot(d2)+
   theme_bw()
 
 # Transit dist to 50% detection
-ggplot(d2)+
-  geom_path(aes(x=n_whales,y=dist_50_prob,group=platform,color=platform))+
-  scale_color_manual(values = platform_cols)+
-  facet_wrap(~box_type, nrow = 1)+
-  labs(x = 'Number of whales', y = 'Transit dist (km) to 50% detection', color = 'Platform')+
-  theme_bw()
+# ggplot(d2)+
+#   geom_path(aes(x=n_whales,y=dist_50_prob,group=platform,color=platform))+
+#   scale_color_manual(values = platform_cols)+
+#   facet_wrap(~box_type, nrow = 1)+
+#   labs(x = 'Number of whales', y = 'Transit dist (km) to 50% detection', color = 'Platform')+
+#   theme_bw()
 
 # Transit area to 50% detection
 ggplot(d2)+
@@ -254,10 +254,16 @@ d3 = d2 %>%
 
 # define factors for plotting order
 d3$vars = factor(d3$vars, levels = c("transits_50_prob", "time_50_prob", 
-                                    "dist_50_prob", "area_50_prob", "cost", ordered = TRUE))
+                                    "area_50_prob", "cost", ordered = TRUE))
 
 # define factors for plotting order
 d3$platform = factor(d3$platform, levels = c("Aircraft","RPAS","Vessel","Slocum glider"), ordered = TRUE)
+
+# prepare metric labels for plotting
+d3$var_labels = as.character(factor(d3$vars, labels = c(`transits_50_prob`="N[0.5]~(transits)",
+                                                          `time_50_prob`="T[0.5]~(hours)",
+                                                          `area_50_prob`="A[0.5]~(km^{2})",
+                                                          `cost`=('C[0.5]~("$")'))))
 
 # subset for plotting
 d3_dfo = d3 %>% dplyr::filter(box_type == 'DFO')
@@ -266,19 +272,19 @@ d3_tc = d3 %>% dplyr::filter(box_type == 'TC')
 # construct labels for each subplot
 plot_labs = d3 %>% 
   dplyr::filter(!is.infinite(vals)) %>% # remove infinite cost
-  group_by(vars) %>% 
+  group_by(var_labels) %>% 
   summarize(vals = max(vals, na.rm = TRUE)) %>%
-  mutate(label = c('a)', 'b)', 'c)', 'd)', 'e)'),
+  mutate(label = c('a)', 'b)', 'c)', 'd)'),
          n_whales = 15) # set to 0 for left-justified letters
 
 # plot
 s = ggplot()+
   geom_path(data = d3_dfo, aes(x = n_whales, y = vals, group = platform, color = platform))+
-  geom_path(data = d3_tc, aes(x = n_whales, y = vals, group = platform, color = platform))+
+  #geom_path(data = d3_tc, aes(x = n_whales, y = vals, group = platform, color = platform))+
   geom_text(data = plot_labs, aes(x = n_whales, y = vals, label = label)) +
   scale_color_manual(values = platform_cols)+
   labs(x='Number of whales', y='Performance metric value', color = ' Platforms')+
-  facet_grid(vars~box_type, scales='free', labeller=label_parsed)+
+  facet_grid(var_labels~box_type, scales='free', labeller=label_parsed)+
   theme_bw()+
   theme(axis.line = element_line(colour = "black"),
         panel.border = element_blank())
