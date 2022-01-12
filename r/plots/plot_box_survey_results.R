@@ -270,7 +270,7 @@ d3_dfo = d3 %>% dplyr::filter(box_type == 'DFO')
 d3_tc = d3 %>% dplyr::filter(box_type == 'TC')
 
 # construct labels for each subplot
-plot_labs = d3 %>% 
+plot_labs = d3_dfo %>% 
   dplyr::filter(!is.infinite(vals)) %>% # remove infinite cost
   group_by(var_labels) %>% 
   summarize(vals = max(vals, na.rm = TRUE)) %>%
