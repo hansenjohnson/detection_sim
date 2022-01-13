@@ -285,9 +285,7 @@ s = ggplot()+
   scale_color_manual(values = platform_cols)+
   labs(x='Number of whales', y='Performance metric value', color = ' Platforms')+
   facet_wrap(~var_labels, scales='free_y', ncol = 1, strip.position = 'right', labeller=label_parsed)+
-  theme_bw()+
-  theme(axis.line = element_line(colour = "black"),
-        panel.border = element_blank())
+  theme_bw()
 s
 
 ggsave('figures/example_prob_metrics.pdf', s, height = 9, width = 8, units = 'in', dpi = 300)
