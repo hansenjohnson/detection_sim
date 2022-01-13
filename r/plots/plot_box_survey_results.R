@@ -254,16 +254,16 @@ d3 = d2 %>%
 
 # define factors for plotting order
 d3$vars = factor(d3$vars, levels = c("transits_50_prob", "time_50_prob", 
-                                    "area_50_prob", "cost", ordered = TRUE))
+                                    "area_50_prob", "cost"), ordered = TRUE)
 
 # define factors for plotting order
 d3$platform = factor(d3$platform, levels = c("Aircraft","RPAS","Vessel","Slocum glider"), ordered = TRUE)
 
 # prepare metric labels for plotting
-d3$var_labels = as.character(factor(d3$vars, labels = c(`transits_50_prob`="N[0.5]~(transits)",
+d3$var_labels = factor(d3$vars, labels = c(`transits_50_prob`="N[0.5]~(transits)",
                                                           `time_50_prob`="T[0.5]~(hours)",
                                                           `area_50_prob`="A[0.5]~(km^{2})",
-                                                          `cost`=('C[0.5]~("$")'))))
+                                                          `cost`=('C[0.5]~("$")')), ordered = TRUE)
 
 # subset for plotting
 d3_dfo = d3 %>% dplyr::filter(box_type == 'DFO')
@@ -273,7 +273,7 @@ d3_tc = d3 %>% dplyr::filter(box_type == 'TC')
 plot_labs = d3_dfo %>% 
   dplyr::filter(!is.infinite(vals)) %>% # remove infinite cost
   group_by(var_labels) %>% 
-  summarize(vals = max(vals, na.rm = TRUE)) %>%
+  summarize(vals = 0.9*max(vals, na.rm = TRUE)) %>%
   mutate(label = c('a)', 'b)', 'c)', 'd)'),
          n_whales = 15) # set to 0 for left-justified letters
 
@@ -284,7 +284,7 @@ s = ggplot()+
   geom_text(data = plot_labs, aes(x = n_whales, y = vals, label = label)) +
   scale_color_manual(values = platform_cols)+
   labs(x='Number of whales', y='Performance metric value', color = ' Platforms')+
-  facet_grid(var_labels~box_type, scales='free', labeller=label_parsed)+
+  facet_wrap(~var_labels, scales='free_y', ncol = 1, strip.position = 'right', labeller=label_parsed)+
   theme_bw()+
   theme(axis.line = element_line(colour = "black"),
         panel.border = element_blank())
