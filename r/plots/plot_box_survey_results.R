@@ -118,7 +118,7 @@ ggsave('figures/per_transits_box_surveys.png', q, height = 5, width = 5, units =
 # combine both plots into one and save
 r = ggarrange(p,q, ncol=2, nrow=1, common.legend=TRUE, labels = c('a)','b)'), legend = 'right')
 r
-ggsave('figures/box_surveys_results.pdf', r, height = 5, width = 10, units = 'in', dpi = 300)
+ggsave('figures/figure_4.pdf', r, height = 5, width = 10, units = 'in', dpi = 300)
 
 # plot time to first detection
 # r = ggplot()+
@@ -286,5 +286,5 @@ s = ggplot()+
   theme_bw()
 s
 
-ggsave('figures/example_prob_metrics.pdf', s, height = 9, width = 8, units = 'in', dpi = 300)
+ggsave('figures/figure_5.pdf', s, height = 9, width = 8, units = 'in', dpi = 300)
 

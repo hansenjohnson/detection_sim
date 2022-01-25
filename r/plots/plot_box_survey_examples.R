@@ -102,4 +102,4 @@ p = ggplot()+
 p
 
 # save plot
-ggsave('figures/box_survey_examples.png', p, height = 7, width = 8, units = 'in', dpi = 300)
+ggsave('figures/figure_3_rough.pdf', p, height = 7, width = 8, units = 'in', dpi = 300)

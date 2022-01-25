@@ -7,6 +7,7 @@ library(tidyverse)
 library(lubridate)
 library(sf)
 library(ggspatial)
+library(rnaturalearth)
 load('data/processed/map.rda')
 load('data/processed/dfo_tc_layers.rda')
 
@@ -86,7 +87,7 @@ p = ggplot()+
 
 # save
 ggsave(
-  filename = 'figures/site_map.pdf',
+  filename = 'figures/figure_1.pdf',
   plot = p,
   width = 8,
   height = 6,
