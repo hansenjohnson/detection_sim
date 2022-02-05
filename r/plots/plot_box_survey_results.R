@@ -161,11 +161,11 @@ citation(package='zoo')
 citation(package='ggplot2')
 citation()
 
-# prob example ------------------------------------------------------------
+# det prob examples ------------------------------------------------------------
 
 ## calculations ##
 
-# calculate number of transits needed (different from method above)
+# calculate number of transits needed for 50% det prob
 det_prob_example = probs %>%
   group_by(platform, n_whales, box_type) %>%
   summarize(
@@ -174,6 +174,17 @@ det_prob_example = probs %>%
     # platform/whale number/zone to approach a 0.5 probability as close as possible
     .groups = 'drop'
   )
+
+# repeat for 100% det prob
+det_prob_example2 = probs %>%
+  group_by(platform, n_whales, box_type) %>%
+  summarize(
+    transits_100_prob = n[which.min(abs(p-1.0))], 
+    .groups = 'drop'
+  )
+
+# put in a single table
+det_prob_example$transits_100_prob = det_prob_example2$transits_100_prob
 
 # format transit times (in hours)
 tt = transit_times %>% transmute(platform, box_type, transit_time_h = hours)
@@ -187,8 +198,9 @@ d1 = left_join(det_prob_example, tt)
 # add hourly cost to probs
 d2 = left_join(d1, tc)
 
-# calc time to 50% prob
+# calc time to example probs
 d2$time_50_prob = d2$transits_50_prob*d2$transit_time_h
+d2$time_100_prob = d2$transits_100_prob*d2$transit_time_h
 
 # calc dist to 50% prob
 # d2$dist_50_prob = d2$transits_50_prob*out$mean_transit_dist
@@ -196,17 +208,25 @@ d2$time_50_prob = d2$transits_50_prob*d2$transit_time_h
 # calc area to 50% prob
 # d2$area_50_prob = d2$transits_50_prob*out$mean_transit_area
 
-# calc cost to 50% prob
-d2$cost = d2$time_50_prob*d2$cost_h
+# calc cost to example probs
+d2$cost_50 = d2$time_50_prob*d2$cost_h
+d2$cost_100 = d2$time_100_prob*d2$cost_h
 
-## plots ##
+## test plots ##
 
-# Number of transits to 50% detection
+# Number of transits to example detections
 ggplot(d2)+
   geom_path(aes(x=n_whales,y=transits_50_prob,group=platform,color=platform))+
   scale_color_manual(values = platform_cols)+
   facet_wrap(~box_type, nrow = 1)+
   labs(x = 'Number of whales', y = 'Number of transits to 50% detection', color = 'Platform')+
+  theme_bw()
+
+ggplot(d2)+
+  geom_path(aes(x=n_whales,y=transits_100_prob,group=platform,color=platform))+
+  scale_color_manual(values = platform_cols)+
+  facet_wrap(~box_type, nrow = 1)+
+  labs(x = 'Number of whales', y = 'Number of transits to 100% detection', color = 'Platform')+
   theme_bw()
 
 # Transit time to 50% detection
@@ -235,7 +255,7 @@ ggplot(d2)+
 
 # Cost to 50% detection
 ggplot(d2)+
-  geom_path(aes(x=n_whales,y=cost,group=platform,color=platform))+
+  geom_path(aes(x=n_whales,y=cost_50,group=platform,color=platform))+
   scale_color_manual(values = platform_cols)+
   facet_wrap(~box_type, nrow = 1)+
   labs(x = 'Number of whales', y = 'Cost to 50% detection', color = 'Platform')+
@@ -248,20 +268,24 @@ d2 = subset(d2, select = -c(transit_time_h,cost_h))
 
 # pivot df and limit whale number for plotting
 d3 = d2 %>%
-  pivot_longer(transits_50_prob:cost, names_to = 'vars', values_to = 'vals') %>%
+  pivot_longer(transits_50_prob:cost_100, names_to = 'vars', values_to = 'vals') %>%
   dplyr::select(platform, n_whales, box_type, vars, vals) %>%
   dplyr::filter(n_whales <= 15)
 
 # define factors for plotting order
-d3$vars = factor(d3$vars, levels = c("transits_50_prob", "time_50_prob", "cost"), ordered = TRUE)
+d3$vars = factor(d3$vars, levels = c("transits_50_prob", "transits_100_prob", "time_50_prob", 
+                                     "time_100_prob", "cost_50", "cost_100"), ordered = TRUE)
 
 # define factors for plotting order
 d3$platform = factor(d3$platform, levels = c("Aircraft","RPAS","Vessel","Slocum glider"), ordered = TRUE)
 
 # prepare metric labels for plotting
-d3$var_labels = factor(d3$vars, labels = c(`transits_50_prob`="N[0.5]~(transits)",
-                                                          `time_50_prob`="T[0.5]~(hours)",
-                                                          `cost`=('C[0.5]~("$")')), ordered = TRUE)
+d3$var_labels = factor(d3$vars, labels = c(`transits_50_prob`="N[0.5]~(transits)", 
+                                           `transits_100_prob`="N[1.0]~(transits)",
+                                           `time_50_prob`="T[0.5]~(hours)",
+                                           `time_100_prob`="T[1.0]~(hours)",
+                                           `cost_50`='C[0.5]~("$")',
+                                          `cost_100`=('C[1.0]~("$")')),ordered = TRUE)
 
 # subset for plotting
 d3_dfo = d3 %>% dplyr::filter(box_type == 'DFO')
@@ -272,7 +296,7 @@ plot_labs = d3_dfo %>%
   dplyr::filter(!is.infinite(vals)) %>% # remove infinite cost
   group_by(var_labels) %>% 
   summarize(vals = 0.9*max(vals, na.rm = TRUE)) %>%
-  mutate(label = c('a)', 'b)', 'c)'),
+  mutate(label = c('a)', 'b)', 'c)', 'd)', 'e)', 'f)'),
          n_whales = 15) # set to 0 for left-justified letters
 
 # plot
@@ -282,9 +306,9 @@ s = ggplot()+
   geom_text(data = plot_labs, aes(x = n_whales, y = vals, label = label)) +
   scale_color_manual(values = platform_cols)+
   labs(x='Number of whales', y='Performance metric value', color = ' Platforms')+
-  facet_wrap(~var_labels, scales='free_y', ncol = 1, strip.position = 'right', labeller=label_parsed)+
+  facet_wrap(~var_labels, scales='free_y', ncol = 2, strip.position = 'right', labeller=label_parsed)+
   theme_bw()
 s
 
-ggsave('figures/figure_5.pdf', s, height = 9, width = 8, units = 'in', dpi = 300)
+ggsave('figures/figure_5.pdf', s, height = 10, width = 15, units = 'in', dpi = 300)
 
