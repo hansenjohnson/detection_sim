@@ -311,7 +311,6 @@ plot_labs = d3_dfo %>%
 s = ggplot()+
   geom_path(data = d3_dfo, aes(x = n_whales, y = vals, group = platform, color = platform))+
   #geom_path(data = d3_tc, aes(x = n_whales, y = vals, group = platform, color = platform))+
-  geom_text(data = plot_labs, aes(x = n_whales, y = vals, label = label)) +
   scale_color_manual(values = platform_cols)+
   labs(x='Number of whales', y='Performance metric value', color = ' Platforms')+
   facet_wrap(~var_labels, scales='free_y', ncol = 2, strip.position = 'right', labeller=label_parsed)+
@@ -319,6 +318,7 @@ s = ggplot()+
 s
 
 # make label text bigger
-s = s + theme(text = element_text(size = 20))
+s = s + theme(text = element_text(size = 24))
+s = s + geom_text(data = plot_labs, aes(x = n_whales, y = vals, label = label), size = 8)
 
-ggsave('figures/figure_5.pdf', s, height = 10, width = 15, units = 'in', dpi = 300)
+ggsave('figures/figure_5.pdf', s, height = 12, width = 15, units = 'in', dpi = 300)
