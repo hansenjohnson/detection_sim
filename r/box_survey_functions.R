@@ -33,10 +33,10 @@ rw_sim = function(
   x0 = 0,         # initial x position
   y0 = 0,         # initial y position
   bh = 'feeding', # behaviour (feeding, traveling, socializing)
-  dtime_mean = 720,# mean dive time (s)
-  dtime_sd = 180, # standard dev dive time (s)
-  stime_mean = 300,# mean surface time (s)
-  stime_sd = 60   # standard dev surface time (s)
+  dtime_mean = 730,# mean dive time (s)
+  dtime_sd = 133, # standard dev dive time (s)
+  stime_mean = 188,# mean surface time (s)
+  stime_sd = 59   # standard dev surface time (s)
 )
 { 
   
