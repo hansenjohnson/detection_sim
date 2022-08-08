@@ -166,6 +166,10 @@ citation()
 ## calculations ##
 
 # calculate number of transits needed for 50% det prob
+
+probs = probs %>%
+  dplyr::filter(p >= 0.5)
+
 det_prob_example = probs %>%
   group_by(platform, n_whales, box_type) %>%
   summarize(
@@ -175,16 +179,20 @@ det_prob_example = probs %>%
     .groups = 'drop'
   )
 
-# repeat for 100% det prob
+# repeat for 95% det prob
+
+probs = probs %>%
+  dplyr::filter(p >= 0.95)
+
 det_prob_example2 = probs %>%
   group_by(platform, n_whales, box_type) %>%
   summarize(
-    transits_100_prob = n[which.min(abs(p-1.0))], 
+    transits_95_prob = n[which.min(abs(p-0.95))], 
     .groups = 'drop'
   )
 
 # put in a single table
-det_prob_example$transits_100_prob = det_prob_example2$transits_100_prob
+det_prob = full_join(det_prob_example, det_prob_example2)
 
 # format transit times (in hours)
 tt = transit_times %>% transmute(platform, box_type, transit_time_h = hours)
@@ -193,14 +201,14 @@ tt = transit_times %>% transmute(platform, box_type, transit_time_h = hours)
 tc = tibble(platform = c('Aircraft', 'RPAS', 'Vessel', 'Slocum glider'), cost_h = c(1592,NA,700,31.25))
 
 # add transit times to probs
-d1 = left_join(det_prob_example, tt)
+d1 = left_join(det_prob, tt)
 
 # add hourly cost to probs
 d2 = left_join(d1, tc)
 
 # calc time to example probs
 d2$time_50_prob = d2$transits_50_prob*d2$transit_time_h
-d2$time_100_prob = d2$transits_100_prob*d2$transit_time_h
+d2$time_95_prob = d2$transits_95_prob*d2$transit_time_h
 
 # calc dist to 50% prob
 # d2$dist_50_prob = d2$transits_50_prob*out$mean_transit_dist
@@ -210,7 +218,7 @@ d2$time_100_prob = d2$transits_100_prob*d2$transit_time_h
 
 # calc cost to example probs
 d2$cost_50 = d2$time_50_prob*d2$cost_h
-d2$cost_100 = d2$time_100_prob*d2$cost_h
+d2$cost_95 = d2$time_95_prob*d2$cost_h
 
 ## test plots ##
 
@@ -223,10 +231,10 @@ ggplot(d2)+
   theme_bw()
 
 ggplot(d2)+
-  geom_path(aes(x=n_whales,y=transits_100_prob,group=platform,color=platform))+
+  geom_path(aes(x=n_whales,y=transits_95_prob,group=platform,color=platform))+
   scale_color_manual(values = platform_cols)+
   facet_wrap(~box_type, nrow = 1)+
-  labs(x = 'Number of whales', y = 'Number of transits to 100% detection', color = 'Platform')+
+  labs(x = 'Number of whales', y = 'Number of transits to 95% detection', color = 'Platform')+
   theme_bw()
 
 # Transit time to 50% detection
@@ -268,24 +276,24 @@ d2 = subset(d2, select = -c(transit_time_h,cost_h))
 
 # pivot df and limit whale number for plotting
 d3 = d2 %>%
-  pivot_longer(transits_50_prob:cost_100, names_to = 'vars', values_to = 'vals') %>%
+  pivot_longer(transits_50_prob:cost_95, names_to = 'vars', values_to = 'vals') %>%
   dplyr::select(platform, n_whales, box_type, vars, vals) %>%
   dplyr::filter(n_whales <= 15)
 
 # define factors for plotting order
-d3$vars = factor(d3$vars, levels = c("transits_50_prob", "transits_100_prob", "time_50_prob", 
-                                     "time_100_prob", "cost_50", "cost_100"), ordered = TRUE)
+d3$vars = factor(d3$vars, levels = c("transits_50_prob", "transits_95_prob", "time_50_prob", 
+                                     "time_95_prob", "cost_50", "cost_95"), ordered = TRUE)
 
 # define factors for plotting order
 d3$platform = factor(d3$platform, levels = c("Aircraft","RPAS","Vessel","Slocum glider"), ordered = TRUE)
 
 # prepare metric labels for plotting
 d3$var_labels = factor(d3$vars, labels = c(`transits_50_prob`="N[0.5]~(transits)", 
-                                           `transits_100_prob`="N[1.0]~(transits)",
+                                           `transits_95_prob`="N[0.95]~(transits)",
                                            `time_50_prob`="T[0.5]~(hours)",
-                                           `time_100_prob`="T[1.0]~(hours)",
+                                           `time_95_prob`="T[0.95]~(hours)",
                                            `cost_50`='C[0.5]~("$")',
-                                          `cost_100`=('C[1.0]~("$")')),ordered = TRUE)
+                                          `cost_95`=('C[0.95]~("$")')),ordered = TRUE)
 
 # subset for plotting
 d3_dfo = d3 %>% dplyr::filter(box_type == 'DFO')
@@ -303,12 +311,14 @@ plot_labs = d3_dfo %>%
 s = ggplot()+
   geom_path(data = d3_dfo, aes(x = n_whales, y = vals, group = platform, color = platform))+
   #geom_path(data = d3_tc, aes(x = n_whales, y = vals, group = platform, color = platform))+
-  geom_text(data = plot_labs, aes(x = n_whales, y = vals, label = label)) +
   scale_color_manual(values = platform_cols)+
   labs(x='Number of whales', y='Performance metric value', color = ' Platforms')+
   facet_wrap(~var_labels, scales='free_y', ncol = 2, strip.position = 'right', labeller=label_parsed)+
   theme_bw()
 s
 
-ggsave('figures/figure_5.pdf', s, height = 10, width = 15, units = 'in', dpi = 300)
+# make label text bigger
+s = s + theme(text = element_text(size = 24))
+s = s + geom_text(data = plot_labs, aes(x = n_whales, y = vals, label = label), size = 8)
 
+ggsave('figures/figure_5.pdf', s, height = 12, width = 15, units = 'in', dpi = 300)
