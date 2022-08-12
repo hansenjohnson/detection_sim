@@ -15,7 +15,7 @@ platform_cols = c('Slocum glider' = 'blue', 'Aircraft' = 'red',
 
 # read in simulated survey data
 # note that some lines for the TC box are missing (kaos crashed)
-df = readRDS('data/processed/box_surveys.rds')
+df = readRDS('data/processed/box_surveys_new.rds')
 
 # change platform names for plotting
 df$platform = recode(df$platform, slocum = "Slocum glider", plane = "Aircraft", 
@@ -89,7 +89,7 @@ p = ggplot()+
 p
 
 # save plot
-ggsave('figures/per_whales_box_surveys.png', p, height = 5, width = 5, units = 'in', dpi = 300)
+ggsave('figures/per_whales_box_surveys_new.png', p, height = 5, width = 5, units = 'in', dpi = 300)
 
 # plot p vs n_surveys
 # choose subset to plot
@@ -113,12 +113,12 @@ q = ggplot()+
 q
 
 # save plot
-ggsave('figures/per_transits_box_surveys.png', q, height = 5, width = 5, units = 'in', dpi = 300)
+ggsave('figures/per_transits_box_surveys_new.png', q, height = 5, width = 5, units = 'in', dpi = 300)
 
 # combine both plots into one and save
 r = ggarrange(p,q, ncol=2, nrow=1, common.legend=TRUE, labels = c('a)','b)'), legend = 'right')
 r
-ggsave('figures/figure_4.pdf', r, height = 5, width = 10, units = 'in', dpi = 300)
+ggsave('figures/figure_4_new.pdf', r, height = 5, width = 10, units = 'in', dpi = 300)
 
 # plot time to first detection
 # r = ggplot()+
@@ -321,4 +321,4 @@ s
 s = s + theme(text = element_text(size = 24))
 s = s + geom_text(data = plot_labs, aes(x = n_whales, y = vals, label = label), size = 8)
 
-ggsave('figures/figure_5.pdf', s, height = 12, width = 15, units = 'in', dpi = 300)
+ggsave('figures/figure_5_new.pdf', s, height = 12, width = 15, units = 'in', dpi = 300)
