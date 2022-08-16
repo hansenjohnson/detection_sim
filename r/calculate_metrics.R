@@ -3,8 +3,8 @@
 
 # input -------------------------------------------------------------------
 
-ifile = 'data/processed/box_surveys.rds'
-ofile = 'data/processed/metrics.rds'
+ifile = 'data/processed/box_surveys_new.rds'
+ofile = 'data/processed/metrics_new.rds'
 
 # setup -------------------------------------------------------------------
 
