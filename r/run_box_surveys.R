@@ -7,7 +7,7 @@
 n_surveys = 10000
 
 # numbers of right whales in box
-n_whales = c(seq(1, 10, 1), seq(15, 65, 5))
+n_whales = c(seq(1, 10, 1), seq(15, 100, 5))
 
 # dimensions of TC box (km)
 tc_height = 20
