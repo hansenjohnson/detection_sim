@@ -73,9 +73,10 @@ aictab(cand.set = models, modnames = model.names)
 
 tmp = tibble(x=rexp(1e3, rate = 4.271893))
 
-ggplot()+
-  geom_density(data = df, aes(x=upcall_production_rate), color = 'black')+
-  geom_density(data = tmp, aes(x=x), color = 'blue')
+u = ggplot()+
+    geom_density(data = df, aes(x=upcall_production_rate), color = 'black')+
+    geom_density(data = tmp, aes(x=x), color = 'blue')
+ggsave('figures/upcall_prod_distributions.pdf', u, height = 5, width = 10, units = 'in', dpi = 300)
 
 citation("fitdistrplus")
 citation("AICcmodavg")
