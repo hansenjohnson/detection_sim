@@ -89,7 +89,7 @@ p = ggplot()+
 p
 
 # save plot
-ggsave('figures/per_whales_box_surveys_new.png', p, height = 5, width = 5, units = 'in', dpi = 300)
+ggsave('figures/per_whales_box_surveys_new.png', p, height = 5, width = 7, units = 'in', dpi = 300)
 
 # plot p vs n_surveys
 # choose subset to plot
@@ -113,7 +113,7 @@ q = ggplot()+
 q
 
 # save plot
-ggsave('figures/per_transits_box_surveys_new.png', q, height = 5, width = 5, units = 'in', dpi = 300)
+ggsave('figures/per_transits_box_surveys_new.png', q, height = 5, width = 7, units = 'in', dpi = 300)
 
 # combine both plots into one and save
 r = ggarrange(p,q, ncol=2, nrow=1, common.legend=TRUE, labels = c('a)','b)'), legend = 'right')
