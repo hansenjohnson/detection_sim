@@ -87,7 +87,7 @@ p = ggplot()+
 
 # save
 ggsave(
-  filename = 'figures/figure_1.pdf',
+  filename = 'figures/figure_1.jpeg',
   plot = p,
   width = 8,
   height = 6,

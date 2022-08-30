@@ -49,4 +49,4 @@ p = ggplot(df,aes(x=r,y=p, group = platform, color = platform))+
         panel.border = element_blank())
 
 # save plot
-ggsave('figures/figure_2.pdf', p, height = 3, width = 6, units = 'in', dpi = 300)
+ggsave('figures/figure_2.jpeg', p, height = 3, width = 6, units = 'in', dpi = 300)
