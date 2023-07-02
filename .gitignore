@@ -12,6 +12,7 @@
 data
 figures
 reports
+tests
 wrk
 
 # files
@@ -27,3 +28,4 @@ wrk
 *.pdf
 *.xls
 *.docx
+nohup.out
