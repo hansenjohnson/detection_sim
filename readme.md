@@ -1,54 +1,12 @@
 # detection_sim
-Simulate and compare whale detection methods
+Comparison of visual and acoustic surveys for the detection and dynamic management of North Atlantic right whales 
 
-## Project outline
-- the right whale movement model code is in `r/rw_sim.R`  
-- examples for how to run the model are in `tests/movement_model_example.R`
-- the first attempt at a finished Monte Carlo approach is in `tests/box_survey/old_run_box_surveys.R`; the real, final run is in `r/run_box_surveys.R`
-- eventually the analysis steps will be documented and executable in `master.R`
+This code accompanies the following manuscript:
 
-## Analysis steps
-1. find literature estimates for calling rate and surfacing rate for right whales  
-2. add these behaviors to the model  
-3. simulate acoustic and/or visual detection for a stationary platform  
-4. adapt for a moving platform  
-5. simulate glider-, plane-, and vessel-based detection
-6. compare results, update model parameters as necessary, and repeat  
+V Ceballos, CT Taggart, HD Johnson (2022). Comparison of visual and acoustic surveys for the detection and dynamic management of North Atlantic right whales (Eubalaena glacialis) in Canada. Conservation Science and Practice. e12866. https://doi.org/10.1111/csp2.12866
 
-## Running remotely
-
-Currently set up to run remotely on "kaos" machine at Dal
-
-### Setup
-
-Install required packages:
-```
-R -e "install.packages(c('tidyverse','parallel','zoo'), repos='https://cran.rstudio.com/')"
-R -e "install.packages(c('sp','rgeos','raster'), repos='https://cran.rstudio.com/')"
-```
-
-### Processing
-
-Run over ssh:
-```
-Rscript r/run_box_surveys.R 
-```
-
-Run headless:
-```
-# run job (output will print to nohup.out)
-nohup Rscript r/run_box_surveys.R &
-
-# record PID
-480255
-
-# kill process (only if necessary)
-kill -9 <PID>
-```
-
-Transfer results:
-```
-rsync -rtv hansen@kaos:/home/hansen/Projects/detection_sim/nohup.out .
-rsync -rtv hansen@kaos:/home/hansen/Projects/detection_sim/data/processed/box_surveys.rds .
-```
+## Project structure
+`r` - contains all R code
+`r/plot/` - contains code to make figures
+`master.R` - describes and executes the analysis
 
