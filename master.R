@@ -4,20 +4,32 @@
 # setup -------------------------------------------------------------------
 
 # read in functions
-source('r/rw_sim.R')
+source('r/box_survey_functions.R')
 
 # process -----------------------------------------------------------------
 
-# run 1 week model
-source('r/run_one_week.R')
+# run surveys (large analysis done on remote machine)
+source('r/run_box_surveys.R')
 
 # calculate performance metrics
 source('r/calculate_metrics.R')
 
 #  plot -------------------------------------------------------------------
 
-# detection function
-source('r/plot_detection_functions.R')
+# process map data
+source('r/plots/proc_map_data.R')
 
-# 1 week example
-source('r/plot_one_week.R')
+# plot site map
+source('r/plots/f_site_map.R')
+
+# plot detection functions
+source('r/plots/plot_detection_functions.R')
+
+# plot survey examples
+source('r/plots/plot_box_survey_examples.R')
+
+# plot survey results
+source('r/plots/plot_box_survey_results.R')
+
+# plot survey metrics
+source('r/plots/plot_metrics.R')
