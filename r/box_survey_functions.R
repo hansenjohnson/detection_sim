@@ -9,7 +9,7 @@ suppressPackageStartupMessages(library(parallel))
 suppressPackageStartupMessages(library(zoo))
 # suppressPackageStartupMessages(library(sf))
 suppressPackageStartupMessages(library(sp))
-suppressPackageStartupMessages(library(rgeos))
+# suppressPackageStartupMessages(library(rgeos))
 suppressPackageStartupMessages(library(raster))
 
 # functions ---------------------------------------------------------------
